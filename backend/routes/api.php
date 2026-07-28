@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\ChuyenNganhController as AdminChuyenNganhCont
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\HeDaoTaoController as AdminHeDaoTaoController;
 use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
+use App\Http\Controllers\Api\Admin\LoaiCauHoiController as AdminLoaiCauHoiController;
 use App\Http\Controllers\Api\Admin\LoaiTruongController as AdminLoaiTruongController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\Admin\TinhThanhController as AdminTinhThanhController;
@@ -91,5 +92,10 @@ Route::prefix('v1')->group(function () {
             Route::post('truong-hoc/bulk-status', [AdminTruongHocController::class, 'bulkUpdateStatus']);
             Route::apiResource('truong-hoc', AdminTruongHocController::class)
                 ->parameters(['truong-hoc' => 'truongHoc']);
+
+            Route::post('loai-cau-hoi/bulk-delete', [AdminLoaiCauHoiController::class, 'bulkDestroy']);
+            Route::post('loai-cau-hoi/bulk-status', [AdminLoaiCauHoiController::class, 'bulkUpdateStatus']);
+            Route::apiResource('loai-cau-hoi', AdminLoaiCauHoiController::class)
+                ->parameters(['loai-cau-hoi' => 'loaiCauHoi']);
         });
 });

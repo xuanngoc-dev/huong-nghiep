@@ -88,6 +88,17 @@ export const API_TRUONG_HOC = {
   BULK_STATUS: { url: '/admin/truong-hoc/bulk-status', method: 'post' },
 }
 
+/** Admin — Loại câu hỏi */
+export const API_LOAI_CAU_HOI = {
+  LIST: { url: '/admin/loai-cau-hoi', method: 'get' },
+  CREATE: { url: '/admin/loai-cau-hoi', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/loai-cau-hoi/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/loai-cau-hoi/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/loai-cau-hoi/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/loai-cau-hoi/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/loai-cau-hoi/bulk-status', method: 'post' },
+}
+
 /** Admin — khác (placeholder / dùng dần) */
 export const API_ADMIN = {
   DASHBOARD: { url: '/admin/dashboard', method: 'get' },

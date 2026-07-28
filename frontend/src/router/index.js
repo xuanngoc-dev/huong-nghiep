@@ -106,6 +106,12 @@ const router = createRouter({
           component: () => import('@/views/admin/ChuyenNganhView.vue'),
           meta: { title: 'Chuyên ngành', icon: 'Notebook' },
         },
+        {
+          path: 'danh-muc/loai-cau-hoi',
+          name: 'admin-loai-cau-hoi',
+          component: () => import('@/views/admin/LoaiCauHoiView.vue'),
+          meta: { title: 'Loại câu hỏi', icon: 'Document' },
+        },
       ],
     },
     {

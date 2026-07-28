@@ -15,19 +15,9 @@
     "abbr": "TN",
     "items": [
       {
-        "index": "/admin/trac-nghiem",
-        "title": "Trắc nghiệm",
+        "index": "/admin/cau-hoi-dap-an",
+        "title": "Câu hỏi đáp án",
         "icon": "Collection"
-      },
-      {
-        "index": "/admin/trac-nghiem/cau-hoi",
-        "title": "Câu hỏi",
-        "icon": "Document"
-      },
-      {
-        "index": "/admin/trac-nghiem/cau-tra-loi",
-        "title": "Câu trả lời",
-        "icon": "Document"
       }
     ]
   },
@@ -69,6 +59,11 @@
         "index": "/admin/danh-muc/chuyen-nganh",
         "title": "Chuyên ngành",
         "icon": "Reading"
+      },
+      {
+        "index": "/admin/danh-muc/loai-cau-hoi",
+        "title": "Loại câu hỏi",
+        "icon": "Document"
       }
     ]
   }
