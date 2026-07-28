@@ -11,18 +11,23 @@
     ]
   },
   {
-    "header": "Ngành",
-    "abbr": "N",
+    "header": "Trắc nghiệm",
+    "abbr": "TN",
     "items": [
       {
-        "index": "/admin/nganh",
-        "title": "Ngành",
+        "index": "/admin/trac-nghiem",
+        "title": "Trắc nghiệm",
         "icon": "Collection"
       },
       {
-        "index": "/admin/chuyen-nganh",
-        "title": "Chuyên ngành",
-        "icon": "Notebook"
+        "index": "/admin/trac-nghiem/cau-hoi",
+        "title": "Câu hỏi",
+        "icon": "Document"
+      },
+      {
+        "index": "/admin/trac-nghiem/cau-tra-loi",
+        "title": "Câu trả lời",
+        "icon": "Document"
       }
     ]
   },

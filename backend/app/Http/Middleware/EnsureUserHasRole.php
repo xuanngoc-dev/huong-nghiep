@@ -17,7 +17,11 @@ class EnsureUserHasRole
         $user = $request->user();
 
         if (! $user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated.',
+                'data' => null,
+            ], 401);
         }
 
         $allowed = collect($roles)
@@ -32,7 +36,9 @@ class EnsureUserHasRole
 
         if (! in_array($userRole, $allowed, true)) {
             return response()->json([
+                'status' => false,
                 'message' => 'Bạn không có quyền truy cập.',
+                'data' => null,
             ], 403);
         }
 

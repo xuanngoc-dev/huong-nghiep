@@ -91,7 +91,7 @@ const router = createRouter({
         {
           path: 'danh-muc/nganh-hoc',
           name: 'admin-nganh-hoc',
-          component: placeholder,
+          component: () => import('@/views/admin/NganhHocView.vue'),
           meta: { title: 'Ngành học', icon: 'Reading' },
         },
       ],

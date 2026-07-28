@@ -1,4 +1,27 @@
+/**
+ * API layer — request helper + endpoint wrappers (legacy).
+ *
+ * Ưu tiên dùng:
+ *   import { request } from '@/api'
+ *   import { API_NGANH_HOC } from '@/constants/constant_api'
+ *
+ *   const url = API_NGANH_HOC.LIST
+ *   const params = { q, start, limit }
+ *   const res = await request({ url, params })
+ *
+ *   // Tắt loading / toast khi cần:
+ *   await request({ url, params, loading: false, silent: true })
+ */
 import api from './axios'
+
+export { default as api } from './axios'
+export { request, http, notifyApi, apiErrorMessage, isRequestLoading } from './request'
+export {
+  API_AUTH,
+  API_NGANH_HOC,
+  API_ADMIN,
+  API_PUBLIC,
+} from '@/constants/constant_api'
 
 export const authApi = {
   register: (payload) => api.post('/auth/register', payload),

@@ -1,0 +1,65 @@
+/**
+ * Khai báo endpoint API: { url, method }.
+ * Dùng với request({ url, params, body }).
+ *
+ * method: 'get' | 'post' | 'put' | 'patch' | 'delete'
+ */
+
+/** Auth */
+export const API_AUTH = {
+  REGISTER: { url: '/auth/register', method: 'post' },
+  LOGIN: { url: '/auth/login', method: 'post' },
+  LOGOUT: { url: '/auth/logout', method: 'post' },
+  ME: { url: '/auth/me', method: 'get' },
+}
+
+/** Admin — Ngành học */
+export const API_NGANH_HOC = {
+  LIST: { url: '/admin/nganh-hoc', method: 'get' },
+  CREATE: { url: '/admin/nganh-hoc', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/nganh-hoc/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/nganh-hoc/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/nganh-hoc/${id}`, method: 'delete' }),
+}
+
+/** Admin — khác (placeholder / dùng dần) */
+export const API_ADMIN = {
+  DASHBOARD: { url: '/admin/dashboard', method: 'get' },
+  CAREERS: {
+    LIST: { url: '/admin/careers', method: 'get' },
+    CREATE: { url: '/admin/careers', method: 'post' },
+    SHOW: (id) => ({ url: `/admin/careers/${id}`, method: 'get' }),
+    UPDATE: (id) => ({ url: `/admin/careers/${id}`, method: 'put' }),
+    DELETE: (id) => ({ url: `/admin/careers/${id}`, method: 'delete' }),
+  },
+  ARTICLES: {
+    LIST: { url: '/admin/articles', method: 'get' },
+    CREATE: { url: '/admin/articles', method: 'post' },
+    UPDATE: (id) => ({ url: `/admin/articles/${id}`, method: 'put' }),
+    DELETE: (id) => ({ url: `/admin/articles/${id}`, method: 'delete' }),
+  },
+  ASSESSMENTS: {
+    LIST: { url: '/admin/assessments', method: 'get' },
+    CREATE: { url: '/admin/assessments', method: 'post' },
+    UPDATE: (id) => ({ url: `/admin/assessments/${id}`, method: 'put' }),
+    DELETE: (id) => ({ url: `/admin/assessments/${id}`, method: 'delete' }),
+  },
+}
+
+/** Public site */
+export const API_PUBLIC = {
+  HEALTH: { url: '/health', method: 'get' },
+  CAREERS: {
+    LIST: { url: '/careers', method: 'get' },
+    SHOW: (id) => ({ url: `/careers/${id}`, method: 'get' }),
+  },
+  ARTICLES: {
+    LIST: { url: '/articles', method: 'get' },
+    SHOW: (id) => ({ url: `/articles/${id}`, method: 'get' }),
+  },
+  ASSESSMENTS: {
+    LIST: { url: '/assessments', method: 'get' },
+    SHOW: (id) => ({ url: `/assessments/${id}`, method: 'get' }),
+    SUBMIT: (id) => ({ url: `/assessments/${id}/submit`, method: 'post' }),
+  },
+}

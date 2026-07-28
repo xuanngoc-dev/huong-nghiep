@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Api\Admin\AssessmentController as AdminAssessmentController;
 use App\Http\Controllers\Api\Admin\CareerController as AdminCareerController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
@@ -52,5 +53,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('careers', AdminCareerController::class);
             Route::apiResource('articles', AdminArticleController::class)->except(['show']);
             Route::apiResource('assessments', AdminAssessmentController::class)->except(['show']);
+            Route::apiResource('nganh-hoc', AdminNganhHocController::class)
+                ->parameters(['nganh-hoc' => 'nganhHoc']);
         });
 });

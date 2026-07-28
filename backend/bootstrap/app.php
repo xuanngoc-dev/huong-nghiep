@@ -1,9 +1,14 @@
 <?php
 
+use App\Support\ApiResponse;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,4 +27,45 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            if ($e instanceof ValidationException) {
+                $message = collect($e->errors())->flatten()->first()
+                    ?? 'Dữ liệu không hợp lệ.';
+
+                return ApiResponse::error($message, null, [
+                    'errors' => $e->errors(),
+                ]);
+            }
+
+            if ($e instanceof AuthenticationException) {
+                return ApiResponse::error('Unauthenticated.', null, [], 401);
+            }
+
+            if ($e instanceof ModelNotFoundException) {
+                return ApiResponse::error('Không tìm thấy dữ liệu.');
+            }
+
+            if ($e instanceof HttpExceptionInterface) {
+                $statusCode = $e->getStatusCode();
+                $httpStatus = in_array($statusCode, [401, 403], true) ? $statusCode : 200;
+                $message = $e->getMessage() !== ''
+                    ? $e->getMessage()
+                    : 'Đã xảy ra lỗi.';
+
+                return ApiResponse::error($message, null, [], $httpStatus);
+            }
+
+            report($e);
+
+            $message = config('app.debug')
+                ? $e->getMessage()
+                : 'Đã xảy ra lỗi hệ thống.';
+
+            return ApiResponse::error($message);
+        });
     })->create();
