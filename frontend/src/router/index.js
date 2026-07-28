@@ -62,12 +62,6 @@ const router = createRouter({
           component: placeholder,
           meta: { title: 'Ngành', icon: 'Collection' },
         },
-        {
-          path: 'chuyen-nganh',
-          name: 'admin-chuyen-nganh',
-          component: placeholder,
-          meta: { title: 'Chuyên ngành', icon: 'Notebook' },
-        },
 
         // Danh mục
         {
@@ -93,6 +87,12 @@ const router = createRouter({
           name: 'admin-nganh-hoc',
           component: () => import('@/views/admin/NganhHocView.vue'),
           meta: { title: 'Ngành học', icon: 'Reading' },
+        },
+        {
+          path: 'danh-muc/chuyen-nganh',
+          name: 'admin-chuyen-nganh',
+          component: () => import('@/views/admin/ChuyenNganhView.vue'),
+          meta: { title: 'Chuyên ngành', icon: 'Notebook' },
         },
       ],
     },

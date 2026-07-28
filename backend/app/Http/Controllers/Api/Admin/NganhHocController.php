@@ -54,7 +54,7 @@ class NganhHocController extends Controller
         return $this->tryApi(function () use ($request) {
             $validated = $request->validate([
                 'ten_nganh' => ['required', 'string', 'max:255'],
-                'ma_nganh' => ['required', 'string', 'max:50', 'unique:nganh_hoc,ma_nganh'],
+                'ma_nganh' => ['required', 'string', 'max:50', 'unique:danh_muc_nganh_hoc,ma_nganh'],
                 'ghi_chu' => ['nullable', 'string'],
                 'trang_thai' => ['required', Rule::enum(TrangThaiNganhHoc::class)],
             ]);
@@ -74,7 +74,7 @@ class NganhHocController extends Controller
                     'sometimes',
                     'string',
                     'max:50',
-                    Rule::unique('nganh_hoc', 'ma_nganh')->ignore($nganhHoc->id),
+                    Rule::unique('danh_muc_nganh_hoc', 'ma_nganh')->ignore($nganhHoc->id),
                 ],
                 'ghi_chu' => ['nullable', 'string'],
                 'trang_thai' => ['sometimes', Rule::enum(TrangThaiNganhHoc::class)],
@@ -100,7 +100,7 @@ class NganhHocController extends Controller
         return $this->tryApi(function () use ($request) {
             $validated = $request->validate([
                 'ids' => ['required', 'array', 'min:1'],
-                'ids.*' => ['integer', 'distinct', 'exists:nganh_hoc,id'],
+                'ids.*' => ['integer', 'distinct', 'exists:danh_muc_nganh_hoc,id'],
             ]);
 
             $count = NganhHoc::query()->whereIn('id', $validated['ids'])->delete();
@@ -117,7 +117,7 @@ class NganhHocController extends Controller
         return $this->tryApi(function () use ($request) {
             $validated = $request->validate([
                 'ids' => ['required', 'array', 'min:1'],
-                'ids.*' => ['integer', 'distinct', 'exists:nganh_hoc,id'],
+                'ids.*' => ['integer', 'distinct', 'exists:danh_muc_nganh_hoc,id'],
                 'trang_thai' => ['required', Rule::enum(TrangThaiNganhHoc::class)],
             ]);
 

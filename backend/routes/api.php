@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Api\Admin\AssessmentController as AdminAssessmentController;
 use App\Http\Controllers\Api\Admin\CareerController as AdminCareerController;
+use App\Http\Controllers\Api\Admin\ChuyenNganhController as AdminChuyenNganhController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\ArticleController;
@@ -57,5 +58,10 @@ Route::prefix('v1')->group(function () {
             Route::post('nganh-hoc/bulk-status', [AdminNganhHocController::class, 'bulkUpdateStatus']);
             Route::apiResource('nganh-hoc', AdminNganhHocController::class)
                 ->parameters(['nganh-hoc' => 'nganhHoc']);
+
+            Route::post('chuyen-nganh/bulk-delete', [AdminChuyenNganhController::class, 'bulkDestroy']);
+            Route::post('chuyen-nganh/bulk-status', [AdminChuyenNganhController::class, 'bulkUpdateStatus']);
+            Route::apiResource('chuyen-nganh', AdminChuyenNganhController::class)
+                ->parameters(['chuyen-nganh' => 'chuyenNganh']);
         });
 });

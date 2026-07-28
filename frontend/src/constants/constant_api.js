@@ -24,6 +24,17 @@ export const API_NGANH_HOC = {
   BULK_STATUS: { url: '/admin/nganh-hoc/bulk-status', method: 'post' },
 }
 
+/** Admin — Chuyên ngành */
+export const API_CHUYEN_NGANH = {
+  LIST: { url: '/admin/chuyen-nganh', method: 'get' },
+  CREATE: { url: '/admin/chuyen-nganh', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/chuyen-nganh/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/chuyen-nganh/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/chuyen-nganh/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/chuyen-nganh/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/chuyen-nganh/bulk-status', method: 'post' },
+}
+
 /** Admin — khác (placeholder / dùng dần) */
 export const API_ADMIN = {
   DASHBOARD: { url: '/admin/dashboard', method: 'get' },

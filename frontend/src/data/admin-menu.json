@@ -53,6 +53,11 @@
       {
         "index": "/admin/danh-muc/nganh-hoc",
         "title": "Ngành học",
+        "icon": "Book"
+      },
+      {
+        "index": "/admin/danh-muc/chuyen-nganh",
+        "title": "Chuyên ngành",
         "icon": "Reading"
       }
     ]

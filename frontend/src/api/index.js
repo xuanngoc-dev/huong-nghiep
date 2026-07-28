@@ -19,6 +19,7 @@ export { request, http, notifyApi, apiErrorMessage, isRequestLoading } from './r
 export {
   API_AUTH,
   API_NGANH_HOC,
+  API_CHUYEN_NGANH,
   API_ADMIN,
   API_PUBLIC,
 } from '@/constants/constant_api'
