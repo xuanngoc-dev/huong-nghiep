@@ -1,7 +1,7 @@
 <template>
   <section class="quiz-result" aria-labelledby="quiz-result-title">
     <header class="quiz-result__head">
-      <p class="quiz-result__eyebrow">Bước 7 · Kết quả</p>
+      <p class="quiz-result__eyebrow">Bước {{ currentStep }} · Kết quả</p>
       <h1 id="quiz-result-title">{{ assessment?.name || 'Kết quả bài làm' }}</h1>
       <p class="quiz-result__lead">
         Trang kết quả sẽ hiển thị nhóm ngành phù hợp, điểm mạnh và gợi ý bước tiếp theo.
@@ -25,7 +25,11 @@
       </div>
 
       <div class="quiz-result__actions">
-        <RouterLink class="btn btn-outline" :to="{ name: 'quiz-fields' }">
+        <RouterLink
+          v-if="prevStep"
+          class="btn btn-outline"
+          :to="quiz.toLocation(prevStep)"
+        >
           Quay lại bước trước
         </RouterLink>
         <RouterLink class="btn" :to="{ name: 'careers' }">
@@ -37,19 +41,27 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { assessmentApi } from '@/api'
+import { useQuizStore } from '@/stores/quiz'
+
+const route = useRoute()
+const quiz = useQuizStore()
 
 const assessment = ref(null)
 const loading = ref(true)
 const error = ref(null)
+
+const currentStep = computed(() => quiz.resolveCurrentStep(route))
+const prevStep = computed(() => quiz.getAdjacent(route, -1))
 
 async function loadAssessment() {
   loading.value = true
   error.value = null
 
   try {
+    await quiz.ensureLoaded()
     const { data } = await assessmentApi.list()
     assessment.value = data.data?.[0] || null
   } catch {

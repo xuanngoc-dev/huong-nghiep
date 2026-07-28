@@ -30,6 +30,7 @@ class LoaiCauHoiController extends Controller
                     $trangThai !== '' && TrangThaiLoaiCauHoi::tryFrom($trangThai) !== null,
                     fn ($query) => $query->where('trang_thai', $trangThai),
                 )
+                ->orderBy('thu_tu_uu_tien')
                 ->orderBy('ten_loai_cau_hoi');
 
             $page = OffsetPaginator::paginate($query, $request);
@@ -56,6 +57,7 @@ class LoaiCauHoiController extends Controller
                 'ten_loai_cau_hoi' => ['required', 'string', 'max:255'],
                 'ma_loai_cau_hoi' => ['required', 'string', 'max:50', 'unique:danh_muc_loai_cau_hoi,ma_loai_cau_hoi'],
                 'ghi_chu' => ['nullable', 'string'],
+                'thu_tu_uu_tien' => ['required', 'integer', 'min:1'],
                 'trang_thai' => ['required', Rule::enum(TrangThaiLoaiCauHoi::class)],
             ]);
 
@@ -77,6 +79,7 @@ class LoaiCauHoiController extends Controller
                     Rule::unique('danh_muc_loai_cau_hoi', 'ma_loai_cau_hoi')->ignore($loaiCauHoi->id),
                 ],
                 'ghi_chu' => ['nullable', 'string'],
+                'thu_tu_uu_tien' => ['sometimes', 'integer', 'min:1'],
                 'trang_thai' => ['sometimes', Rule::enum(TrangThaiLoaiCauHoi::class)],
             ]);
 

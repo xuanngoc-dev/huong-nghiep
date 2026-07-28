@@ -4,8 +4,8 @@
       <p class="quiz-start__eyebrow">Bước 1 · Bắt đầu</p>
       <h1 id="quiz-start-title">Sẵn sàng khám phá nghề nghiệp phù hợp?</h1>
       <p class="quiz-start__lead">
-        Bài trắc nghiệm gồm nhiều phần ngắn về sở thích, kỹ năng, môi trường và phong cách
-        làm việc. Hoàn thành lần lượt từng bước để nhận gợi ý ngành nghề phù hợp với bạn.
+        Bài trắc nghiệm gồm nhiều phần theo từng loại câu hỏi. Hoàn thành lần lượt từng bước
+        để nhận gợi ý ngành nghề phù hợp với bạn.
       </p>
     </header>
 
@@ -19,7 +19,7 @@
       <ul class="quiz-start__points">
         <li>{{ assessment.question_count }} câu hỏi</li>
         <li>Thời gian khoảng 15–20 phút</li>
-        <li>6 bước nội dung + trang kết quả</li>
+        <li>{{ contentStepCount }} bước nội dung + trang kết quả</li>
       </ul>
     </div>
 
@@ -30,7 +30,7 @@
       <button
         class="btn"
         type="button"
-        :disabled="!assessmentId || starting"
+        :disabled="!assessmentId || starting || !nextStep"
         @click="goNextStep"
       >
         {{ starting ? 'Đang mở...' : 'Bắt đầu bước tiếp theo' }}
@@ -50,8 +50,10 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { assessmentApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { useQuizStore } from '@/stores/quiz'
 
 const auth = useAuthStore()
+const quiz = useQuizStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -61,17 +63,24 @@ const error = ref(null)
 const starting = ref(false)
 
 const assessmentId = computed(() => assessment.value?.id || null)
+const nextStep = computed(() => quiz.getAdjacent(route, 1))
+const contentStepCount = computed(
+  () => quiz.steps.filter((item) => item.type === 'loai' || item.type === 'fields').length,
+)
 
 async function loadAssessment() {
   loading.value = true
   error.value = null
 
   try {
+    await quiz.ensureLoaded()
     const { data } = await assessmentApi.list()
     const list = data.data || []
     assessment.value = list[0] || null
     if (!assessment.value) {
       error.value = 'Chưa có bài trắc nghiệm khả dụng.'
+    } else if (quiz.error) {
+      error.value = quiz.error
     }
   } catch {
     error.value = 'Không tải được bài trắc nghiệm.'
@@ -81,10 +90,10 @@ async function loadAssessment() {
 }
 
 async function goNextStep() {
-  if (!assessmentId.value) return
+  if (!assessmentId.value || !nextStep.value) return
   starting.value = true
   try {
-    await router.push({ name: 'quiz-interests' })
+    await router.push(quiz.toLocation(nextStep.value))
   } finally {
     starting.value = false
   }

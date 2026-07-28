@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CareerController;
+use App\Http\Controllers\Api\LoaiCauHoiController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -48,6 +49,7 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/assessments', [AssessmentController::class, 'index']);
     Route::get('/assessments/{id}', [AssessmentController::class, 'show']);
+    Route::get('/loai-cau-hoi', [LoaiCauHoiController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/assessments/{id}/submit', [AssessmentController::class, 'submit']);

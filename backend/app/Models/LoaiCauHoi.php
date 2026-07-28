@@ -6,7 +6,7 @@ use App\Enums\TrangThaiLoaiCauHoi;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['ten_loai_cau_hoi', 'ma_loai_cau_hoi', 'ghi_chu', 'trang_thai'])]
+#[Fillable(['ten_loai_cau_hoi', 'ma_loai_cau_hoi', 'ghi_chu', 'thu_tu_uu_tien', 'trang_thai'])]
 class LoaiCauHoi extends Model
 {
     protected $table = 'danh_muc_loai_cau_hoi';
@@ -17,6 +17,7 @@ class LoaiCauHoi extends Model
     protected function casts(): array
     {
         return [
+            'thu_tu_uu_tien' => 'integer',
             'trang_thai' => TrangThaiLoaiCauHoi::class,
         ];
     }

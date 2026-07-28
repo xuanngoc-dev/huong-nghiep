@@ -16,19 +16,24 @@
         <h2>Nội dung bước {{ currentStep }}</h2>
         <p>
           Đây là khung nội dung cho bước <strong>{{ currentStepMeta?.label }}</strong>.
-          Phần câu hỏi và chọn đáp án sẽ được bổ sung theo nghiệp vụ từng section.
+          Phần câu hỏi và chọn đáp án sẽ được bổ sung theo nghiệp vụ từng loại.
         </p>
         <ul>
-          <li>Section: <code>{{ currentStepMeta?.section || route.meta.quizSection || '—' }}</code></li>
+          <li v-if="currentStepMeta?.type === 'loai'">
+            Mã loại: <code>{{ currentStepMeta.maLoaiCauHoi }}</code>
+          </li>
+          <li v-else>
+            Section: <code>{{ currentStepMeta?.section || route.meta.quizSection || '—' }}</code>
+          </li>
           <li>URL: <code>/trac-nghiem/{{ currentStepMeta?.path }}</code></li>
         </ul>
       </div>
 
       <div class="quiz-take__actions">
-        <button class="btn btn-outline" type="button" @click="goPrev">
+        <button class="btn btn-outline" type="button" :disabled="!prevStepMeta" @click="goPrev">
           Quay lại
         </button>
-        <button class="btn" type="button" @click="goNext">
+        <button class="btn" type="button" :disabled="!nextStepMeta" @click="goNext">
           {{ isLastQuestionStep ? 'Xem kết quả' : 'Bước tiếp theo' }}
         </button>
       </div>
@@ -40,36 +45,39 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { assessmentApi } from '@/api'
-import quizSteps from '@/data/quiz-steps.json'
+import { useQuizStore } from '@/stores/quiz'
 
 const route = useRoute()
 const router = useRouter()
+const quiz = useQuizStore()
 
 const assessment = ref(null)
 const loading = ref(true)
 const error = ref(null)
 
-const currentStep = computed(() => Number(route.meta.quizStep) || 2)
-
-const currentStepMeta = computed(() =>
-  quizSteps.find((item) => item.step === currentStep.value) || null,
-)
-
-const prevStepMeta = computed(() =>
-  quizSteps.find((item) => item.step === currentStep.value - 1) || null,
-)
-
-const nextStepMeta = computed(() =>
-  quizSteps.find((item) => item.step === currentStep.value + 1) || null,
-)
-
-const isLastQuestionStep = computed(() => currentStep.value >= 6)
+const currentStepMeta = computed(() => quiz.findStepByRoute(route))
+const currentStep = computed(() => currentStepMeta.value?.step || 1)
+const prevStepMeta = computed(() => quiz.getAdjacent(route, -1))
+const nextStepMeta = computed(() => quiz.getAdjacent(route, 1))
+const isLastQuestionStep = computed(() => nextStepMeta.value?.type === 'result')
 
 async function loadAssessment() {
   loading.value = true
   error.value = null
 
   try {
+    const ok = await quiz.ensureLoaded()
+    if (!ok) {
+      error.value = quiz.error || 'Không tải được các bước trắc nghiệm.'
+      return
+    }
+
+    if (route.name === 'quiz-loai' && !currentStepMeta.value) {
+      error.value = 'Không tìm thấy loại câu hỏi tương ứng.'
+      await router.replace({ name: 'quiz-start' })
+      return
+    }
+
     const { data } = await assessmentApi.list()
     assessment.value = data.data?.[0] || null
     if (!assessment.value) {
@@ -84,12 +92,12 @@ async function loadAssessment() {
 
 function goPrev() {
   if (!prevStepMeta.value) return
-  router.push({ name: prevStepMeta.value.routeName })
+  router.push(quiz.toLocation(prevStepMeta.value))
 }
 
 function goNext() {
   if (!nextStepMeta.value) return
-  router.push({ name: nextStepMeta.value.routeName })
+  router.push(quiz.toLocation(nextStepMeta.value))
 }
 
 onMounted(loadAssessment)

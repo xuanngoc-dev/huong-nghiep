@@ -57,52 +57,7 @@ const router = createRouter({
           component: () => import('@/views/user/quiz/QuizStartView.vue'),
           meta: {
             quizTitle: 'Bắt đầu làm bài',
-            quizStep: 1,
             exitTo: { name: 'assessments' },
-          },
-        },
-        {
-          path: 'so-thich-dam-me',
-          name: 'quiz-interests',
-          component: () => import('@/views/user/quiz/QuizTakeView.vue'),
-          meta: {
-            quizTitle: 'Sở thích & đam mê',
-            quizStep: 2,
-            quizSection: 'interests',
-            exitTo: { name: 'quiz-start' },
-          },
-        },
-        {
-          path: 'ky-nang-kha-nang',
-          name: 'quiz-skills',
-          component: () => import('@/views/user/quiz/QuizTakeView.vue'),
-          meta: {
-            quizTitle: 'Kỹ năng & khả năng',
-            quizStep: 3,
-            quizSection: 'skills',
-            exitTo: { name: 'quiz-start' },
-          },
-        },
-        {
-          path: 'moi-truong-lam-viec',
-          name: 'quiz-environment',
-          component: () => import('@/views/user/quiz/QuizTakeView.vue'),
-          meta: {
-            quizTitle: 'Môi trường làm việc',
-            quizStep: 4,
-            quizSection: 'environment',
-            exitTo: { name: 'quiz-start' },
-          },
-        },
-        {
-          path: 'phong-cach-lam-viec',
-          name: 'quiz-style',
-          component: () => import('@/views/user/quiz/QuizTakeView.vue'),
-          meta: {
-            quizTitle: 'Phong cách làm việc',
-            quizStep: 5,
-            quizSection: 'style',
-            exitTo: { name: 'quiz-start' },
           },
         },
         {
@@ -111,7 +66,6 @@ const router = createRouter({
           component: () => import('@/views/user/quiz/QuizTakeView.vue'),
           meta: {
             quizTitle: 'Ngành phù hợp',
-            quizStep: 6,
             quizSection: 'fields',
             exitTo: { name: 'quiz-start' },
           },
@@ -122,8 +76,15 @@ const router = createRouter({
           component: () => import('@/views/user/quiz/QuizResultView.vue'),
           meta: {
             quizTitle: 'Kết quả trắc nghiệm',
-            quizStep: 7,
             exitTo: { name: 'assessments' },
+          },
+        },
+        {
+          path: 'loai/:maLoaiCauHoi',
+          name: 'quiz-loai',
+          component: () => import('@/views/user/quiz/QuizTakeView.vue'),
+          meta: {
+            exitTo: { name: 'quiz-start' },
           },
         },
       ],

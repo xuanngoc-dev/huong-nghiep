@@ -1,6 +1,6 @@
 <template>
   <nav class="quiz-stepper" aria-label="Các bước làm trắc nghiệm">
-    <ol class="quiz-stepper__list">
+    <ol class="quiz-stepper__list" :style="{ '--step-count': Math.max(steps.length, 1) }">
       <li
         v-for="item in steps"
         :key="item.id"
@@ -54,8 +54,8 @@ defineProps({
   content: '';
   position: absolute;
   top: 1rem;
-  left: calc(100% / 14);
-  right: calc(100% / 14);
+  left: calc(50% / var(--step-count, 1));
+  right: calc(50% / var(--step-count, 1));
   height: 1px;
   background: #d9e2dc;
   z-index: 0;

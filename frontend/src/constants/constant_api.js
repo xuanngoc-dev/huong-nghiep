@@ -160,4 +160,7 @@ export const API_PUBLIC = {
     SHOW: (id) => ({ url: `/assessments/${id}`, method: 'get' }),
     SUBMIT: (id) => ({ url: `/assessments/${id}/submit`, method: 'post' }),
   },
+  LOAI_CAU_HOI: {
+    LIST: { url: '/loai-cau-hoi', method: 'get' },
+  },
 }

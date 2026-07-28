@@ -127,6 +127,7 @@
         </CustomTableColumn>
         <CustomTableColumn prop="ma_loai_cau_hoi" label="Mã loại" width="140" />
         <CustomTableColumn prop="ten_loai_cau_hoi" label="Tên loại câu hỏi" min-width="200" />
+        <CustomTableColumn prop="thu_tu_uu_tien" label="Ưu tiên" width="100" align="center" />
         <CustomTableColumn prop="ghi_chu" label="Ghi chú" min-width="180" show-overflow-tooltip />
         <CustomTableColumn label="Trạng thái" width="200" align="center">
           <template #default="{ row }">
@@ -191,6 +192,17 @@
                 v-model="form.ten_loai_cau_hoi"
                 placeholder="Nhập tên loại câu hỏi"
                 maxlength="255"
+              />
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
+            <CustomFormItem label="Thứ tự ưu tiên" prop="thu_tu_uu_tien">
+              <CustomInput
+                v-model="form.thu_tu_uu_tien"
+                type="number"
+                :min="1"
+                step="1"
+                placeholder="Từ 1 trở lên"
               />
             </CustomFormItem>
           </CustomCol>
@@ -280,6 +292,7 @@ const pagination = reactive({
 const form = reactive({
   ma_loai_cau_hoi: '',
   ten_loai_cau_hoi: '',
+  thu_tu_uu_tien: 1,
   ghi_chu: '',
   trang_thai: 'dang_su_dung',
 })
@@ -292,6 +305,20 @@ const rules = {
   ten_loai_cau_hoi: [
     { required: true, message: 'Vui lòng nhập tên loại câu hỏi', trigger: 'blur' },
     { max: 255, message: 'Tối đa 255 ký tự', trigger: 'blur' },
+  ],
+  thu_tu_uu_tien: [
+    { required: true, message: 'Vui lòng nhập thứ tự ưu tiên', trigger: 'blur' },
+    {
+      validator: (_rule, value, callback) => {
+        const num = Number(value)
+        if (!Number.isInteger(num) || num < 1) {
+          callback(new Error('Thứ tự ưu tiên phải là số tự nhiên từ 1 trở lên'))
+          return
+        }
+        callback()
+      },
+      trigger: 'blur',
+    },
   ],
   trang_thai: [{ required: true, message: 'Vui lòng chọn trạng thái', trigger: 'change' }],
 }
@@ -357,6 +384,7 @@ function handleSearch() {
 function resetForm() {
   form.ma_loai_cau_hoi = ''
   form.ten_loai_cau_hoi = ''
+  form.thu_tu_uu_tien = 1
   form.ghi_chu = ''
   form.trang_thai = 'dang_su_dung'
   editingId.value = null
@@ -371,6 +399,7 @@ function openEdit(row) {
   editingId.value = row.id
   form.ma_loai_cau_hoi = row.ma_loai_cau_hoi
   form.ten_loai_cau_hoi = row.ten_loai_cau_hoi
+  form.thu_tu_uu_tien = row.thu_tu_uu_tien ?? 1
   form.ghi_chu = row.ghi_chu || ''
   form.trang_thai = row.trang_thai
   dialogVisible.value = true
@@ -410,6 +439,7 @@ async function submitForm() {
   const body = {
     ma_loai_cau_hoi: form.ma_loai_cau_hoi.trim(),
     ten_loai_cau_hoi: form.ten_loai_cau_hoi.trim(),
+    thu_tu_uu_tien: Number(form.thu_tu_uu_tien),
     ghi_chu: form.ghi_chu?.trim() || null,
     trang_thai: form.trang_thai,
   }

@@ -37,17 +37,24 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import QuizStepper from '@/components/quiz/QuizStepper.vue'
-import quizSteps from '@/data/quiz-steps.json'
+import { useQuizStore } from '@/stores/quiz'
 
 const route = useRoute()
-const steps = quizSteps
+const quiz = useQuizStore()
 
-const title = computed(() => route.meta.quizTitle || '')
+const steps = computed(() => quiz.steps)
+const currentStep = computed(() => quiz.resolveCurrentStep(route))
+const currentMeta = computed(() => quiz.findStepByRoute(route))
+
+const title = computed(() => route.meta.quizTitle || currentMeta.value?.label || '')
 const exitTo = computed(() => route.meta.exitTo || { name: 'assessments' })
-const currentStep = computed(() => Number(route.meta.quizStep) || 1)
+
+onMounted(() => {
+  quiz.ensureLoaded()
+})
 </script>
 
 <style scoped>
