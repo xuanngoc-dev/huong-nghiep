@@ -21,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Không bật statefulApi(): FE dùng Bearer token (Sanctum), không dùng cookie/CSRF SPA.
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'anti.spam' => \App\Http\Middleware\AntiSpamApi::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\AntiSpamApi::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -52,12 +57,21 @@ return Application::configure(basePath: dirname(__DIR__))
 
             if ($e instanceof HttpExceptionInterface) {
                 $statusCode = $e->getStatusCode();
-                $httpStatus = in_array($statusCode, [401, 403], true) ? $statusCode : 200;
+                $httpStatus = in_array($statusCode, [401, 403, 429], true) ? $statusCode : 200;
                 $message = $e->getMessage() !== ''
                     ? $e->getMessage()
                     : 'Đã xảy ra lỗi.';
 
-                return ApiResponse::error($message, null, [], $httpStatus);
+                $extra = [];
+                if ($statusCode === 429) {
+                    $extra['code'] = 'ANTI_SPAM';
+                    $retryAfter = (int) ($e->getHeaders()['Retry-After'] ?? 0);
+                    if ($retryAfter > 0) {
+                        $extra['retry_after'] = $retryAfter;
+                    }
+                }
+
+                return ApiResponse::error($message, null, $extra, $httpStatus);
             }
 
             report($e);

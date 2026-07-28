@@ -31,18 +31,27 @@ function stopLoading() {
 
 /**
  * Lấy message lỗi từ body API hoặc axios error.
+ * Ưu tiên message do API trả về (tránh "Request failed with status code 429").
  */
 export function apiErrorMessage(errOrBody, fallback = 'Đã xảy ra lỗi.') {
-  if (errOrBody && typeof errOrBody === 'object' && 'status' in errOrBody) {
+  const data = errOrBody?.response?.data
+
+  if (data?.message) return data.message
+
+  const fieldError = Object.values(data?.errors || {})[0]?.[0]
+  if (fieldError) return fieldError
+
+  // Body API trực tiếp: { status: boolean, message }
+  if (errOrBody && typeof errOrBody === 'object' && typeof errOrBody.status === 'boolean') {
     return errOrBody.message || fallback
   }
 
-  return (
-    errOrBody?.response?.data?.message ||
-    Object.values(errOrBody?.response?.data?.errors || {})[0]?.[0] ||
-    errOrBody?.message ||
-    fallback
-  )
+  // Bỏ qua message mặc định của Axios (Request failed with status code ...)
+  if (errOrBody?.isAxiosError || errOrBody?.response) {
+    return fallback
+  }
+
+  return errOrBody?.message || fallback
 }
 
 /**
