@@ -1,0 +1,35 @@
+[
+  {
+    "label": "Nghề nghiệp",
+    "to": "/careers"
+  },
+  {
+    "label": "Trắc nghiệm",
+    "to": "/assessments"
+  },
+  {
+    "label": "Thư viện",
+    "to": "/library"
+  },
+  {
+    "label": "Dịch vụ",
+    "to": "/services"
+  },
+  {
+    "label": "Tuyển sinh",
+    "to": "/admission"
+  },
+  {
+    "label": "Việc làm",
+    "to": "/jobs"
+  },
+  {
+    "label": "Tin tức",
+    "to": "/news"
+  },
+  {
+    "label": "CMS",
+    "to": "/admin",
+    "admin": true
+  }
+]

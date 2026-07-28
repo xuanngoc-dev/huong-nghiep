@@ -1,92 +1,103 @@
 <template>
-  <section class="hero">
-    <div>
-      <p class="eyebrow">Hệ thống hướng nghiệp</p>
-      <h1>Khám phá nghề nghiệp phù hợp với bạn</h1>
-      <p class="muted lead">
-        Khung ứng dụng Vue 3 kết nối Laravel API qua Axios — sẵn sàng mở rộng trắc nghiệm,
-        danh mục nghề và nội dung tư vấn.
-      </p>
-      <div class="cta">
-        <RouterLink class="btn" to="/assessments">Làm trắc nghiệm</RouterLink>
-        <RouterLink class="btn btn-outline" to="/careers">Xem nghề nghiệp</RouterLink>
+  <div class="home">
+    <div class="home-block home-block--hero">
+      <HomeHero />
+      <div class="section-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 72" preserveAspectRatio="none" focusable="false">
+          <path
+            fill="var(--home-bg-audiences)"
+            d="M0,36 C180,68 360,4 540,28 C720,52 900,76 1080,44 C1260,12 1380,8 1440,20 L1440,72 L0,72 Z"
+          />
+        </svg>
       </div>
     </div>
 
-    <div class="card status">
-      <h2>Trạng thái API</h2>
-      <p v-if="loading" class="muted">Đang kiểm tra kết nối...</p>
-      <p v-else-if="error" class="error-text">{{ error }}</p>
-      <template v-else>
-        <p><strong>Status:</strong> {{ health?.status }}</p>
-        <p><strong>App:</strong> {{ health?.app }}</p>
-        <p class="muted">{{ health?.timestamp }}</p>
-      </template>
+    <div class="home-block home-block--audiences">
+      <HomeAudiences />
+      <div class="section-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 72" preserveAspectRatio="none" focusable="false">
+          <path
+            fill="var(--home-bg-services)"
+            d="M0,28 C220,8 420,70 640,42 C860,14 1100,-4 1440,36 L1440,72 L0,72 Z"
+          />
+        </svg>
+      </div>
     </div>
-  </section>
+
+    <div class="home-block home-block--services">
+      <HomeServices />
+      <div class="section-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 72" preserveAspectRatio="none" focusable="false">
+          <path
+            fill="var(--home-bg-admission)"
+            d="M0,44 C160,12 380,64 600,40 C820,16 1040,0 1220,24 C1340,40 1400,48 1440,40 L1440,72 L0,72 Z"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <div class="home-block home-block--admission">
+      <HomeAdmission />
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import { healthApi } from '@/api'
-
-const health = ref(null)
-const loading = ref(true)
-const error = ref(null)
-
-onMounted(async () => {
-  try {
-    const { data } = await healthApi.check()
-    health.value = data
-  } catch {
-    error.value = 'Không kết nối được backend. Hãy chạy Laravel tại cổng 8000.'
-  } finally {
-    loading.value = false
-  }
-})
+import {
+  HomeHero,
+  HomeAudiences,
+  HomeServices,
+  HomeAdmission,
+} from '@/components/home'
 </script>
 
 <style scoped>
-.hero {
-  display: grid;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-@media (min-width: 900px) {
-  .hero {
-    grid-template-columns: 1.4fr 0.8fr;
-  }
-}
-
-.eyebrow {
-  color: var(--accent);
-  font-weight: 600;
-  margin: 0 0 0.5rem;
-}
-
-h1 {
-  margin: 0;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-}
-
-.lead {
-  margin: 1rem 0 1.4rem;
-  max-width: 36rem;
-  line-height: 1.6;
-}
-
-.cta {
+.home {
+  --home-bg-hero: #eef6f1;
+  --home-bg-audiences: #f8fcfa;
+  --home-bg-services: #eaf3ee;
+  --home-bg-admission: #f3f8f5;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex-direction: column;
 }
 
-.status h2 {
-  margin-top: 0;
-  font-size: 1.1rem;
+.home-block {
+  position: relative;
+}
+
+.home-block--hero {
+  background: var(--home-bg-hero);
+}
+
+.home-block--audiences {
+  background: var(--home-bg-audiences);
+}
+
+.home-block--services {
+  background: var(--home-bg-services);
+}
+
+.home-block--admission {
+  background: var(--home-bg-admission);
+}
+
+.section-wave {
+  display: block;
+  line-height: 0;
+  margin-bottom: -1px;
+}
+
+.section-wave svg {
+  display: block;
+  width: 100%;
+  height: clamp(2.25rem, 5vw, 3.5rem);
+}
+
+/* Section con dùng nền trong suốt để lộ màu khối cha */
+.home-block :deep(.hero-section),
+.home-block :deep(.audiences),
+.home-block :deep(.services),
+.home-block :deep(.admission) {
+  background: transparent;
 }
 </style>

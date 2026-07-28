@@ -8,6 +8,8 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 
 import App from './App.vue'
 import router from './router'
+import 'bootstrap/dist/css/bootstrap-grid.min.css'
+import 'bootstrap/dist/css/bootstrap-utilities.min.css'
 import './styles/main.css'
 import './styles/admin-crud.css'
 

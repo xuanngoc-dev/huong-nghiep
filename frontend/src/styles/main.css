@@ -10,6 +10,9 @@
   --shadow: 0 10px 30px rgba(26, 46, 36, 0.06);
   --radius: 14px;
   --font: "Be Vietnam Pro", "Segoe UI", sans-serif;
+  /* UI spacing chuẩn */
+  --space-section: 1rem;
+  --space-btn: 1rem;
 }
 
 * {
@@ -41,17 +44,12 @@ input {
   font: inherit;
 }
 
-.container {
-  width: min(1100px, calc(100% - 2rem));
-  margin-inline: auto;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  padding: 0.7rem 1.1rem;
+  padding: 0.55rem 1rem;
   border: 0;
   border-radius: 999px;
   background: var(--accent);
@@ -74,6 +72,12 @@ input {
   background: transparent;
   color: var(--accent);
   border: 1px solid var(--accent);
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-btn);
 }
 
 .card {
