@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="admin-crud">
     <CustomCard shadow="never" class="mb filter-card">
       <div class="filter-bar">
         <CustomInput
@@ -483,86 +483,3 @@ async function confirmBulkStatus(trangThai) {
 
 onMounted(fetchList)
 </script>
-
-<style scoped>
-h2 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.mb {
-  margin-bottom: 1rem;
-}
-
-.filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.filter-input {
-  width: 280px;
-  max-width: 100%;
-}
-
-.filter-status {
-  width: 200px;
-  max-width: 100%;
-}
-
-.filter-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.list-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.list-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.action-wrap {
-  display: inline-flex;
-}
-
-.action-btns {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.15rem;
-}
-
-.status-cell {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 575px) {
-  .filter-input,
-  .filter-status {
-    width: 100%;
-  }
-
-  .list-toolbar {
-    align-items: flex-start;
-  }
-
-  .list-actions {
-    width: 100%;
-  }
-}
-</style>

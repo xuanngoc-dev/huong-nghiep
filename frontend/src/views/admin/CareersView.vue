@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="loading">
+  <div v-loading="loading" class="admin-crud">
     <div class="toolbar">
       <div>
         <h2>Quản lý nghề nghiệp</h2>
@@ -61,27 +61,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-h2 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.desc {
-  margin: 0.35rem 0 0;
-  color: var(--el-text-color-secondary);
-}
-
-.mb {
-  margin-bottom: 1rem;
-}
-</style>

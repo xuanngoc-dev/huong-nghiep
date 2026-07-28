@@ -1,0 +1,101 @@
+/**
+ * Shared layout for admin CRUD / list screens.
+ * Wrap page root with class `admin-crud` and reuse the utility classes below.
+ */
+
+.admin-crud h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.admin-crud .desc {
+  margin: 0.35rem 0 0;
+  color: var(--el-text-color-secondary);
+}
+
+.admin-crud .mb {
+  margin-bottom: 1rem;
+}
+
+/* Top toolbar (title + primary action outside list card) */
+.admin-crud .toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Filter card */
+.admin-crud .filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-crud .filter-input {
+  width: 280px;
+  max-width: 100%;
+}
+
+.admin-crud .filter-status {
+  width: 200px;
+  max-width: 100%;
+}
+
+.admin-crud .filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* List card header */
+.admin-crud .list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-crud .list-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-crud .action-wrap {
+  display: inline-flex;
+}
+
+.admin-crud .action-btns {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.admin-crud .status-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 575px) {
+  .admin-crud .filter-input,
+  .admin-crud .filter-status {
+    width: 100%;
+  }
+
+  .admin-crud .list-toolbar {
+    align-items: flex-start;
+  }
+
+  .admin-crud .list-actions {
+    width: 100%;
+  }
+}
