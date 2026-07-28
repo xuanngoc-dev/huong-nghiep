@@ -67,11 +67,11 @@
           <button
             type="button"
             class="header-search"
-            aria-label="Tìm kiếm nhanh"
+            aria-label="Lọc nhanh"
             @click="searchOpen = true"
           >
             <el-icon :size="16"><Search /></el-icon>
-            <span class="header-search__placeholder">Tìm kiếm nhanh...</span>
+            <span class="header-search__placeholder">Lọc nhanh...</span>
             <kbd class="header-search__kbd">{{ searchShortcutLabel }}</kbd>
           </button>
 

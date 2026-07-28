@@ -11,7 +11,7 @@
     />
 
     <CustomRow v-if="!error" :gutter="16" class="mt">
-      <CustomCol v-for="item in cards" :key="item.label" :xs="24" :sm="12" :md="8" :lg="8">
+      <CustomCol v-for="item in cards" :key="item.label">
         <CustomCard shadow="hover" class="stat-card">
           <div class="stat">
             <div>

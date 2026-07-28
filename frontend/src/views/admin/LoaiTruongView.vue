@@ -1,26 +1,35 @@
 <template>
   <div class="admin-crud">
     <CustomCard shadow="never" class="mb filter-card">
-      <div class="filter-bar">
-        <CustomInput
-          v-model="filters.keyword"
-          clearable
-          class="filter-input"
-          placeholder="Tìm theo tên hoặc mã loại trường..."
-          @keyup.enter="handleSearch"
-        />
-        <div class="filter-actions">
-          <CustomButton
-            type="primary"
-            :icon="Search"
-            :loading="isRequestLoading"
-            @click="handleSearch"
-          >
-            Tìm kiếm
-          </CustomButton>
-          <CustomButton :disabled="isRequestLoading" @click="resetFilters">Đặt lại</CustomButton>
-        </div>
-      </div>
+      <CustomForm :model="filters" class="filter-form">
+        <CustomRow :gutter="12" class="filter-bar--grid">
+          <CustomCol>
+            <CustomFormItem label="Từ khóa">
+              <CustomInput
+                v-model="filters.keyword"
+                clearable
+                class="filter-control"
+                placeholder="Tên hoặc mã loại trường..."
+                @keyup.enter="handleSearch"
+              />
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol>
+            <CustomFormItem label=" " class="filter-actions-item">
+              <div class="filter-actions">
+                <CustomButton
+                  type="primary"
+                  :icon="Search"
+                  :loading="isRequestLoading"
+                  @click="handleSearch"
+                >
+                  Lọc
+                </CustomButton>
+              </div>
+            </CustomFormItem>
+          </CustomCol>
+        </CustomRow>
+      </CustomForm>
     </CustomCard>
 
     <CustomCard shadow="never">
@@ -102,12 +111,12 @@
     >
       <CustomForm ref="formRef" :model="form" :rules="rules">
         <CustomRow :gutter="16">
-          <CustomCol :xs="24" :sm="12">
+          <CustomCol :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
             <CustomFormItem label="Mã loại trường" prop="ma_loai_truong">
               <CustomInput v-model="form.ma_loai_truong" placeholder="Ví dụ: CL" maxlength="50" />
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="24" :sm="12">
+          <CustomCol :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
             <CustomFormItem label="Tên loại trường" prop="ten_loai_truong">
               <CustomInput
                 v-model="form.ten_loai_truong"
@@ -213,11 +222,6 @@ function handleSearch() {
   fetchList()
 }
 
-function resetFilters() {
-  filters.keyword = ''
-  pagination.start = 0
-  fetchList()
-}
 
 function resetForm() {
   form.ma_loai_truong = ''

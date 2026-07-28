@@ -77,6 +77,17 @@ export const API_HE_DAO_TAO = {
   BULK_DELETE: { url: '/admin/he-dao-tao/bulk-delete', method: 'post' },
 }
 
+/** Admin — Trường học */
+export const API_TRUONG_HOC = {
+  LIST: { url: '/admin/truong-hoc', method: 'get' },
+  CREATE: { url: '/admin/truong-hoc', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/truong-hoc/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/truong-hoc/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/truong-hoc/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/truong-hoc/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/truong-hoc/bulk-status', method: 'post' },
+}
+
 /** Admin — khác (placeholder / dùng dần) */
 export const API_ADMIN = {
   DASHBOARD: { url: '/admin/dashboard', method: 'get' },

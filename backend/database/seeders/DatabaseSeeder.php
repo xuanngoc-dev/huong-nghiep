@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             TinhThanhSeeder::class,
             LoaiTruongSeeder::class,
             HeDaoTaoSeeder::class,
+            TruongHocSeeder::class,
         ]);
     }
 }

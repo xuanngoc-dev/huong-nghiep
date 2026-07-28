@@ -26,11 +26,14 @@
   margin-bottom: 1rem;
 }
 
-/* Filter card */
-.admin-crud .filter-bar {
+/**
+ * Legacy flex filter (không dùng el-row).
+ * Không gắn class này lên CustomRow — gap sẽ phá grid 24 cột (50%+50%+gap > 100%).
+ */
+.admin-crud .filter-bar:not(.el-row) {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.75rem;
 }
 
@@ -44,10 +47,34 @@
   max-width: 100%;
 }
 
+/* Filter theo CustomRow/CustomCol — dùng gutter của el-row, không dùng CSS gap */
+.admin-crud .filter-bar--grid.el-row {
+  align-items: flex-end;
+  row-gap: 0;
+}
+
+/* Khoảng cách giữa các hàng filter giống form modal (el-form-item mặc định) */
+.admin-crud .filter-form .el-form-item {
+  margin-bottom: var(--el-form-item-margin-bottom, 18px);
+}
+
+.admin-crud .filter-control {
+  width: 100%;
+}
+
 .admin-crud .filter-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  width: 100%;
+}
+
+/* Không hiện label nhưng giữ chiều cao label để nút thẳng hàng với input */
+.admin-crud .filter-form .filter-actions-item .el-form-item__label {
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* List card header */

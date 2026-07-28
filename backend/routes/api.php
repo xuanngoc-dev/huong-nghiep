@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
 use App\Http\Controllers\Api\Admin\LoaiTruongController as AdminLoaiTruongController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\Admin\TinhThanhController as AdminTinhThanhController;
+use App\Http\Controllers\Api\Admin\TruongHocController as AdminTruongHocController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
@@ -85,5 +86,10 @@ Route::prefix('v1')->group(function () {
             Route::post('he-dao-tao/bulk-delete', [AdminHeDaoTaoController::class, 'bulkDestroy']);
             Route::apiResource('he-dao-tao', AdminHeDaoTaoController::class)
                 ->parameters(['he-dao-tao' => 'heDaoTao']);
+
+            Route::post('truong-hoc/bulk-delete', [AdminTruongHocController::class, 'bulkDestroy']);
+            Route::post('truong-hoc/bulk-status', [AdminTruongHocController::class, 'bulkUpdateStatus']);
+            Route::apiResource('truong-hoc', AdminTruongHocController::class)
+                ->parameters(['truong-hoc' => 'truongHoc']);
         });
 });

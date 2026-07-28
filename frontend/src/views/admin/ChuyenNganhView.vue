@@ -1,53 +1,70 @@
 <template>
   <div class="admin-crud">
     <CustomCard shadow="never" class="mb filter-card">
-      <div class="filter-bar">
-        <CustomInput
-          v-model="filters.keyword"
-          clearable
-          class="filter-input"
-          placeholder="Tìm theo tên hoặc mã chuyên ngành..."
-          @keyup.enter="handleSearch"
-        />
-        <CustomSelect
-          v-model="filters.nganh_hoc_id"
-          clearable
-          filterable
-          class="filter-status"
-          placeholder="Ngành học"
-        >
-          <CustomOption
-            v-for="opt in nganhHocOptions"
-            :key="opt.id"
-            :label="`${opt.ma_nganh} — ${opt.ten_nganh}`"
-            :value="opt.id"
-          />
-        </CustomSelect>
-        <CustomSelect
-          v-model="filters.trang_thai"
-          clearable
-          class="filter-status"
-          placeholder="Trạng thái"
-        >
-          <CustomOption
-            v-for="opt in trangThaiOptions"
-            :key="opt.value"
-            :label="opt.label"
-            :value="opt.value"
-          />
-        </CustomSelect>
-        <div class="filter-actions">
-          <CustomButton
-            type="primary"
-            :icon="Search"
-            :loading="isRequestLoading"
-            @click="handleSearch"
-          >
-            Tìm kiếm
-          </CustomButton>
-          <CustomButton :disabled="isRequestLoading" @click="resetFilters">Đặt lại</CustomButton>
-        </div>
-      </div>
+      <CustomForm :model="filters" class="filter-form">
+        <CustomRow :gutter="12" class="filter-bar--grid">
+          <CustomCol>
+            <CustomFormItem label="Từ khóa">
+              <CustomInput
+                v-model="filters.keyword"
+                clearable
+                class="filter-control"
+                placeholder="Tên hoặc mã chuyên ngành..."
+                @keyup.enter="handleSearch"
+              />
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol>
+            <CustomFormItem label="Ngành học">
+              <CustomSelect
+                v-model="filters.nganh_hoc_id"
+                clearable
+                filterable
+                class="filter-control"
+                placeholder="Chọn ngành học"
+              >
+                <CustomOption
+                  v-for="opt in nganhHocOptions"
+                  :key="opt.id"
+                  :label="`${opt.ma_nganh} — ${opt.ten_nganh}`"
+                  :value="opt.id"
+                />
+              </CustomSelect>
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol>
+            <CustomFormItem label="Trạng thái">
+              <CustomSelect
+                v-model="filters.trang_thai"
+                clearable
+                class="filter-control"
+                placeholder="Chọn trạng thái"
+              >
+                <CustomOption
+                  v-for="opt in trangThaiOptions"
+                  :key="opt.value"
+                  :label="opt.label"
+                  :value="opt.value"
+                />
+              </CustomSelect>
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol>
+            <CustomFormItem label=" " class="filter-actions-item">
+              <div class="filter-actions">
+                <CustomButton
+                  type="primary"
+                  :icon="Search"
+                  :loading="isRequestLoading"
+                  @click="handleSearch"
+                >
+                  Lọc
+                </CustomButton>
+              </div>
+            </CustomFormItem>
+          </CustomCol>
+        </CustomRow>
+      </CustomForm>
     </CustomCard>
 
     <CustomCard shadow="never">
@@ -183,16 +200,16 @@
     <CustomDialog
       v-model="dialogVisible"
       :title="isEdit ? 'Sửa chuyên ngành' : 'Thêm chuyên ngành'"
-      :width="780"
+      :width="900"
     >
       <CustomForm ref="formRef" :model="form" :rules="rules">
         <CustomRow :gutter="16">
-          <CustomCol :xs="24" :sm="12" :md="8">
+          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <CustomFormItem label="Mã chuyên ngành" prop="ma_chuyen_nganh">
               <CustomInput v-model="form.ma_chuyen_nganh" placeholder="Ví dụ: CNTT-PM" maxlength="50" />
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="24" :sm="12" :md="8">
+          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <CustomFormItem label="Tên chuyên ngành" prop="ten_chuyen_nganh">
               <CustomInput
                 v-model="form.ten_chuyen_nganh"
@@ -201,7 +218,7 @@
               />
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="24" :sm="24" :md="8">
+          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <CustomFormItem label="Ngành học" prop="nganh_hoc_id">
               <CustomSelect
                 v-model="form.nganh_hoc_id"
@@ -218,7 +235,7 @@
               </CustomSelect>
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="24" :sm="12" :md="8">
+          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <CustomFormItem label="Trạng thái" prop="trang_thai">
               <CustomSelect v-model="form.trang_thai" placeholder="Chọn trạng thái" style="width: 100%">
                 <CustomOption
@@ -393,13 +410,6 @@ function handleSearch() {
   fetchList()
 }
 
-function resetFilters() {
-  filters.keyword = ''
-  filters.nganh_hoc_id = ''
-  filters.trang_thai = ''
-  pagination.start = 0
-  fetchList()
-}
 
 function resetForm() {
   form.ma_chuyen_nganh = ''

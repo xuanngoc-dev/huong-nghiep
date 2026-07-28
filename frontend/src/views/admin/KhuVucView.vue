@@ -1,39 +1,52 @@
 <template>
   <div class="admin-crud">
     <CustomCard shadow="never" class="mb filter-card">
-      <div class="filter-bar">
-        <CustomInput
-          v-model="filters.keyword"
-          clearable
-          class="filter-input"
-          placeholder="Tìm theo tên hoặc mã khu vực..."
-          @keyup.enter="handleSearch"
-        />
-        <CustomSelect
-          v-model="filters.trang_thai"
-          clearable
-          class="filter-status"
-          placeholder="Trạng thái"
-        >
-          <CustomOption
-            v-for="opt in trangThaiOptions"
-            :key="opt.value"
-            :label="opt.label"
-            :value="opt.value"
-          />
-        </CustomSelect>
-        <div class="filter-actions">
-          <CustomButton
-            type="primary"
-            :icon="Search"
-            :loading="isRequestLoading"
-            @click="handleSearch"
-          >
-            Tìm kiếm
-          </CustomButton>
-          <CustomButton :disabled="isRequestLoading" @click="resetFilters">Đặt lại</CustomButton>
-        </div>
-      </div>
+      <CustomForm :model="filters" class="filter-form">
+        <CustomRow :gutter="12" class="filter-bar--grid">
+          <CustomCol>
+            <CustomFormItem label="Từ khóa">
+              <CustomInput
+                v-model="filters.keyword"
+                clearable
+                class="filter-control"
+                placeholder="Tên hoặc mã khu vực..."
+                @keyup.enter="handleSearch"
+              />
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol>
+            <CustomFormItem label="Trạng thái">
+              <CustomSelect
+                v-model="filters.trang_thai"
+                clearable
+                class="filter-control"
+                placeholder="Chọn trạng thái"
+              >
+                <CustomOption
+                  v-for="opt in trangThaiOptions"
+                  :key="opt.value"
+                  :label="opt.label"
+                  :value="opt.value"
+                />
+              </CustomSelect>
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol>
+            <CustomFormItem label=" " class="filter-actions-item">
+              <div class="filter-actions">
+                <CustomButton
+                  type="primary"
+                  :icon="Search"
+                  :loading="isRequestLoading"
+                  @click="handleSearch"
+                >
+                  Lọc
+                </CustomButton>
+              </div>
+            </CustomFormItem>
+          </CustomCol>
+        </CustomRow>
+      </CustomForm>
     </CustomCard>
 
     <CustomCard shadow="never">
@@ -167,17 +180,17 @@
     >
       <CustomForm ref="formRef" :model="form" :rules="rules">
         <CustomRow :gutter="16">
-          <CustomCol :xs="24" :sm="12" :md="8">
+          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
             <CustomFormItem label="Mã khu vực" prop="ma_khu_vuc">
               <CustomInput v-model="form.ma_khu_vuc" placeholder="Ví dụ: MB" maxlength="50" />
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="24" :sm="12" :md="8">
+          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
             <CustomFormItem label="Tên khu vực" prop="ten_khu_vuc">
               <CustomInput v-model="form.ten_khu_vuc" placeholder="Nhập tên khu vực" maxlength="255" />
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="24" :sm="24" :md="8">
+          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
             <CustomFormItem label="Trạng thái" prop="trang_thai">
               <CustomSelect v-model="form.trang_thai" placeholder="Chọn trạng thái" style="width: 100%">
                 <CustomOption
@@ -339,12 +352,6 @@ function handleSearch() {
   fetchList()
 }
 
-function resetFilters() {
-  filters.keyword = ''
-  filters.trang_thai = ''
-  pagination.start = 0
-  fetchList()
-}
 
 function resetForm() {
   form.ma_khu_vuc = ''

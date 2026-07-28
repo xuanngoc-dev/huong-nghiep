@@ -79,7 +79,7 @@ const router = createRouter({
         {
           path: 'danh-muc/truong-hoc',
           name: 'admin-truong-hoc',
-          component: placeholder,
+          component: () => import('@/views/admin/TruongHocView.vue'),
           meta: { title: 'Trường học', icon: 'School' },
         },
         {
