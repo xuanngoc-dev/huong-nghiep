@@ -20,6 +20,8 @@ export const API_NGANH_HOC = {
   SHOW: (id) => ({ url: `/admin/nganh-hoc/${id}`, method: 'get' }),
   UPDATE: (id) => ({ url: `/admin/nganh-hoc/${id}`, method: 'put' }),
   DELETE: (id) => ({ url: `/admin/nganh-hoc/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/nganh-hoc/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/nganh-hoc/bulk-status', method: 'post' },
 }
 
 /** Admin — khác (placeholder / dùng dần) */

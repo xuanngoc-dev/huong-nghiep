@@ -53,6 +53,8 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('careers', AdminCareerController::class);
             Route::apiResource('articles', AdminArticleController::class)->except(['show']);
             Route::apiResource('assessments', AdminAssessmentController::class)->except(['show']);
+            Route::post('nganh-hoc/bulk-delete', [AdminNganhHocController::class, 'bulkDestroy']);
+            Route::post('nganh-hoc/bulk-status', [AdminNganhHocController::class, 'bulkUpdateStatus']);
             Route::apiResource('nganh-hoc', AdminNganhHocController::class)
                 ->parameters(['nganh-hoc' => 'nganhHoc']);
         });

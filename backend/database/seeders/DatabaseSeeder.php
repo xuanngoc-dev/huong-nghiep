@@ -30,5 +30,7 @@ class DatabaseSeeder extends Seeder
                 'role' => UserRole::User,
             ],
         );
+
+        $this->call(NganhHocSeeder::class);
     }
 }

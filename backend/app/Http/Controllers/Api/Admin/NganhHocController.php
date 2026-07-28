@@ -17,6 +17,7 @@ class NganhHocController extends Controller
     {
         return $this->tryApi(function () use ($request) {
             $keyword = trim((string) $request->query('q', ''));
+            $trangThai = trim((string) $request->query('trang_thai', ''));
 
             $query = NganhHoc::query()
                 ->when($keyword !== '', function ($query) use ($keyword) {
@@ -25,6 +26,10 @@ class NganhHocController extends Controller
                             ->orWhere('ma_nganh', 'like', "%{$keyword}%");
                     });
                 })
+                ->when(
+                    $trangThai !== '' && TrangThaiNganhHoc::tryFrom($trangThai) !== null,
+                    fn ($query) => $query->where('trang_thai', $trangThai),
+                )
                 ->orderBy('ten_nganh');
 
             $page = OffsetPaginator::paginate($query, $request);
@@ -87,6 +92,47 @@ class NganhHocController extends Controller
             $nganhHoc->delete();
 
             return ApiResponse::success(null, 'Đã xóa ngành học.');
+        });
+    }
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        return $this->tryApi(function () use ($request) {
+            $validated = $request->validate([
+                'ids' => ['required', 'array', 'min:1'],
+                'ids.*' => ['integer', 'distinct', 'exists:nganh_hoc,id'],
+            ]);
+
+            $count = NganhHoc::query()->whereIn('id', $validated['ids'])->delete();
+
+            return ApiResponse::success(
+                ['deleted' => $count],
+                "Đã xóa {$count} ngành học.",
+            );
+        });
+    }
+
+    public function bulkUpdateStatus(Request $request): JsonResponse
+    {
+        return $this->tryApi(function () use ($request) {
+            $validated = $request->validate([
+                'ids' => ['required', 'array', 'min:1'],
+                'ids.*' => ['integer', 'distinct', 'exists:nganh_hoc,id'],
+                'trang_thai' => ['required', Rule::enum(TrangThaiNganhHoc::class)],
+            ]);
+
+            $trangThai = $validated['trang_thai'] instanceof TrangThaiNganhHoc
+                ? $validated['trang_thai']
+                : TrangThaiNganhHoc::from($validated['trang_thai']);
+
+            $count = NganhHoc::query()
+                ->whereIn('id', $validated['ids'])
+                ->update(['trang_thai' => $trangThai->value]);
+
+            return ApiResponse::success(
+                ['updated' => $count],
+                "Đã cập nhật trạng thái «{$trangThai->label()}» cho {$count} ngành học.",
+            );
         });
     }
 }

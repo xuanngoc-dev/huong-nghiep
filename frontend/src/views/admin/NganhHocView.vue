@@ -1,14 +1,5 @@
 <template>
   <div>
-    <div class="toolbar">
-      <div>
-        <h2>Quản lý ngành học</h2>
-      </div>
-      <CustomButton type="primary" :icon="Plus" @click="openCreate">
-        Thêm ngành học
-      </CustomButton>
-    </div>
-
     <CustomCard shadow="never" class="mb filter-card">
       <div class="filter-bar">
         <CustomInput
@@ -18,6 +9,19 @@
           placeholder="Tìm theo tên hoặc mã ngành..."
           @keyup.enter="handleSearch"
         />
+        <CustomSelect
+          v-model="filters.trang_thai"
+          clearable
+          class="filter-status"
+          placeholder="Trạng thái"
+        >
+          <CustomOption
+            v-for="opt in trangThaiOptions"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </CustomSelect>
         <div class="filter-actions">
           <CustomButton
             type="primary"
@@ -33,16 +37,104 @@
     </CustomCard>
 
     <CustomCard shadow="never">
-      <CustomTable :data="items" stripe empty-text="Chưa có dữ liệu">
-        <CustomTableColumn prop="id" label="ID" width="70" />
+      <div class="list-toolbar">
+        <h2>Quản lý ngành học</h2>
+        <div class="list-actions">
+          <CustomTooltip content="Xóa đã chọn" placement="top">
+            <span class="action-wrap">
+              <el-badge :value="selectedCount" :hidden="!selectedCount" :max="99">
+                <CustomButton
+                  type="danger"
+                  :icon="Delete"
+                  :disabled="!hasSelection || isRequestLoading"
+                  @click="confirmBulkRemove"
+                >
+                  Xóa
+                </CustomButton>
+              </el-badge>
+            </span>
+          </CustomTooltip>
+
+          <CustomTooltip content="Khóa các ngành đang sử dụng" placement="top">
+            <span class="action-wrap">
+              <el-badge :value="lockableCount" :hidden="!lockableCount" :max="99">
+                <CustomButton
+                  type="warning"
+                  :icon="Lock"
+                  :disabled="!lockableCount || isRequestLoading"
+                  @click="confirmBulkStatus('ngung_su_dung')"
+                >
+                  Khóa
+                </CustomButton>
+              </el-badge>
+            </span>
+          </CustomTooltip>
+
+          <CustomTooltip content="Mở các ngành đang ngừng sử dụng" placement="top">
+            <span class="action-wrap">
+              <el-badge :value="unlockableCount" :hidden="!unlockableCount" :max="99">
+                <CustomButton
+                  type="success"
+                  :icon="Unlock"
+                  :disabled="!unlockableCount || isRequestLoading"
+                  @click="confirmBulkStatus('dang_su_dung')"
+                >
+                  Mở
+                </CustomButton>
+              </el-badge>
+            </span>
+          </CustomTooltip>
+
+          <CustomTooltip content="Thêm ngành học" placement="top">
+            <span class="action-wrap">
+              <el-badge :value="0" :hidden="true">
+                <CustomButton type="primary" :icon="Plus" @click="openCreate">
+                  Thêm mới
+                </CustomButton>
+              </el-badge>
+            </span>
+          </CustomTooltip>
+        </div>
+      </div>
+
+      <CustomTable
+        ref="tableRef"
+        :data="items"
+        row-key="id"
+        border
+        stripe
+        empty-text="Chưa có dữ liệu"
+        @selection-change="onSelectionChange"
+      >
+        <CustomTableColumn type="selection" width="48" align="center" />
+        <CustomTableColumn label="STT" width="70" align="center">
+          <template #default="{ $index }">
+            {{ pagination.start + $index + 1 }}
+          </template>
+        </CustomTableColumn>
         <CustomTableColumn prop="ma_nganh" label="Mã ngành" width="140" />
         <CustomTableColumn prop="ten_nganh" label="Tên ngành" min-width="200" />
         <CustomTableColumn prop="ghi_chu" label="Ghi chú" min-width="180" show-overflow-tooltip />
-        <CustomTableColumn label="Trạng thái" width="140">
+        <CustomTableColumn label="Trạng thái" width="200" align="center">
           <template #default="{ row }">
-            <CustomTag :type="row.trang_thai === 'dang_su_dung' ? 'success' : 'info'" effect="light">
-              {{ trangThaiLabel(row.trang_thai) }}
-            </CustomTag>
+            <div class="status-cell">
+              <el-switch
+                :model-value="row.trang_thai === 'dang_su_dung'"
+                :loading="statusLoadingId === row.id"
+                :disabled="statusLoadingId === row.id"
+                inline-prompt
+                active-text="Mở"
+                inactive-text="Khóa"
+                @change="(val) => toggleStatus(row, val)"
+              />
+              <CustomTag
+                :type="row.trang_thai === 'dang_su_dung' ? 'success' : 'info'"
+                effect="light"
+                size="small"
+              >
+                {{ trangThaiLabel(row.trang_thai) }}
+              </CustomTag>
+            </div>
           </template>
         </CustomTableColumn>
         <CustomTableColumn label="Thao tác" width="100" fixed="right" align="center">
@@ -123,7 +215,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import { Delete, Edit, Plus, Search } from '@element-plus/icons-vue'
+import { Delete, Edit, Lock, Plus, Search, Unlock } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import { API_NGANH_HOC } from '@/constants/constant_api'
 import {
@@ -149,13 +241,17 @@ const trangThaiOptions = [
   { value: 'ngung_su_dung', label: 'Ngừng sử dụng' },
 ]
 
+const tableRef = ref(null)
 const items = ref([])
+const selectedRows = ref([])
+const statusLoadingId = ref(null)
 const dialogVisible = ref(false)
 const editingId = ref(null)
 const formRef = ref(null)
 
 const filters = reactive({
   keyword: '',
+  trang_thai: '',
 })
 
 const pagination = reactive({
@@ -184,9 +280,58 @@ const rules = {
 }
 
 const isEdit = computed(() => editingId.value !== null)
+const selectedCount = computed(() => selectedRows.value.length)
+const hasSelection = computed(() => selectedCount.value > 0)
+const selectedIds = computed(() => selectedRows.value.map((row) => row.id))
+
+/** Đang sử dụng → có thể khóa */
+const lockableRows = computed(() =>
+  selectedRows.value.filter((row) => row.trang_thai === 'dang_su_dung'),
+)
+/** Ngừng sử dụng → có thể mở */
+const unlockableRows = computed(() =>
+  selectedRows.value.filter((row) => row.trang_thai === 'ngung_su_dung'),
+)
+const lockableCount = computed(() => lockableRows.value.length)
+const unlockableCount = computed(() => unlockableRows.value.length)
 
 function trangThaiLabel(value) {
   return trangThaiOptions.find((o) => o.value === value)?.label || value
+}
+
+function onSelectionChange(rows) {
+  selectedRows.value = rows
+}
+
+async function toggleStatus(row, enabled) {
+  const nextStatus = enabled ? 'dang_su_dung' : 'ngung_su_dung'
+  if (row.trang_thai === nextStatus) return
+
+  const prevStatus = row.trang_thai
+  row.trang_thai = nextStatus
+  statusLoadingId.value = row.id
+
+  const res = await request({
+    url: API_NGANH_HOC.UPDATE(row.id),
+    body: { trang_thai: nextStatus },
+    loading: false,
+  })
+
+  statusLoadingId.value = null
+
+  if (!res.ok) {
+    row.trang_thai = prevStatus
+    return
+  }
+
+  if (res.data?.trang_thai) {
+    row.trang_thai = res.data.trang_thai
+  }
+}
+
+function clearSelection() {
+  selectedRows.value = []
+  tableRef.value?.clearSelection?.()
 }
 
 function handleSearch() {
@@ -196,6 +341,7 @@ function handleSearch() {
 
 function resetFilters() {
   filters.keyword = ''
+  filters.trang_thai = ''
   pagination.start = 0
   fetchList()
 }
@@ -224,9 +370,11 @@ function openEdit(row) {
 
 async function fetchList() {
   const q = filters.keyword.trim()
+  const trangThai = filters.trang_thai || ''
   const url = API_NGANH_HOC.LIST
   const params = {
     ...(q ? { q } : {}),
+    ...(trangThai ? { trang_thai: trangThai } : {}),
     start: pagination.start,
     limit: pagination.limit,
   }
@@ -236,11 +384,13 @@ async function fetchList() {
   if (!res.ok) {
     items.value = []
     pagination.total = 0
+    clearSelection()
     return
   }
 
   items.value = res.data ?? []
   pagination.total = res.total ?? 0
+  clearSelection()
 }
 
 async function submitForm() {
@@ -282,18 +432,59 @@ async function confirmRemove(row) {
   await fetchList()
 }
 
+async function confirmBulkRemove() {
+  if (!hasSelection.value) return
+
+  try {
+    await ElMessageBox.confirm(
+      `Xóa ${selectedCount.value} ngành học đã chọn? Thao tác không thể hoàn tác.`,
+      'Xác nhận xóa',
+      { type: 'warning', confirmButtonText: 'Xóa', cancelButtonText: 'Hủy' },
+    )
+  } catch {
+    return
+  }
+
+  const res = await request({
+    url: API_NGANH_HOC.BULK_DELETE,
+    body: { ids: selectedIds.value },
+  })
+  if (!res.ok) return
+
+  await fetchList()
+}
+
+async function confirmBulkStatus(trangThai) {
+  const targetRows = trangThai === 'ngung_su_dung' ? lockableRows.value : unlockableRows.value
+  if (!targetRows.length) return
+
+  const actionLabel = trangThai === 'ngung_su_dung' ? 'khóa' : 'mở'
+  const statusLabel = trangThaiLabel(trangThai)
+  const ids = targetRows.map((row) => row.id)
+
+  try {
+    await ElMessageBox.confirm(
+      `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)} ${ids.length} ngành học (trạng thái: ${statusLabel})?`,
+      `Xác nhận ${actionLabel}`,
+      { type: 'warning', confirmButtonText: 'Đồng ý', cancelButtonText: 'Hủy' },
+    )
+  } catch {
+    return
+  }
+
+  const res = await request({
+    url: API_NGANH_HOC.BULK_STATUS,
+    body: { ids, trang_thai: trangThai },
+  })
+  if (!res.ok) return
+
+  await fetchList()
+}
+
 onMounted(fetchList)
 </script>
 
 <style scoped>
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
 h2 {
   margin: 0;
   font-size: 1.2rem;
@@ -315,21 +506,63 @@ h2 {
   max-width: 100%;
 }
 
+.filter-status {
+  width: 200px;
+  max-width: 100%;
+}
+
 .filter-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-@media (max-width: 575px) {
-  .filter-input {
-    width: 100%;
-  }
+.list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.list-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.action-wrap {
+  display: inline-flex;
 }
 
 .action-btns {
   display: inline-flex;
   align-items: center;
   gap: 0.15rem;
+}
+
+.status-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 575px) {
+  .filter-input,
+  .filter-status {
+    width: 100%;
+  }
+
+  .list-toolbar {
+    align-items: flex-start;
+  }
+
+  .list-actions {
+    width: 100%;
+  }
 }
 </style>
