@@ -88,7 +88,6 @@ defineProps({
 }
 
 .quiz-stepper__label {
-  max-width: 7.5rem;
   color: #5c7268;
   font-size: clamp(0.68rem, 1.3vw, 0.82rem);
   font-weight: 500;
