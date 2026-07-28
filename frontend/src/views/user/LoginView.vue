@@ -38,8 +38,8 @@ const router = useRouter()
 const route = useRoute()
 
 const form = reactive({
-  email: '',
-  password: '',
+  email: 'admin@huongnghiep.local',
+  password: 'password',
 })
 
 async function onSubmit() {

@@ -84,7 +84,7 @@
           <li v-for="item in intro.benefits" :key="item">{{ item }}</li>
         </ul>
 
-        <button class="btn intro__cta" type="button" @click="scrollToList">
+        <button class="btn intro__cta" type="button" @click="startQuiz">
           {{ intro.cta }}
         </button>
       </div>
@@ -108,6 +108,9 @@
             <h3>{{ item.name }}</h3>
             <p class="muted">{{ item.description }}</p>
             <p class="assessment-card__meta">{{ item.question_count }} câu hỏi</p>
+            <button class="btn assessment-card__cta" type="button" @click="startQuiz">
+              Làm bài này
+            </button>
           </article>
         </div>
       </div>
@@ -117,11 +120,13 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
 import { assessmentApi } from '@/api'
 import { assessmentsIntro } from '@/data/assessments'
 import assessmentFields from '@/data/assessment-fields.json'
 
+const router = useRouter()
 const intro = assessmentsIntro
 const fields = assessmentFields
 
@@ -139,11 +144,8 @@ const slideTransition = computed(() =>
   slideDirection.value === 'down' ? 'slide-down' : 'slide-up',
 )
 
-function scrollToList() {
-  document.getElementById('assessment-list')?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start',
-  })
+function startQuiz() {
+  router.push({ name: 'quiz-start' })
 }
 
 function goToSlide(index, direction) {
@@ -533,6 +535,13 @@ onBeforeUnmount(() => {
   margin: 0;
   color: var(--accent);
   font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.assessment-card__cta {
+  margin-top: 0.35rem;
+  align-self: flex-start;
+  padding: 0.45rem 0.95rem;
   font-size: 0.9rem;
 }
 

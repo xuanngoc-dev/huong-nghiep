@@ -1,0 +1,56 @@
+[
+  {
+    "id": "start",
+    "step": 1,
+    "label": "Bắt đầu",
+    "path": "bat-dau",
+    "routeName": "quiz-start"
+  },
+  {
+    "id": "interests",
+    "step": 2,
+    "label": "Sở thích & đam mê",
+    "path": "so-thich-dam-me",
+    "routeName": "quiz-interests",
+    "section": "interests"
+  },
+  {
+    "id": "skills",
+    "step": 3,
+    "label": "Kỹ năng & khả năng",
+    "path": "ky-nang-kha-nang",
+    "routeName": "quiz-skills",
+    "section": "skills"
+  },
+  {
+    "id": "environment",
+    "step": 4,
+    "label": "Môi trường làm việc",
+    "path": "moi-truong-lam-viec",
+    "routeName": "quiz-environment",
+    "section": "environment"
+  },
+  {
+    "id": "style",
+    "step": 5,
+    "label": "Phong cách làm việc",
+    "path": "phong-cach-lam-viec",
+    "routeName": "quiz-style",
+    "section": "style"
+  },
+  {
+    "id": "fields",
+    "step": 6,
+    "label": "Ngành phù hợp",
+    "path": "nganh-phu-hop",
+    "routeName": "quiz-fields",
+    "section": "fields"
+  },
+  {
+    "id": "result",
+    "step": 7,
+    "label": "Kết quả",
+    "path": "ket-qua",
+    "routeName": "quiz-result"
+  }
+]
