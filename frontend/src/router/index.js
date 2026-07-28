@@ -67,7 +67,7 @@ const router = createRouter({
         {
           path: 'danh-muc/tinh-thanh',
           name: 'admin-tinh-thanh',
-          component: placeholder,
+          component: () => import('@/views/admin/TinhThanhView.vue'),
           meta: { title: 'Tỉnh thành', icon: 'Location' },
         },
         {

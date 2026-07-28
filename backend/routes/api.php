@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\ChuyenNganhController as AdminChuyenNganhCont
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
+use App\Http\Controllers\Api\Admin\TinhThanhController as AdminTinhThanhController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
@@ -69,5 +70,10 @@ Route::prefix('v1')->group(function () {
             Route::post('khu-vuc/bulk-status', [AdminKhuVucController::class, 'bulkUpdateStatus']);
             Route::apiResource('khu-vuc', AdminKhuVucController::class)
                 ->parameters(['khu-vuc' => 'khuVuc']);
+
+            Route::post('tinh-thanh/bulk-delete', [AdminTinhThanhController::class, 'bulkDestroy']);
+            Route::post('tinh-thanh/bulk-status', [AdminTinhThanhController::class, 'bulkUpdateStatus']);
+            Route::apiResource('tinh-thanh', AdminTinhThanhController::class)
+                ->parameters(['tinh-thanh' => 'tinhThanh']);
         });
 });

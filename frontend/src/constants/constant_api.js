@@ -35,6 +35,17 @@ export const API_KHU_VUC = {
   BULK_STATUS: { url: '/admin/khu-vuc/bulk-status', method: 'post' },
 }
 
+/** Admin — Tỉnh thành */
+export const API_TINH_THANH = {
+  LIST: { url: '/admin/tinh-thanh', method: 'get' },
+  CREATE: { url: '/admin/tinh-thanh', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/tinh-thanh/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/tinh-thanh/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/tinh-thanh/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/tinh-thanh/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/tinh-thanh/bulk-status', method: 'post' },
+}
+
 /** Admin — Chuyên ngành */
 export const API_CHUYEN_NGANH = {
   LIST: { url: '/admin/chuyen-nganh', method: 'get' },
