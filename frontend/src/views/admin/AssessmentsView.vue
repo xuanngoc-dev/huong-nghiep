@@ -1,37 +1,49 @@
 <template>
-  <section>
-    <div class="page-head">
-      <h1>Quản lý trắc nghiệm</h1>
-      <p class="muted">API admin `/admin/assessments`.</p>
+  <div v-loading="loading">
+    <div class="toolbar">
+      <div>
+        <h2>Quản lý trắc nghiệm</h2>
+        <p class="desc">Danh sách từ API `/admin/assessments`</p>
+      </div>
+      <CustomButton type="primary" :icon="Plus" @click="ElMessage.info('CRUD sẽ bổ sung sau.')">
+        Thêm trắc nghiệm
+      </CustomButton>
     </div>
 
-    <p v-if="loading" class="muted">Đang tải...</p>
-    <p v-else-if="error" class="error-text">{{ error }}</p>
+    <CustomAlert v-if="error" :title="error" type="error" show-icon class="mb" />
 
-    <div v-else class="table-wrap card">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Tên</th>
-            <th>Số câu</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in items" :key="item.id">
-            <td>{{ item.id }}</td>
-            <td>{{ item.name }}</td>
-            <td>{{ item.question_count }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <CustomCard shadow="never">
+      <CustomTable :data="items" stripe empty-text="Chưa có dữ liệu">
+        <CustomTableColumn prop="id" label="ID" width="80" />
+        <CustomTableColumn prop="name" label="Tên" min-width="240" />
+        <CustomTableColumn prop="question_count" label="Số câu" width="120" />
+        <CustomTableColumn label="Thao tác" width="160" fixed="right">
+          <template #default>
+            <CustomButton link type="primary" @click="ElMessage.info('Sửa — placeholder')">
+              Sửa
+            </CustomButton>
+            <CustomButton link type="danger" @click="ElMessage.info('Xóa — placeholder')">
+              Xóa
+            </CustomButton>
+          </template>
+        </CustomTableColumn>
+      </CustomTable>
+    </CustomCard>
+  </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { adminApi } from '@/api'
+import {
+  CustomAlert,
+  CustomButton,
+  CustomCard,
+  CustomTable,
+  CustomTableColumn,
+} from '@/components/element'
 
 const items = ref([])
 const loading = ref(true)
@@ -50,34 +62,25 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.page-head {
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.table-wrap {
-  overflow-x: auto;
-  padding: 0;
+h2 {
+  margin: 0;
+  font-size: 1.2rem;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.desc {
+  margin: 0.35rem 0 0;
+  color: var(--el-text-color-secondary);
 }
 
-th,
-td {
-  text-align: left;
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-th {
-  font-size: 0.85rem;
-  color: var(--muted);
-  font-weight: 600;
-}
-
-tr:last-child td {
-  border-bottom: 0;
+.mb {
+  margin-bottom: 1rem;
 }
 </style>

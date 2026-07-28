@@ -1,89 +1,117 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+const placeholder = () => import('@/components/admin/PagePlaceholder.vue')
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      component: () => import('@/layouts/MainLayout.vue'),
+      component: () => import('@/layouts/user/MainLayout.vue'),
       children: [
         {
           path: '',
           name: 'home',
-          component: () => import('@/views/HomeView.vue'),
+          component: () => import('@/views/user/HomeView.vue'),
         },
         {
           path: 'careers',
           name: 'careers',
-          component: () => import('@/views/CareersView.vue'),
+          component: () => import('@/views/user/CareersView.vue'),
         },
         {
           path: 'careers/:id',
           name: 'career-detail',
-          component: () => import('@/views/CareerDetailView.vue'),
+          component: () => import('@/views/user/CareerDetailView.vue'),
         },
         {
           path: 'articles',
           name: 'articles',
-          component: () => import('@/views/ArticlesView.vue'),
+          component: () => import('@/views/user/ArticlesView.vue'),
         },
         {
           path: 'assessments',
           name: 'assessments',
-          component: () => import('@/views/AssessmentsView.vue'),
+          component: () => import('@/views/user/AssessmentsView.vue'),
         },
         {
           path: 'profile',
           name: 'profile',
-          component: () => import('@/views/ProfileView.vue'),
+          component: () => import('@/views/user/ProfileView.vue'),
           meta: { requiresAuth: true },
         },
       ],
     },
     {
       path: '/admin',
-      component: () => import('@/layouts/AdminLayout.vue'),
+      component: () => import('@/layouts/admin/AdminLayout.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
       children: [
         {
           path: '',
           name: 'admin-dashboard',
           component: () => import('@/views/admin/DashboardView.vue'),
+          meta: { title: 'Tổng quan' },
+        },
+
+        // Ngành
+        {
+          path: 'nganh',
+          name: 'admin-nganh',
+          component: placeholder,
+          meta: { title: 'Ngành', icon: 'Collection' },
         },
         {
-          path: 'careers',
-          name: 'admin-careers',
-          component: () => import('@/views/admin/CareersView.vue'),
+          path: 'chuyen-nganh',
+          name: 'admin-chuyen-nganh',
+          component: placeholder,
+          meta: { title: 'Chuyên ngành', icon: 'Notebook' },
+        },
+
+        // Danh mục
+        {
+          path: 'danh-muc/tinh-thanh',
+          name: 'admin-tinh-thanh',
+          component: placeholder,
+          meta: { title: 'Tỉnh thành', icon: 'Location' },
         },
         {
-          path: 'articles',
-          name: 'admin-articles',
-          component: () => import('@/views/admin/ArticlesView.vue'),
+          path: 'danh-muc/khu-vuc',
+          name: 'admin-khu-vuc',
+          component: placeholder,
+          meta: { title: 'Khu vực', icon: 'MapLocation' },
         },
         {
-          path: 'assessments',
-          name: 'admin-assessments',
-          component: () => import('@/views/admin/AssessmentsView.vue'),
+          path: 'danh-muc/truong-hoc',
+          name: 'admin-truong-hoc',
+          component: placeholder,
+          meta: { title: 'Trường học', icon: 'School' },
+        },
+        {
+          path: 'danh-muc/nganh-hoc',
+          name: 'admin-nganh-hoc',
+          component: placeholder,
+          meta: { title: 'Ngành học', icon: 'Reading' },
         },
       ],
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue'),
+      component: () => import('@/views/user/LoginView.vue'),
       meta: { guest: true },
     },
     {
       path: '/register',
       name: 'register',
-      component: () => import('@/views/RegisterView.vue'),
+      component: () => import('@/views/user/RegisterView.vue'),
       meta: { guest: true },
     },
     {
       path: '/forbidden',
       name: 'forbidden',
-      component: () => import('@/views/ForbiddenView.vue'),
+      component: () => import('@/views/user/ForbiddenView.vue'),
     },
   ],
   scrollBehavior() {

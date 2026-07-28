@@ -1,0 +1,55 @@
+[
+  {
+    "header": "Tổng quan",
+    "abbr": "TQ",
+    "items": [
+      {
+        "index": "/admin",
+        "title": "Dashboard",
+        "icon": "Odometer"
+      }
+    ]
+  },
+  {
+    "header": "Ngành",
+    "abbr": "N",
+    "items": [
+      {
+        "index": "/admin/nganh",
+        "title": "Ngành",
+        "icon": "Collection"
+      },
+      {
+        "index": "/admin/chuyen-nganh",
+        "title": "Chuyên ngành",
+        "icon": "Notebook"
+      }
+    ]
+  },
+  {
+    "header": "Danh mục",
+    "abbr": "DM",
+    "items": [
+      {
+        "index": "/admin/danh-muc/tinh-thanh",
+        "title": "Tỉnh thành",
+        "icon": "Location"
+      },
+      {
+        "index": "/admin/danh-muc/khu-vuc",
+        "title": "Khu vực",
+        "icon": "MapLocation"
+      },
+      {
+        "index": "/admin/danh-muc/truong-hoc",
+        "title": "Trường học",
+        "icon": "School"
+      },
+      {
+        "index": "/admin/danh-muc/nganh-hoc",
+        "title": "Ngành học",
+        "icon": "Reading"
+      }
+    ]
+  }
+]

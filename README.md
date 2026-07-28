@@ -1,13 +1,20 @@
 # Hệ thống Hướng Nghiệp
 
-Khung dự án gồm **Laravel API** (`backend`) và **Vue 3** (`frontend`). Trang công khai và CMS dùng chung một frontend; phân quyền theo `role` sau khi đăng nhập.
+Khung dự án gồm **Laravel API** (`backend`) và **Vue 3** (`frontend`). Trang công khai và CMS dùng chung một frontend; phân quyền theo `role` sau khi đăng nhập. CMS dùng **Element Plus**.
 
-## Cấu trúc
+## Cấu trúc Frontend
 
 ```
-huong-nghiep/
-├── backend/     # Laravel 13 + Sanctum
-└── frontend/    # Vue 3 (site + CMS /admin)
+frontend/src/
+├── layouts/
+│   ├── user/MainLayout.vue
+│   └── admin/AdminLayout.vue      # Element Plus
+├── views/
+│   ├── user/                      # Trang người dùng
+│   └── admin/                     # CMS (Element Plus)
+├── api/
+├── router/
+└── stores/
 ```
 
 ## Vai trò
@@ -41,13 +48,4 @@ npm run dev           # http://localhost:5173
 ```
 
 - Site: `/`
-- CMS: `/admin` (chỉ admin)
-
-## Luồng đăng nhập
-
-1. FE gọi `POST /api/v1/auth/login`
-2. BE trả `user` (có `role`) + `token`
-3. Nếu `role === admin` → chuyển vào `/admin`
-4. Nếu `role === user` → về trang chủ
-5. Route guard chặn `/admin` nếu không phải admin
-6. API admin dùng middleware `auth:sanctum` + `role:admin`
+- CMS: `/admin` (chỉ admin, UI Element Plus)
