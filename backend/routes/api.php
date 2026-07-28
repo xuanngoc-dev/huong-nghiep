@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\Admin\LoaiCauHoiController as AdminLoaiCauHoiContro
 use App\Http\Controllers\Api\Admin\LoaiTruongController as AdminLoaiTruongController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\Admin\TinhThanhController as AdminTinhThanhController;
+use App\Http\Controllers\Api\Admin\TracNghiemCauHoiController as AdminTracNghiemCauHoiController;
+use App\Http\Controllers\Api\Admin\TracNghiemCauTraLoiController as AdminTracNghiemCauTraLoiController;
 use App\Http\Controllers\Api\Admin\TruongHocController as AdminTruongHocController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AssessmentController;
@@ -97,5 +99,14 @@ Route::prefix('v1')->group(function () {
             Route::post('loai-cau-hoi/bulk-status', [AdminLoaiCauHoiController::class, 'bulkUpdateStatus']);
             Route::apiResource('loai-cau-hoi', AdminLoaiCauHoiController::class)
                 ->parameters(['loai-cau-hoi' => 'loaiCauHoi']);
+
+            Route::post('trac-nghiem-cau-hoi/bulk-delete', [AdminTracNghiemCauHoiController::class, 'bulkDestroy']);
+            Route::post('trac-nghiem-cau-hoi/bulk-status', [AdminTracNghiemCauHoiController::class, 'bulkUpdateStatus']);
+            Route::apiResource('trac-nghiem-cau-hoi', AdminTracNghiemCauHoiController::class)
+                ->parameters(['trac-nghiem-cau-hoi' => 'tracNghiemCauHoi']);
+
+            Route::post('trac-nghiem-cau-tra-loi/bulk-delete', [AdminTracNghiemCauTraLoiController::class, 'bulkDestroy']);
+            Route::apiResource('trac-nghiem-cau-tra-loi', AdminTracNghiemCauTraLoiController::class)
+                ->parameters(['trac-nghiem-cau-tra-loi' => 'tracNghiemCauTraLoi']);
         });
 });

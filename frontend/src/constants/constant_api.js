@@ -99,6 +99,27 @@ export const API_LOAI_CAU_HOI = {
   BULK_STATUS: { url: '/admin/loai-cau-hoi/bulk-status', method: 'post' },
 }
 
+/** Admin — Trắc nghiệm câu hỏi */
+export const API_TRAC_NGHIEM_CAU_HOI = {
+  LIST: { url: '/admin/trac-nghiem-cau-hoi', method: 'get' },
+  CREATE: { url: '/admin/trac-nghiem-cau-hoi', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/trac-nghiem-cau-hoi/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/trac-nghiem-cau-hoi/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/trac-nghiem-cau-hoi/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/trac-nghiem-cau-hoi/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/trac-nghiem-cau-hoi/bulk-status', method: 'post' },
+}
+
+/** Admin — Trắc nghiệm câu trả lời */
+export const API_TRAC_NGHIEM_CAU_TRA_LOI = {
+  LIST: { url: '/admin/trac-nghiem-cau-tra-loi', method: 'get' },
+  CREATE: { url: '/admin/trac-nghiem-cau-tra-loi', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/trac-nghiem-cau-tra-loi/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/trac-nghiem-cau-tra-loi/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/trac-nghiem-cau-tra-loi/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/trac-nghiem-cau-tra-loi/bulk-delete', method: 'post' },
+}
+
 /** Admin — khác (placeholder / dùng dần) */
 export const API_ADMIN = {
   DASHBOARD: { url: '/admin/dashboard', method: 'get' },

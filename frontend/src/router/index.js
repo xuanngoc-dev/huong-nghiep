@@ -112,6 +112,14 @@ const router = createRouter({
           component: () => import('@/views/admin/LoaiCauHoiView.vue'),
           meta: { title: 'Loại câu hỏi', icon: 'Document' },
         },
+
+        // Trắc nghiệm
+        {
+          path: 'cau-hoi-dap-an',
+          name: 'admin-cau-hoi-dap-an',
+          component: () => import('@/views/admin/CauHoiDapAnView.vue'),
+          meta: { title: 'Câu hỏi đáp án', icon: 'Collection' },
+        },
       ],
     },
     {
