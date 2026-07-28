@@ -1,0 +1,44 @@
+[
+  {
+    "id": "business",
+    "title": "Kinh doanh & quản lý",
+    "description": "Quản trị, marketing, tài chính, khởi nghiệp và lãnh đạo tổ chức.",
+    "image": "/images/assessment-fields/business.jpg",
+    "alt": "Môi trường kinh doanh và quản lý chuyên nghiệp"
+  },
+  {
+    "id": "tech",
+    "title": "Kỹ thuật & công nghệ",
+    "description": "CNTT, điện tử, cơ khí, AI và các ngành kỹ thuật ứng dụng.",
+    "image": "/images/assessment-fields/tech.jpg",
+    "alt": "Công nghệ và kỹ thuật hiện đại"
+  },
+  {
+    "id": "art",
+    "title": "Nghệ thuật & sáng tạo",
+    "description": "Thiết kế, truyền thông sáng tạo, âm nhạc, mỹ thuật và nội dung số.",
+    "image": "/images/assessment-fields/art.jpg",
+    "alt": "Nghệ thuật và sáng tạo"
+  },
+  {
+    "id": "science",
+    "title": "Khoa học & nghiên cứu",
+    "description": "Khoa học tự nhiên, dữ liệu, nghiên cứu và phân tích chuyên sâu.",
+    "image": "/images/assessment-fields/science.jpg",
+    "alt": "Khoa học và nghiên cứu trong phòng thí nghiệm"
+  },
+  {
+    "id": "defense",
+    "title": "Lực lượng vũ trang",
+    "description": "Quân sự, an ninh, kỷ luật và các nghề phục vụ quốc phòng.",
+    "image": "/images/assessment-fields/defense.jpg",
+    "alt": "Lực lượng vũ trang và quốc phòng"
+  },
+  {
+    "id": "education",
+    "title": "Giáo dục & công tác xã hội",
+    "description": "Sư phạm, tâm lý, công tác xã hội và hỗ trợ cộng đồng.",
+    "image": "/images/assessment-fields/education.jpg",
+    "alt": "Giáo dục và công tác xã hội"
+  }
+]
