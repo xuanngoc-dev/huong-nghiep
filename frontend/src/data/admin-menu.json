@@ -51,6 +51,16 @@
         "icon": "School"
       },
       {
+        "index": "/admin/danh-muc/loai-truong",
+        "title": "Loại trường",
+        "icon": "OfficeBuilding"
+      },
+      {
+        "index": "/admin/danh-muc/he-dao-tao",
+        "title": "Hệ đào tạo",
+        "icon": "Medal"
+      },
+      {
         "index": "/admin/danh-muc/nganh-hoc",
         "title": "Ngành học",
         "icon": "Book"

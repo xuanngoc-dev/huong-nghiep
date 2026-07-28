@@ -83,6 +83,18 @@ const router = createRouter({
           meta: { title: 'Trường học', icon: 'School' },
         },
         {
+          path: 'danh-muc/loai-truong',
+          name: 'admin-loai-truong',
+          component: () => import('@/views/admin/LoaiTruongView.vue'),
+          meta: { title: 'Loại trường', icon: 'OfficeBuilding' },
+        },
+        {
+          path: 'danh-muc/he-dao-tao',
+          name: 'admin-he-dao-tao',
+          component: () => import('@/views/admin/HeDaoTaoView.vue'),
+          meta: { title: 'Hệ đào tạo', icon: 'Medal' },
+        },
+        {
           path: 'danh-muc/nganh-hoc',
           name: 'admin-nganh-hoc',
           component: () => import('@/views/admin/NganhHocView.vue'),

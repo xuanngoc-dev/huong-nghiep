@@ -5,7 +5,9 @@ use App\Http\Controllers\Api\Admin\AssessmentController as AdminAssessmentContro
 use App\Http\Controllers\Api\Admin\CareerController as AdminCareerController;
 use App\Http\Controllers\Api\Admin\ChuyenNganhController as AdminChuyenNganhController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\HeDaoTaoController as AdminHeDaoTaoController;
 use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
+use App\Http\Controllers\Api\Admin\LoaiTruongController as AdminLoaiTruongController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\Admin\TinhThanhController as AdminTinhThanhController;
 use App\Http\Controllers\Api\ArticleController;
@@ -75,5 +77,13 @@ Route::prefix('v1')->group(function () {
             Route::post('tinh-thanh/bulk-status', [AdminTinhThanhController::class, 'bulkUpdateStatus']);
             Route::apiResource('tinh-thanh', AdminTinhThanhController::class)
                 ->parameters(['tinh-thanh' => 'tinhThanh']);
+
+            Route::post('loai-truong/bulk-delete', [AdminLoaiTruongController::class, 'bulkDestroy']);
+            Route::apiResource('loai-truong', AdminLoaiTruongController::class)
+                ->parameters(['loai-truong' => 'loaiTruong']);
+
+            Route::post('he-dao-tao/bulk-delete', [AdminHeDaoTaoController::class, 'bulkDestroy']);
+            Route::apiResource('he-dao-tao', AdminHeDaoTaoController::class)
+                ->parameters(['he-dao-tao' => 'heDaoTao']);
         });
 });

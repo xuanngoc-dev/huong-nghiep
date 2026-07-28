@@ -57,6 +57,26 @@ export const API_CHUYEN_NGANH = {
   BULK_STATUS: { url: '/admin/chuyen-nganh/bulk-status', method: 'post' },
 }
 
+/** Admin — Loại trường */
+export const API_LOAI_TRUONG = {
+  LIST: { url: '/admin/loai-truong', method: 'get' },
+  CREATE: { url: '/admin/loai-truong', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/loai-truong/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/loai-truong/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/loai-truong/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/loai-truong/bulk-delete', method: 'post' },
+}
+
+/** Admin — Hệ đào tạo */
+export const API_HE_DAO_TAO = {
+  LIST: { url: '/admin/he-dao-tao', method: 'get' },
+  CREATE: { url: '/admin/he-dao-tao', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/he-dao-tao/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/he-dao-tao/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/he-dao-tao/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/he-dao-tao/bulk-delete', method: 'post' },
+}
+
 /** Admin — khác (placeholder / dùng dần) */
 export const API_ADMIN = {
   DASHBOARD: { url: '/admin/dashboard', method: 'get' },
