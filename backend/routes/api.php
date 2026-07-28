@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\AssessmentController as AdminAssessmentContro
 use App\Http\Controllers\Api\Admin\CareerController as AdminCareerController;
 use App\Http\Controllers\Api\Admin\ChuyenNganhController as AdminChuyenNganhController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AssessmentController;
@@ -63,5 +64,10 @@ Route::prefix('v1')->group(function () {
             Route::post('chuyen-nganh/bulk-status', [AdminChuyenNganhController::class, 'bulkUpdateStatus']);
             Route::apiResource('chuyen-nganh', AdminChuyenNganhController::class)
                 ->parameters(['chuyen-nganh' => 'chuyenNganh']);
+
+            Route::post('khu-vuc/bulk-delete', [AdminKhuVucController::class, 'bulkDestroy']);
+            Route::post('khu-vuc/bulk-status', [AdminKhuVucController::class, 'bulkUpdateStatus']);
+            Route::apiResource('khu-vuc', AdminKhuVucController::class)
+                ->parameters(['khu-vuc' => 'khuVuc']);
         });
 });

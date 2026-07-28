@@ -73,7 +73,7 @@ const router = createRouter({
         {
           path: 'danh-muc/khu-vuc',
           name: 'admin-khu-vuc',
-          component: placeholder,
+          component: () => import('@/views/admin/KhuVucView.vue'),
           meta: { title: 'Khu vực', icon: 'MapLocation' },
         },
         {
