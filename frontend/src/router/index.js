@@ -120,6 +120,12 @@ const router = createRouter({
           component: () => import('@/views/admin/CauHoiDapAnView.vue'),
           meta: { title: 'Câu hỏi đáp án', icon: 'Collection' },
         },
+        {
+          path: 'trac-nghiem/lich-su-khao-sat',
+          name: 'admin-lich-su-khao-sat',
+          component: placeholder,
+          meta: { title: 'Lịch sử khảo sát', icon: 'Calendar' },
+        },
       ],
     },
     {

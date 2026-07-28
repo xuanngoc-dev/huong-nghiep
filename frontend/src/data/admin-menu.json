@@ -18,6 +18,11 @@
         "index": "/admin/cau-hoi-dap-an",
         "title": "Câu hỏi đáp án",
         "icon": "Collection"
+      },
+      {
+        "index": "/admin/trac-nghiem/lich-su-khao-sat",
+        "title": "Lịch sử khảo sát",
+        "icon": "Calendar"
       }
     ]
   },
