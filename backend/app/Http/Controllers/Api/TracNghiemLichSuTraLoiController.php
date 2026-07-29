@@ -9,6 +9,7 @@ use App\Models\LoaiCauHoi;
 use App\Models\TracNghiemCauHoi;
 use App\Models\TracNghiemCauTraLoi;
 use App\Models\TracNghiemLichSuTraLoi;
+use App\Models\TracNghiemPhienDaHoanThanh;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -141,6 +142,7 @@ class TracNghiemLichSuTraLoiController extends Controller
             return ApiResponse::success(
                 [
                     'ssid' => $ssid,
+                    'da_hoan_thanh' => $this->isSessionCompleted($ssid),
                     ...$this->buildSessionPayload($ssid, $maLoai ?: null),
                 ],
                 'Lấy lịch sử trả lời thành công.',
@@ -151,6 +153,7 @@ class TracNghiemLichSuTraLoiController extends Controller
     /**
      * Tổng hợp điểm theo nganh_hoc_id / chuyen_nganh_id của một phiên (ssid).
      * Chỉ tính các câu đã có đáp án (diem_so không null).
+     * Sau khi tổng hợp, lưu snapshot phiên vào bảng hoàn thành (nếu chưa có).
      */
     public function tongHop(string $ssid): JsonResponse
     {
@@ -165,10 +168,15 @@ class TracNghiemLichSuTraLoiController extends Controller
                 return ApiResponse::error('Không tìm thấy phiên trắc nghiệm.');
             }
 
+            $summary = $this->buildTongHopPayload($ssid);
+            $completed = $this->persistCompletedSession($ssid, $summary);
+
             return ApiResponse::success(
                 [
                     'ssid' => $ssid,
-                    ...$this->buildTongHopPayload($ssid),
+                    'da_hoan_thanh' => true,
+                    'nguoi_khao_sat_id' => $completed->nguoi_khao_sat_id,
+                    ...$summary,
                 ],
                 'Tổng hợp ngành / chuyên ngành phù hợp thành công.',
             );
@@ -195,6 +203,12 @@ class TracNghiemLichSuTraLoiController extends Controller
 
             if (! $sessionExists) {
                 return ApiResponse::error('Không tìm thấy phiên trắc nghiệm.');
+            }
+
+            if ($this->isSessionCompleted($ssid)) {
+                return ApiResponse::error(
+                    'Phiên trắc nghiệm đã hoàn thành, không thể cập nhật câu trả lời.',
+                );
             }
 
             $userId = $request->user('sanctum')?->id;
@@ -521,5 +535,39 @@ class TracNghiemLichSuTraLoiController extends Controller
             'total_questions' => $records->whereNotNull('cau_hoi_id')->count(),
             'expected_per_loai' => self::QUESTIONS_PER_LOAI,
         ];
+    }
+
+    private function isSessionCompleted(string $ssid): bool
+    {
+        return TracNghiemPhienDaHoanThanh::query()
+            ->where('ssid', $ssid)
+            ->exists();
+    }
+
+    /**
+     * Lưu snapshot tổng hợp ngành / chuyên ngành khi phiên chuyển sang bước hoàn thành.
+     *
+     * @param  array{
+     *   tong_diem: float,
+     *   so_cau_da_tra_loi: int,
+     *   nganh_hoc: list<array<string, mixed>>,
+     *   chuyen_nganh: list<array<string, mixed>>
+     * }  $summary
+     */
+    private function persistCompletedSession(string $ssid, array $summary): TracNghiemPhienDaHoanThanh
+    {
+        $nguoiKhaoSatId = TracNghiemLichSuTraLoi::query()
+            ->where('ssid', $ssid)
+            ->whereNotNull('nguoi_dung_id')
+            ->value('nguoi_dung_id');
+
+        return TracNghiemPhienDaHoanThanh::query()->firstOrCreate(
+            ['ssid' => $ssid],
+            [
+                'nganh_hoc' => $summary['nganh_hoc'] ?? [],
+                'chuyen_nganh' => $summary['chuyen_nganh'] ?? [],
+                'nguoi_khao_sat_id' => $nguoiKhaoSatId,
+            ],
+        );
     }
 }

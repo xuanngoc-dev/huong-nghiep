@@ -5,12 +5,17 @@
       <h1 id="quiz-take-title">{{ currentStepMeta?.label || 'Đang làm bài' }}</h1>
       <p class="quiz-take__lead">
         <template v-if="isLoaiStep">
-          Chọn mức độ phù hợp nhất với bạn cho từng câu hỏi
-          ({{ questions.length }} câu ngẫu nhiên trong nhóm này).
-          Nhấn phím
-          <kbd>1</kbd>–<kbd>5</kbd>
-          để chọn nhanh,
-          mũi tên để chuyển câu.
+          <template v-if="isReadOnly">
+            Phiên khảo sát đã hoàn thành — bạn chỉ có thể xem lại đáp án, không thể chỉnh sửa.
+          </template>
+          <template v-else>
+            Chọn mức độ phù hợp nhất với bạn cho từng câu hỏi
+            ({{ questions.length }} câu ngẫu nhiên trong nhóm này).
+            Nhấn phím
+            <kbd>1</kbd>–<kbd>5</kbd>
+            để chọn nhanh,
+            mũi tên để chuyển câu.
+          </template>
         </template>
         <template v-else>
           {{ assessment?.description || 'Hoàn thành phần câu hỏi của bước này rồi chuyển sang bước tiếp theo.' }}
@@ -61,6 +66,7 @@
                 role="radio"
                 :aria-checked="answers[question.id] === answer.id"
                 :aria-keyshortcuts="String(answerIndex + 1)"
+                :disabled="isReadOnly"
                 @click="selectAnswer(question.id, answer.id)"
               >
                 <span class="quiz-take__answer-stt" aria-hidden="true">{{ answerIndex + 1 }}.</span>
@@ -119,7 +125,7 @@ import { useQuizStore } from '@/stores/quiz'
 const route = useRoute()
 const router = useRouter()
 const quiz = useQuizStore()
-const { answersByLoai } = storeToRefs(quiz)
+const { answersByLoai, sessionCompleted } = storeToRefs(quiz)
 
 const loading = ref(true)
 const error = ref(null)
@@ -139,6 +145,7 @@ const prevStepMeta = computed(() => quiz.getAdjacent(route, -1))
 const nextStepMeta = computed(() => quiz.getAdjacent(route, 1))
 const isLoaiStep = computed(() => currentStepMeta.value?.type === 'loai')
 const isLastQuestionStep = computed(() => nextStepMeta.value?.type === 'result')
+const isReadOnly = computed(() => sessionCompleted.value)
 
 const maLoai = computed(() => currentStepMeta.value?.maLoaiCauHoi || '')
 
@@ -174,6 +181,8 @@ function setQuestionEl(questionId, el) {
 }
 
 function selectAnswer(cauHoiId, cauTraLoiId) {
+  if (isReadOnly.value) return
+
   const index = questions.value.findIndex((q) => q.id === cauHoiId)
   if (index >= 0) focusedQuestionIndex.value = index
 
@@ -295,7 +304,7 @@ function isTypingTarget(target) {
 }
 
 function onKeyDown(event) {
-  if (!isLoaiStep.value || loading.value || !questions.value.length) return
+  if (!isLoaiStep.value || loading.value || !questions.value.length || isReadOnly.value) return
   if (event.altKey || event.ctrlKey || event.metaKey) return
   if (isTypingTarget(event.target)) return
 
@@ -392,21 +401,25 @@ async function goNext() {
 
   if (isLoaiStep.value) {
     if (!questions.value.length) return
-    if (!quiz.isLoaiComplete(maLoai.value)) {
-      focusFirstUnanswered()
-      return
-    }
 
-    saving.value = true
-    error.value = null
-    try {
-      const saved = await quiz.saveLoaiAnswers(maLoai.value, sessionId)
-      if (!saved.ok) {
-        error.value = saved.message || 'Không lưu được câu trả lời.'
+    // Phiên đã hoàn thành: chỉ cho xem / chuyển bước, không lưu lại đáp án
+    if (!isReadOnly.value) {
+      if (!quiz.isLoaiComplete(maLoai.value)) {
+        focusFirstUnanswered()
         return
       }
-    } finally {
-      saving.value = false
+
+      saving.value = true
+      error.value = null
+      try {
+        const saved = await quiz.saveLoaiAnswers(maLoai.value, sessionId)
+        if (!saved.ok) {
+          error.value = saved.message || 'Không lưu được câu trả lời.'
+          return
+        }
+      } finally {
+        saving.value = false
+      }
     }
   } else if (currentStepMeta.value?.id) {
     quiz.markStepCompleted(currentStepMeta.value.id)
@@ -579,6 +592,22 @@ onUnmounted(() => {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(31, 122, 76, 0.2);
+}
+
+.quiz-take__answer:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.quiz-take__answer:disabled:hover {
+  cursor: not-allowed;
+  border-color: #d5ddd8;
+  background: #fff;
+}
+
+.quiz-take__answer.is-selected:disabled:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .quiz-take__answer.is-selected {

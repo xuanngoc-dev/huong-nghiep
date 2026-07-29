@@ -32,6 +32,8 @@ export const useQuizStore = defineStore('quiz', () => {
   const historyByLoai = ref({})
   /** Các mã loại đã trả lời đủ theo lịch sử ssid */
   const historyCompletedLoai = ref([])
+  /** Phiên đã lưu vào bảng hoàn thành — không cho cập nhật đáp án */
+  const sessionCompleted = ref(false)
 
   /** Tổng hợp ngành / chuyên ngành theo ssid (bước Ngành phù hợp) */
   const fieldsSummary = ref(null)
@@ -122,6 +124,7 @@ export const useQuizStore = defineStore('quiz', () => {
     historyLoadedForSsid.value = null
     historyByLoai.value = {}
     historyCompletedLoai.value = []
+    sessionCompleted.value = false
     fieldsSummary.value = null
     fieldsSummaryLoadedForSsid.value = null
   }
@@ -205,6 +208,8 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   function setAnswer(maLoaiCauHoi, cauHoiId, cauTraLoiId) {
+    if (sessionCompleted.value) return
+
     const ma = normalizeMa(maLoaiCauHoi)
     const current = { ...(answersByLoai.value[ma] || {}) }
     if (cauTraLoiId == null) {
@@ -239,6 +244,7 @@ export const useQuizStore = defineStore('quiz', () => {
     historyCompletedLoai.value = Array.isArray(data?.completed_loai)
       ? data.completed_loai.map(normalizeMa).filter(Boolean)
       : []
+    sessionCompleted.value = Boolean(data?.da_hoan_thanh)
 
     const nextQuestions = { ...questionsByLoai.value }
     const nextAnswers = { ...answersByLoai.value }
@@ -441,6 +447,13 @@ export const useQuizStore = defineStore('quiz', () => {
       return { ok: false, message: 'Thiếu phiên làm bài. Vui lòng bắt đầu lại.' }
     }
 
+    if (sessionCompleted.value) {
+      return {
+        ok: false,
+        message: 'Phiên trắc nghiệm đã hoàn thành, không thể cập nhật câu trả lời.',
+      }
+    }
+
     const payload = buildLoaiPayload(ma)
     const answers = payload.answers
       .filter((item) => item.cau_hoi_id != null && item.cau_tra_loi_id != null)
@@ -535,6 +548,9 @@ export const useQuizStore = defineStore('quiz', () => {
 
         fieldsSummary.value = res.data || null
         fieldsSummaryLoadedForSsid.value = id
+        if (res.data?.da_hoan_thanh) {
+          sessionCompleted.value = true
+        }
         return { ok: true, data: res.data }
       } finally {
         fieldsSummaryLoading.value = false
@@ -647,6 +663,7 @@ export const useQuizStore = defineStore('quiz', () => {
     historyLoading,
     historyByLoai,
     historyCompletedLoai,
+    sessionCompleted,
     fieldsSummary,
     fieldsSummaryLoadedForSsid,
     fieldsSummaryLoading,
