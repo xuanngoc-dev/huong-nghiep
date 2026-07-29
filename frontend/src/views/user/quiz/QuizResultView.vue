@@ -64,6 +64,7 @@ async function loadAssessment() {
   try {
     quiz.syncSsidFromRoute(route)
     if (route.meta.requiresQuizSession && !route.params.ssid) {
+      quiz.resetSession()
       await router.replace({ name: 'quiz-start' })
       return
     }
@@ -73,7 +74,8 @@ async function loadAssessment() {
     if (route.params.ssid) {
       const history = await quiz.ensureHistoryLoaded(String(route.params.ssid))
       if (!history.ok) {
-        error.value = history.message || 'Không tải được lịch sử phiên làm bài.'
+        quiz.resetSession()
+        await router.replace({ name: 'quiz-start' })
         return
       }
     }

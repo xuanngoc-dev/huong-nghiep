@@ -42,12 +42,13 @@
 
 <script setup>
 import { computed, watch } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import QuizStepper from '@/components/quiz/QuizStepper.vue'
 import { useQuizStore } from '@/stores/quiz'
 
 const route = useRoute()
+const router = useRouter()
 const quiz = useQuizStore()
 const {
   answersByLoai,
@@ -75,13 +76,30 @@ const completedIds = computed(() => {
     .map((item) => item.id)
 })
 
+async function redirectToStart() {
+  quiz.resetSession()
+  if (route.name !== 'quiz-start') {
+    await router.replace({ name: 'quiz-start' })
+  }
+}
+
 watch(
-  () => route.params.ssid,
-  async (ssid) => {
+  () => [route.params.ssid, route.meta.requiresQuizSession],
+  async ([ssid, requiresSession]) => {
     quiz.syncSsidFromRoute(route)
     await quiz.ensureLoaded()
-    if (!ssid) return
-    await quiz.ensureHistoryLoaded(String(ssid))
+
+    if (!requiresSession) return
+
+    if (!ssid) {
+      await redirectToStart()
+      return
+    }
+
+    const history = await quiz.ensureHistoryLoaded(String(ssid))
+    if (!history.ok) {
+      await redirectToStart()
+    }
   },
   { immediate: true },
 )

@@ -431,6 +431,7 @@ async function loadSummary() {
     quiz.syncSsidFromRoute(route)
 
     if (route.meta.requiresQuizSession && !route.params.ssid) {
+      quiz.resetSession()
       await router.replace({ name: 'quiz-start' })
       return
     }
@@ -443,18 +444,25 @@ async function loadSummary() {
 
     const sessionId = String(route.params.ssid || quiz.ssid || '')
     if (!sessionId) {
+      quiz.resetSession()
       await router.replace({ name: 'quiz-start' })
       return
     }
 
     const history = await quiz.ensureHistoryLoaded(sessionId)
     if (!history.ok) {
-      error.value = history.message || 'Không tải được lịch sử phiên làm bài.'
+      quiz.resetSession()
+      await router.replace({ name: 'quiz-start' })
       return
     }
 
     const result = await quiz.ensureFieldsSummary(sessionId, { force: true })
     if (!result.ok) {
+      if (/phiên|ssid/i.test(String(result.message || ''))) {
+        quiz.resetSession()
+        await router.replace({ name: 'quiz-start' })
+        return
+      }
       error.value = result.message || 'Không tổng hợp được ngành phù hợp.'
       return
     }

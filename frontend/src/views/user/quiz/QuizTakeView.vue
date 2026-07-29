@@ -344,6 +344,7 @@ async function loadStep() {
     quiz.syncSsidFromRoute(route)
 
     if (route.meta.requiresQuizSession && !route.params.ssid) {
+      quiz.resetSession()
       await router.replace({ name: 'quiz-start' })
       return
     }
@@ -357,13 +358,13 @@ async function loadStep() {
     if (route.params.ssid) {
       const history = await quiz.ensureHistoryLoaded(String(route.params.ssid))
       if (!history.ok) {
-        error.value = history.message || 'Không tải được lịch sử phiên làm bài.'
+        quiz.resetSession()
+        await router.replace({ name: 'quiz-start' })
         return
       }
     }
 
     if (route.name === 'quiz-loai' && !currentStepMeta.value) {
-      error.value = 'Không tìm thấy loại câu hỏi tương ứng.'
       await router.replace({ name: 'quiz-start' })
       return
     }
@@ -371,6 +372,12 @@ async function loadStep() {
     if (isLoaiStep.value) {
       const result = await quiz.ensureQuestionsForLoai(maLoai.value)
       if (!result.ok) {
+        // Thiếu / sai phiên → về bước 1 tạo ssid mới
+        if (/phiên/i.test(String(result.message || ''))) {
+          quiz.resetSession()
+          await router.replace({ name: 'quiz-start' })
+          return
+        }
         error.value = result.message || 'Không tải được câu hỏi.'
         return
       }
