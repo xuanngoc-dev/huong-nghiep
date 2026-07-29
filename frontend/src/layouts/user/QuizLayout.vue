@@ -24,7 +24,11 @@
 
     <div class="quiz-stepper-wrap">
       <div class="container">
-        <QuizStepper :steps="steps" :current-step="currentStep" />
+        <QuizStepper
+          :steps="steps"
+          :current-step="currentStep"
+          :completed-ids="completedIds"
+        />
       </div>
     </div>
 
@@ -39,11 +43,13 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import QuizStepper from '@/components/quiz/QuizStepper.vue'
 import { useQuizStore } from '@/stores/quiz'
 
 const route = useRoute()
 const quiz = useQuizStore()
+const { answersByLoai, questionsByLoai, completedStepIds } = storeToRefs(quiz)
 
 const steps = computed(() => quiz.steps)
 const currentStep = computed(() => quiz.resolveCurrentStep(route))
@@ -51,6 +57,15 @@ const currentMeta = computed(() => quiz.findStepByRoute(route))
 
 const title = computed(() => route.meta.quizTitle || currentMeta.value?.label || '')
 const exitTo = computed(() => route.meta.exitTo || { name: 'assessments' })
+
+const completedIds = computed(() => {
+  void answersByLoai.value
+  void questionsByLoai.value
+  void completedStepIds.value
+  return steps.value
+    .filter((item) => quiz.isStepComplete(item))
+    .map((item) => item.id)
+})
 
 onMounted(() => {
   quiz.ensureLoaded()

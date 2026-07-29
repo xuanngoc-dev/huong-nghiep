@@ -62,6 +62,7 @@ async function loadAssessment() {
 
   try {
     await quiz.ensureLoaded()
+    quiz.markStepCompleted('result')
     const { data } = await assessmentApi.list()
     assessment.value = data.data?.[0] || null
   } catch {

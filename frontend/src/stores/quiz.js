@@ -20,6 +20,8 @@ export const useQuizStore = defineStore('quiz', () => {
   const questionsByLoai = ref({})
   /** Đáp án đã chọn theo mã loại: { [ma]: { [cauHoiId]: answerId } } */
   const answersByLoai = ref({})
+  /** Các bước non-loai đã hoàn thành (start / fields / result) — giữ khi quay lại sửa */
+  const completedStepIds = ref([])
 
   const steps = computed(() => {
     const middle = loaiCauHoi.value.map((item, index) => {
@@ -114,6 +116,12 @@ export const useQuizStore = defineStore('quiz', () => {
   function resetSession() {
     questionsByLoai.value = {}
     answersByLoai.value = {}
+    completedStepIds.value = []
+  }
+
+  function markStepCompleted(stepId) {
+    if (!stepId || completedStepIds.value.includes(stepId)) return
+    completedStepIds.value = [...completedStepIds.value, stepId]
   }
 
   function getQuestions(maLoaiCauHoi) {
@@ -145,6 +153,18 @@ export const useQuizStore = defineStore('quiz', () => {
     if (!questions.length) return false
     const answers = getAnswers(maLoaiCauHoi)
     return questions.every((q) => answers[q.id] != null)
+  }
+
+  /**
+   * Bước đã trả lời đủ — không phụ thuộc vị trí hiện tại
+   * (quay về bước trước sửa vẫn giữ trạng thái bước đã hoàn thành).
+   */
+  function isStepComplete(stepItem) {
+    if (!stepItem) return false
+    if (stepItem.type === 'loai') {
+      return isLoaiComplete(stepItem.maLoaiCauHoi)
+    }
+    return completedStepIds.value.includes(stepItem.id)
   }
 
   /**
@@ -269,16 +289,19 @@ export const useQuizStore = defineStore('quiz', () => {
     error,
     questionsByLoai,
     answersByLoai,
+    completedStepIds,
     steps,
     findStepByRoute,
     resolveCurrentStep,
     toLocation,
     getAdjacent,
     resetSession,
+    markStepCompleted,
     getQuestions,
     getAnswers,
     setAnswer,
     isLoaiComplete,
+    isStepComplete,
     buildLoaiPayload,
     ensureQuestionsForLoai,
     ensureLoaded,

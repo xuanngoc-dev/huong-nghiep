@@ -114,6 +114,7 @@ async function goNextStep() {
   try {
     // Mỗi lần bắt đầu làm bài: xáo lại bộ câu hỏi / đáp án phiên hiện tại
     quiz.resetSession()
+    quiz.markStepCompleted('start')
     await router.push(quiz.toLocation(nextStep.value))
   } finally {
     starting.value = false

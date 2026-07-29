@@ -248,6 +248,8 @@ function goNext() {
     }
     const payload = quiz.buildLoaiPayload(maLoai.value)
     console.log('[quiz] hoàn thành loại câu hỏi:', payload)
+  } else if (currentStepMeta.value?.id) {
+    quiz.markStepCompleted(currentStepMeta.value.id)
   }
 
   router.push(quiz.toLocation(nextStepMeta.value))
