@@ -215,6 +215,9 @@ onBeforeUnmount(() => {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  font-family: var(--font);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
 }
 
 .header {
@@ -268,7 +271,7 @@ onBeforeUnmount(() => {
 
 .brand__text {
   display: none;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 1.05rem;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -300,7 +303,7 @@ onBeforeUnmount(() => {
 
 .nav--desktop a.router-link-active {
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .actions {
@@ -391,13 +394,13 @@ onBeforeUnmount(() => {
   padding: 0.75rem 0.25rem;
   color: var(--text);
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 400;
   border-bottom: 1px solid var(--border);
 }
 
 .nav-mobile-link.router-link-active {
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .nav-mobile-actions {
@@ -435,7 +438,7 @@ onBeforeUnmount(() => {
 
 .footer-title {
   margin: 0 0 0.4rem;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 1.05rem;
 }
 

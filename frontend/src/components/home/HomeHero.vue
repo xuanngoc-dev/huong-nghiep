@@ -382,7 +382,7 @@ onBeforeUnmount(() => {
 .hero__brand {
   margin: 0 0 0.45rem;
   font-size: clamp(1.05rem, 2vw, 1.35rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.2;
 }
@@ -390,7 +390,7 @@ onBeforeUnmount(() => {
 .hero__eyebrow {
   margin: 0 0 0.55rem;
   font-size: clamp(0.78rem, 1.4vw, 0.88rem);
-  font-weight: 500;
+  font-weight: 400;
   opacity: 0.88;
 }
 
@@ -443,7 +443,7 @@ onBeforeUnmount(() => {
 .hero__cta .btn {
   background: #fff;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
   font-size: clamp(0.82rem, 1.4vw, 0.92rem);
   padding: 0.45rem 0.9rem;
   white-space: nowrap;
@@ -481,7 +481,7 @@ onBeforeUnmount(() => {
 
 .hero__stat-value {
   font-size: clamp(1.15rem, 2.2vw, 1.55rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }

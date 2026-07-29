@@ -59,14 +59,14 @@ defineProps({
 .section-eyebrow {
   margin: 0 0 0.5rem;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
 }
 
 .section-head h2 {
   margin: 0 0 0.65rem;
   font-size: clamp(1.55rem, 3vw, 2.15rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.2;
 }
@@ -110,7 +110,7 @@ defineProps({
 .audience h3 {
   margin: 0.25rem 0 0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .audience p {
@@ -127,7 +127,7 @@ defineProps({
   gap: 0.3rem;
   margin-top: 0.35rem;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.92rem;
 }
 

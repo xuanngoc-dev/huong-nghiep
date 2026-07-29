@@ -50,7 +50,7 @@ watch(() => route.params.id, load)
 .category {
   margin: 0;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 h1 {

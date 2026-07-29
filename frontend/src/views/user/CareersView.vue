@@ -52,6 +52,6 @@ onMounted(async () => {
   margin: 0;
   color: var(--accent);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 </style>

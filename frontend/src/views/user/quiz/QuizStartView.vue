@@ -112,6 +112,8 @@ async function goNextStep() {
   if (!nextStep.value) return
   starting.value = true
   try {
+    // Mỗi lần bắt đầu làm bài: xáo lại bộ câu hỏi / đáp án phiên hiện tại
+    quiz.resetSession()
     await router.push(quiz.toLocation(nextStep.value))
   } finally {
     starting.value = false
@@ -179,7 +181,7 @@ onMounted(prepare)
   gap: 0.4rem;
   margin: 0 0 0.65rem;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.4;
   color: var(--text);
 }
@@ -229,14 +231,14 @@ onMounted(prepare)
   border-radius: 6px;
   color: #fff;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 500;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .quiz-start__scale-points {
   color: var(--muted);
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -251,6 +253,6 @@ onMounted(prepare)
   min-width: 8.5rem;
   padding: 0.7rem 1.75rem;
   border-radius: 10px;
-  font-weight: 700;
+  font-weight: 500;
 }
 </style>

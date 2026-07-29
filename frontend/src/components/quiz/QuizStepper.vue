@@ -83,14 +83,14 @@ defineProps({
   background: #fff;
   color: #6b7c73;
   font-size: 0.92rem;
-  font-weight: 600;
+  font-weight: 500;
   box-shadow: 0 1px 2px rgba(26, 46, 36, 0.04);
 }
 
 .quiz-stepper__label {
   color: #5c7268;
   font-size: clamp(0.68rem, 1.3vw, 0.82rem);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.3;
 }
 
@@ -103,7 +103,7 @@ defineProps({
 
 .quiz-stepper__item.is-active .quiz-stepper__label {
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .quiz-stepper__item.is-done .quiz-stepper__node {

@@ -62,6 +62,9 @@ onMounted(() => {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto auto 1fr;
+  font-family: var(--font);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
   background:
     radial-gradient(circle at top left, rgba(31, 122, 76, 0.08), transparent 40%),
     linear-gradient(180deg, #f7faf8 0%, var(--bg) 100%);
@@ -100,7 +103,7 @@ onMounted(() => {
 }
 
 .quiz-brand__text {
-  font-weight: 700;
+  font-weight: 500;
   font-size: 1.05rem;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -121,7 +124,7 @@ onMounted(() => {
   white-space: nowrap;
   color: var(--muted);
   font-size: 0.92rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .quiz-header__exit {

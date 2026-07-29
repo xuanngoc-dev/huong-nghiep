@@ -69,14 +69,14 @@ defineProps({
 .admission__eyebrow {
   margin: 0 0 0.55rem;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 500;
   opacity: 0.88;
 }
 
 .admission__banner h2 {
   margin: 0 0 0.75rem;
   font-size: clamp(1.35rem, 2.8vw, 1.9rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.25;
 }
@@ -97,7 +97,7 @@ defineProps({
 .admission__btn-primary {
   background: #fff;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .admission__btn-secondary {

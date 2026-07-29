@@ -87,14 +87,14 @@ onMounted(loadAssessment)
 .quiz-result__eyebrow {
   margin: 0 0 0.4rem;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
 }
 
 .quiz-result__head h1 {
   margin: 0 0 0.55rem;
   font-size: clamp(1.4rem, 2.8vw, 1.85rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 

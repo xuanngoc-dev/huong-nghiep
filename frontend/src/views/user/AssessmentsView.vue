@@ -254,7 +254,7 @@ onBeforeUnmount(() => {
   margin: 0 0 1.35rem;
   text-align: center;
   font-size: clamp(1.75rem, 3.5vw, 2.35rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--text);
 }
@@ -275,7 +275,7 @@ onBeforeUnmount(() => {
 .intro__section-title {
   margin: 1.5rem 0 0.85rem;
   font-size: clamp(1.05rem, 2vw, 1.2rem);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.45;
   color: var(--text);
 }
@@ -309,7 +309,7 @@ onBeforeUnmount(() => {
 .intro__cta {
   border-radius: 10px;
   padding: 0.7rem 1.35rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .fields__head,
@@ -323,7 +323,7 @@ onBeforeUnmount(() => {
 .list__eyebrow {
   margin: 0 0 0.4rem;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
 }
 
@@ -331,7 +331,7 @@ onBeforeUnmount(() => {
 .list__head h2 {
   margin: 0 0 0.55rem;
   font-size: clamp(1.35rem, 2.8vw, 1.85rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 
@@ -394,14 +394,14 @@ onBeforeUnmount(() => {
   margin: 0;
   color: rgba(255, 255, 255, 0.78);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.04em;
 }
 
 .field-card h3 {
   margin: 0;
   font-size: clamp(1.25rem, 2.6vw, 1.75rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.25;
 }
@@ -522,7 +522,7 @@ onBeforeUnmount(() => {
 .assessment-card h3 {
   margin: 0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .assessment-card .muted {
@@ -534,7 +534,7 @@ onBeforeUnmount(() => {
 .assessment-card__meta {
   margin: 0;
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
 }
 

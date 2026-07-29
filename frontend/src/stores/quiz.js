@@ -3,6 +3,9 @@ import { computed, ref } from 'vue'
 import { request } from '@/api'
 import { API_PUBLIC } from '@/constants/constant_api'
 
+/** Số câu hỏi ngẫu nhiên lấy ra cho mỗi loại (Holland-style). */
+export const QUESTIONS_PER_LOAI = 10
+
 function normalizeMa(ma) {
   return String(ma || '').trim().toLowerCase()
 }
@@ -12,6 +15,11 @@ export const useQuizStore = defineStore('quiz', () => {
   const loading = ref(false)
   const loaded = ref(false)
   const error = ref(null)
+
+  /** Câu hỏi đã chọn theo mã loại: { [ma]: Question[] } */
+  const questionsByLoai = ref({})
+  /** Đáp án đã chọn theo mã loại: { [ma]: { [cauHoiId]: answerId } } */
+  const answersByLoai = ref({})
 
   const steps = computed(() => {
     const middle = loaiCauHoi.value.map((item, index) => {
@@ -103,6 +111,118 @@ export const useQuizStore = defineStore('quiz', () => {
     return steps.value.find((item) => item.step === current.step + delta) || null
   }
 
+  function resetSession() {
+    questionsByLoai.value = {}
+    answersByLoai.value = {}
+  }
+
+  function getQuestions(maLoaiCauHoi) {
+    const ma = normalizeMa(maLoaiCauHoi)
+    return questionsByLoai.value[ma] || []
+  }
+
+  function getAnswers(maLoaiCauHoi) {
+    const ma = normalizeMa(maLoaiCauHoi)
+    return answersByLoai.value[ma] || {}
+  }
+
+  function setAnswer(maLoaiCauHoi, cauHoiId, cauTraLoiId) {
+    const ma = normalizeMa(maLoaiCauHoi)
+    const current = { ...(answersByLoai.value[ma] || {}) }
+    if (cauTraLoiId == null) {
+      delete current[cauHoiId]
+    } else {
+      current[cauHoiId] = cauTraLoiId
+    }
+    answersByLoai.value = {
+      ...answersByLoai.value,
+      [ma]: current,
+    }
+  }
+
+  function isLoaiComplete(maLoaiCauHoi) {
+    const questions = getQuestions(maLoaiCauHoi)
+    if (!questions.length) return false
+    const answers = getAnswers(maLoaiCauHoi)
+    return questions.every((q) => answers[q.id] != null)
+  }
+
+  /**
+   * Snapshot đáp án của 1 loại — dùng để log / gửi API sau này.
+   */
+  function buildLoaiPayload(maLoaiCauHoi) {
+    const ma = normalizeMa(maLoaiCauHoi)
+    const questions = getQuestions(ma)
+    const answers = getAnswers(ma)
+
+    const items = questions.map((q) => {
+      const answerId = answers[q.id] ?? null
+      const answer = (q.cau_tra_lois || q.cauTraLois || []).find((a) => a.id === answerId) || null
+      return {
+        cau_hoi_id: q.id,
+        noi_dung_cau_hoi: q.noi_dung_cau_hoi,
+        cau_tra_loi_id: answer?.id ?? null,
+        noi_dung_cau_tra_loi: answer?.noi_dung_cau_tra_loi ?? null,
+        diem: answer?.diem ?? null,
+      }
+    })
+
+    const totalScore = items.reduce((sum, item) => sum + (Number(item.diem) || 0), 0)
+
+    return {
+      ma_loai_cau_hoi: ma,
+      so_cau: items.length,
+      tong_diem: totalScore,
+      answers: items,
+    }
+  }
+
+  /**
+   * Tải N câu ngẫu nhiên cho loại — giữ nguyên bộ đã chọn nếu quay lại bước.
+   */
+  async function ensureQuestionsForLoai(maLoaiCauHoi, { force = false, limit = QUESTIONS_PER_LOAI } = {}) {
+    const ma = normalizeMa(maLoaiCauHoi)
+    if (!ma) {
+      return { ok: false, message: 'Thiếu mã loại câu hỏi.' }
+    }
+
+    if (!force && questionsByLoai.value[ma]?.length) {
+      return { ok: true, questions: questionsByLoai.value[ma] }
+    }
+
+    const res = await request({
+      url: API_PUBLIC.TRAC_NGHIEM_CAU_HOI.LIST,
+      params: {
+        ma_loai_cau_hoi: ma,
+        limit,
+      },
+      loading: false,
+      silent: true,
+    })
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        message: res.message || 'Không tải được câu hỏi.',
+      }
+    }
+
+    const questions = Array.isArray(res.data?.questions) ? res.data.questions : []
+    questionsByLoai.value = {
+      ...questionsByLoai.value,
+      [ma]: questions,
+    }
+
+    if (!answersByLoai.value[ma]) {
+      answersByLoai.value = {
+        ...answersByLoai.value,
+        [ma]: {},
+      }
+    }
+
+    return { ok: true, questions }
+  }
+
   async function ensureLoaded({ force = false } = {}) {
     if (loaded.value && !force) return true
     if (loading.value) return loaded.value
@@ -147,11 +267,20 @@ export const useQuizStore = defineStore('quiz', () => {
     loading,
     loaded,
     error,
+    questionsByLoai,
+    answersByLoai,
     steps,
     findStepByRoute,
     resolveCurrentStep,
     toLocation,
     getAdjacent,
+    resetSession,
+    getQuestions,
+    getAnswers,
+    setAnswer,
+    isLoaiComplete,
+    buildLoaiPayload,
+    ensureQuestionsForLoai,
     ensureLoaded,
   }
 })
