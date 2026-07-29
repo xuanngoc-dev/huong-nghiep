@@ -11,10 +11,11 @@ return new class extends Migration
     private const SEED_MARKER = 'migration:seed_trac_nghiem_cau_hoi_20260729';
 
     private const ANSWERS = [
-        ['noi_dung' => 'Hoàn toàn không phù hợp', 'diem' => 1],
+        ['noi_dung' => 'Không phù hợp', 'diem' => 1],
         ['noi_dung' => 'Ít phù hợp', 'diem' => 2],
         ['noi_dung' => 'Khá phù hợp', 'diem' => 3],
         ['noi_dung' => 'Rất phù hợp', 'diem' => 4],
+        ['noi_dung' => 'Hoàn toàn phù hợp', 'diem' => 5],
     ];
 
     /**

@@ -7,6 +7,10 @@
         <template v-if="isLoaiStep">
           Chọn mức độ phù hợp nhất với bạn cho từng câu hỏi
           ({{ questions.length }} câu ngẫu nhiên trong nhóm này).
+          Nhấn phím
+          <kbd>1</kbd>–<kbd>5</kbd>
+          để chọn nhanh,
+          mũi tên để chuyển câu.
         </template>
         <template v-else>
           {{ assessment?.description || 'Hoàn thành phần câu hỏi của bước này rồi chuyển sang bước tiếp theo.' }}
@@ -29,9 +33,14 @@
             :key="question.id"
             :ref="(el) => setQuestionEl(question.id, el)"
             class="quiz-take__question"
-            :class="{ 'is-highlight': highlightedQuestionId === question.id }"
-            :tabindex="answers[question.id] == null ? -1 : undefined"
+            :class="{
+              'is-highlight': highlightedQuestionId === question.id,
+              'is-focused': focusedQuestionIndex === index,
+              'is-shake': shakingQuestionId === question.id,
+            }"
+            tabindex="-1"
             :data-question-id="question.id"
+            @focusin="focusedQuestionIndex = index"
           >
             <p class="quiz-take__question-text">
               <span class="quiz-take__question-index">{{ index + 1 }}.</span>
@@ -44,15 +53,17 @@
               :aria-label="`Đáp án câu ${index + 1}`"
             >
               <button
-                v-for="answer in answersOf(question)"
+                v-for="(answer, answerIndex) in answersOf(question)"
                 :key="answer.id"
                 type="button"
                 class="quiz-take__answer"
                 :class="{ 'is-selected': answers[question.id] === answer.id }"
                 role="radio"
                 :aria-checked="answers[question.id] === answer.id"
+                :aria-keyshortcuts="String(answerIndex + 1)"
                 @click="selectAnswer(question.id, answer.id)"
               >
+                <span class="quiz-take__answer-stt" aria-hidden="true">{{ answerIndex + 1 }}.</span>
                 <span class="quiz-take__radio" aria-hidden="true" />
                 <span class="quiz-take__answer-label">{{ answer.noi_dung_cau_tra_loi }}</span>
               </button>
@@ -75,7 +86,10 @@
           <li>
             Section: <code>{{ currentStepMeta?.section || route.meta.quizSection || '—' }}</code>
           </li>
-          <li>URL: <code>/trac-nghiem/{{ currentStepMeta?.path }}</code></li>
+          <li>
+            URL:
+            <code>/trac-nghiem/{{ route.params.ssid }}/{{ currentStepMeta?.path }}</code>
+          </li>
         </ul>
       </div>
 
@@ -86,10 +100,10 @@
         <button
           class="btn"
           type="button"
-          :disabled="!nextStepMeta"
+          :disabled="!nextStepMeta || saving"
           @click="goNext"
         >
-          {{ nextButtonLabel }}
+          {{ saving ? 'Đang lưu...' : nextButtonLabel }}
         </button>
       </div>
     </div>
@@ -97,10 +111,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { useQuizStore, QUESTIONS_PER_LOAI } from '@/stores/quiz'
+import { useQuizStore } from '@/stores/quiz'
 
 const route = useRoute()
 const router = useRouter()
@@ -111,8 +125,13 @@ const loading = ref(true)
 const error = ref(null)
 const assessment = ref(null)
 const highlightedQuestionId = ref(null)
+const focusedQuestionIndex = ref(-1)
+const shakingQuestionId = ref(null)
+const saving = ref(false)
 const questionEls = new Map()
 let highlightTimer = null
+let shakeTimer = null
+let focusBootTimer = null
 
 const currentStepMeta = computed(() => quiz.findStepByRoute(route))
 const currentStep = computed(() => currentStepMeta.value?.step || 1)
@@ -155,6 +174,9 @@ function setQuestionEl(questionId, el) {
 }
 
 function selectAnswer(cauHoiId, cauTraLoiId) {
+  const index = questions.value.findIndex((q) => q.id === cauHoiId)
+  if (index >= 0) focusedQuestionIndex.value = index
+
   quiz.setAnswer(maLoai.value, cauHoiId, cauTraLoiId)
   if (highlightedQuestionId.value === cauHoiId) {
     highlightedQuestionId.value = null
@@ -165,22 +187,91 @@ function findFirstUnanswered() {
   return questions.value.find((q) => answers.value[q.id] == null) || null
 }
 
+function shakeQuestion(questionId) {
+  if (!questionId) return
+  shakingQuestionId.value = null
+  nextTick(() => {
+    shakingQuestionId.value = questionId
+    if (shakeTimer) window.clearTimeout(shakeTimer)
+    shakeTimer = window.setTimeout(() => {
+      if (shakingQuestionId.value === questionId) {
+        shakingQuestionId.value = null
+      }
+    }, 420)
+  })
+}
+
+function focusQuestion(index, { preferSelected = true } = {}) {
+  const list = questions.value
+  if (!list.length || index < 0 || index >= list.length) return false
+
+  focusedQuestionIndex.value = index
+  const question = list[index]
+  const el = questionEls.get(question.id)
+  if (!el) return false
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+  window.setTimeout(() => {
+    const answerButtons = el.querySelectorAll('.quiz-take__answer')
+    const selected = preferSelected
+      ? el.querySelector('.quiz-take__answer.is-selected')
+      : null
+    const target = selected || answerButtons[0] || el
+    target.focus?.({ preventScroll: true })
+  }, 160)
+
+  return true
+}
+
+function moveQuestionFocus(delta) {
+  const list = questions.value
+  if (!list.length) return
+
+  const current = focusedQuestionIndex.value >= 0 ? focusedQuestionIndex.value : 0
+  const next = current + delta
+
+  if (next < 0) {
+    shakeQuestion(list[0].id)
+    focusQuestion(0)
+    return
+  }
+
+  if (next >= list.length) {
+    shakeQuestion(list[list.length - 1].id)
+    focusQuestion(list.length - 1)
+    return
+  }
+
+  focusQuestion(next)
+}
+
+function selectAnswerByNumber(number) {
+  const index = focusedQuestionIndex.value >= 0 ? focusedQuestionIndex.value : 0
+  const question = questions.value[index]
+  if (!question) return
+
+  const answerList = answersOf(question)
+  const answer = answerList[number - 1]
+  if (!answer) return
+
+  selectAnswer(question.id, answer.id)
+
+  nextTick(() => {
+    const el = questionEls.get(question.id)
+    el?.querySelectorAll('.quiz-take__answer')?.[number - 1]?.focus?.({ preventScroll: true })
+  })
+}
+
 function focusFirstUnanswered() {
   const missing = findFirstUnanswered()
   if (!missing) return false
 
-  const el = questionEls.get(missing.id)
-  if (!el) return false
+  const index = questions.value.findIndex((q) => q.id === missing.id)
+  if (index < 0) return false
 
   highlightedQuestionId.value = missing.id
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-
-  // Focus khối câu hỏi để người dùng biết cần trả lời
-  window.setTimeout(() => {
-    el.focus?.({ preventScroll: true })
-    const firstAnswer = el.querySelector('.quiz-take__answer')
-    firstAnswer?.focus?.({ preventScroll: true })
-  }, 280)
+  focusQuestion(index, { preferSelected: false })
 
   if (highlightTimer) window.clearTimeout(highlightTimer)
   highlightTimer = window.setTimeout(() => {
@@ -192,15 +283,74 @@ function focusFirstUnanswered() {
   return true
 }
 
+function isTypingTarget(target) {
+  if (!(target instanceof HTMLElement)) return false
+  const tag = target.tagName
+  return (
+    tag === 'INPUT' ||
+    tag === 'TEXTAREA' ||
+    tag === 'SELECT' ||
+    target.isContentEditable
+  )
+}
+
+function onKeyDown(event) {
+  if (!isLoaiStep.value || loading.value || !questions.value.length) return
+  if (event.altKey || event.ctrlKey || event.metaKey) return
+  if (isTypingTarget(event.target)) return
+
+  if (event.key >= '1' && event.key <= '5') {
+    event.preventDefault()
+    selectAnswerByNumber(Number(event.key))
+    return
+  }
+
+  if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+    event.preventDefault()
+    moveQuestionFocus(-1)
+    return
+  }
+
+  if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+    event.preventDefault()
+    moveQuestionFocus(1)
+  }
+}
+
+function bootFocusFirstQuestion() {
+  if (focusBootTimer) window.clearTimeout(focusBootTimer)
+  focusBootTimer = window.setTimeout(() => {
+    if (!isLoaiStep.value || loading.value || !questions.value.length) return
+    focusQuestion(0, { preferSelected: false })
+  }, 80)
+}
+
 async function loadStep() {
   loading.value = true
   error.value = null
+  focusedQuestionIndex.value = -1
+  shakingQuestionId.value = null
 
   try {
+    quiz.syncSsidFromRoute(route)
+
+    if (route.meta.requiresQuizSession && !route.params.ssid) {
+      await router.replace({ name: 'quiz-start' })
+      return
+    }
+
     const ok = await quiz.ensureLoaded()
     if (!ok) {
       error.value = quiz.error || 'Không tải được các bước trắc nghiệm.'
       return
+    }
+
+    if (route.params.ssid) {
+      const history = await quiz.ensureHistoryLoaded(String(route.params.ssid))
+      if (!history.ok) {
+        error.value = history.message || 'Không tải được lịch sử phiên làm bài.'
+        return
+      }
     }
 
     if (route.name === 'quiz-loai' && !currentStepMeta.value) {
@@ -210,9 +360,7 @@ async function loadStep() {
     }
 
     if (isLoaiStep.value) {
-      const result = await quiz.ensureQuestionsForLoai(maLoai.value, {
-        limit: QUESTIONS_PER_LOAI,
-      })
+      const result = await quiz.ensureQuestionsForLoai(maLoai.value)
       if (!result.ok) {
         error.value = result.message || 'Không tải được câu hỏi.'
         return
@@ -234,11 +382,13 @@ async function loadStep() {
 
 function goPrev() {
   if (!prevStepMeta.value) return
-  router.push(quiz.toLocation(prevStepMeta.value))
+  router.push(quiz.toLocation(prevStepMeta.value, route.params.ssid))
 }
 
-function goNext() {
-  if (!nextStepMeta.value) return
+async function goNext() {
+  if (!nextStepMeta.value || saving.value) return
+
+  const sessionId = route.params.ssid || quiz.ssid
 
   if (isLoaiStep.value) {
     if (!questions.value.length) return
@@ -246,22 +396,51 @@ function goNext() {
       focusFirstUnanswered()
       return
     }
-    const payload = quiz.buildLoaiPayload(maLoai.value)
-    console.log('[quiz] hoàn thành loại câu hỏi:', payload)
+
+    saving.value = true
+    error.value = null
+    try {
+      const saved = await quiz.saveLoaiAnswers(maLoai.value, sessionId)
+      if (!saved.ok) {
+        error.value = saved.message || 'Không lưu được câu trả lời.'
+        return
+      }
+    } finally {
+      saving.value = false
+    }
   } else if (currentStepMeta.value?.id) {
     quiz.markStepCompleted(currentStepMeta.value.id)
   }
 
-  router.push(quiz.toLocation(nextStepMeta.value))
+  await router.push(quiz.toLocation(nextStepMeta.value, sessionId))
 }
 
 watch(
-  () => [route.name, route.params?.maLoaiCauHoi],
+  () => [route.name, route.params?.ssid, route.params?.maLoaiCauHoi],
   () => {
     loadStep()
   },
   { immediate: true },
 )
+
+watch(
+  () => [loading.value, isLoaiStep.value, questions.value.map((q) => q.id).join(',')],
+  ([isLoading, isLoai, ids]) => {
+    if (isLoading || !isLoai || !ids) return
+    nextTick(() => bootFocusFirstQuestion())
+  },
+)
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeyDown)
+  if (highlightTimer) window.clearTimeout(highlightTimer)
+  if (shakeTimer) window.clearTimeout(shakeTimer)
+  if (focusBootTimer) window.clearTimeout(focusBootTimer)
+})
 </script>
 
 <style scoped>
@@ -291,6 +470,21 @@ watch(
   margin: 0;
   color: var(--muted);
   line-height: 1.55;
+}
+
+.quiz-take__lead kbd {
+  display: inline-block;
+  min-width: 1.15rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid #c9d5ce;
+  border-radius: 5px;
+  background: #f4f7f5;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82em;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .quiz-take__panel {
@@ -326,9 +520,18 @@ watch(
   border-bottom: 0;
 }
 
+.quiz-take__question.is-focused {
+  background: #f3faf6;
+  box-shadow: inset 0 0 0 1.5px rgba(31, 122, 76, 0.28);
+}
+
 .quiz-take__question.is-highlight {
   background: #fff8e8;
   box-shadow: inset 0 0 0 1.5px #e2b35a;
+}
+
+.quiz-take__question.is-shake {
+  animation: quiz-take-shake 0.42s ease;
 }
 
 .quiz-take__question-text {
@@ -352,7 +555,7 @@ watch(
 .quiz-take__answer {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   width: 100%;
   padding: 0.7rem 0.9rem;
   border: 1px solid #d5ddd8;
@@ -372,10 +575,29 @@ watch(
   background: #f7faf8;
 }
 
+.quiz-take__answer:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(31, 122, 76, 0.2);
+}
+
 .quiz-take__answer.is-selected {
   border-color: var(--accent);
   background: var(--accent-soft);
   box-shadow: 0 0 0 1px var(--accent);
+}
+
+.quiz-take__answer-stt {
+  flex-shrink: 0;
+  min-width: 1.15rem;
+  color: var(--muted);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.quiz-take__answer.is-selected .quiz-take__answer-stt {
+  color: var(--accent);
 }
 
 .quiz-take__radio {
@@ -443,6 +665,32 @@ watch(
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
+}
+
+@keyframes quiz-take-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-take__question.is-shake {
+    animation: none;
+    box-shadow: inset 0 0 0 1.5px rgba(31, 122, 76, 0.45);
+  }
 }
 
 @media (min-width: 640px) {

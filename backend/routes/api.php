@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\LoaiCauHoiController;
 use App\Http\Controllers\Api\TracNghiemCauHoiController;
+use App\Http\Controllers\Api\TracNghiemLichSuTraLoiController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -52,6 +53,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/assessments/{id}', [AssessmentController::class, 'show']);
     Route::get('/loai-cau-hoi', [LoaiCauHoiController::class, 'index']);
     Route::get('/trac-nghiem-cau-hoi', [TracNghiemCauHoiController::class, 'index']);
+    Route::post('/trac-nghiem-lich-su-tra-loi/start', [TracNghiemLichSuTraLoiController::class, 'start']);
+    Route::post('/trac-nghiem-lich-su-tra-loi', [TracNghiemLichSuTraLoiController::class, 'store']);
+    Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}/tong-hop', [TracNghiemLichSuTraLoiController::class, 'tongHop']);
+    Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}', [TracNghiemLichSuTraLoiController::class, 'show']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/assessments/{id}/submit', [AssessmentController::class, 'submit']);

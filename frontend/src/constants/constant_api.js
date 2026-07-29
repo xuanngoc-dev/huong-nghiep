@@ -166,4 +166,13 @@ export const API_PUBLIC = {
   TRAC_NGHIEM_CAU_HOI: {
     LIST: { url: '/trac-nghiem-cau-hoi', method: 'get' },
   },
+  TRAC_NGHIEM_LICH_SU_TRA_LOI: {
+    START: { url: '/trac-nghiem-lich-su-tra-loi/start', method: 'post' },
+    SAVE: { url: '/trac-nghiem-lich-su-tra-loi', method: 'post' },
+    SHOW: (ssid) => ({ url: `/trac-nghiem-lich-su-tra-loi/${ssid}`, method: 'get' }),
+    TONG_HOP: (ssid) => ({
+      url: `/trac-nghiem-lich-su-tra-loi/${ssid}/tong-hop`,
+      method: 'get',
+    }),
+  },
 }

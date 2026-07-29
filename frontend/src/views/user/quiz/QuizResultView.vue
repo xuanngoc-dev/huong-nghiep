@@ -19,8 +19,8 @@
           tại nhóm component quiz này.
         </p>
         <ul>
-          <li>URL: <code>/trac-nghiem/ket-qua</code></li>
-          <li>API nộp bài: <code>POST /assessments/{id}/submit</code></li>
+          <li>URL: <code>/trac-nghiem/{{ route.params.ssid }}/ket-qua</code></li>
+          <li>SSID: <code>{{ route.params.ssid }}</code></li>
         </ul>
       </div>
 
@@ -28,7 +28,7 @@
         <RouterLink
           v-if="prevStep"
           class="btn btn-outline"
-          :to="quiz.toLocation(prevStep)"
+          :to="quiz.toLocation(prevStep, route.params.ssid)"
         >
           Quay lại bước trước
         </RouterLink>
@@ -42,11 +42,12 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { assessmentApi } from '@/api'
 import { useQuizStore } from '@/stores/quiz'
 
 const route = useRoute()
+const router = useRouter()
 const quiz = useQuizStore()
 
 const assessment = ref(null)
@@ -61,7 +62,22 @@ async function loadAssessment() {
   error.value = null
 
   try {
+    quiz.syncSsidFromRoute(route)
+    if (route.meta.requiresQuizSession && !route.params.ssid) {
+      await router.replace({ name: 'quiz-start' })
+      return
+    }
+
     await quiz.ensureLoaded()
+
+    if (route.params.ssid) {
+      const history = await quiz.ensureHistoryLoaded(String(route.params.ssid))
+      if (!history.ok) {
+        error.value = history.message || 'Không tải được lịch sử phiên làm bài.'
+        return
+      }
+    }
+
     quiz.markStepCompleted('result')
     const { data } = await assessmentApi.list()
     assessment.value = data.data?.[0] || null

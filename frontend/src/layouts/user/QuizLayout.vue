@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import QuizStepper from '@/components/quiz/QuizStepper.vue'
@@ -49,7 +49,13 @@ import { useQuizStore } from '@/stores/quiz'
 
 const route = useRoute()
 const quiz = useQuizStore()
-const { answersByLoai, questionsByLoai, completedStepIds } = storeToRefs(quiz)
+const {
+  answersByLoai,
+  questionsByLoai,
+  completedStepIds,
+  historyCompletedLoai,
+  historyByLoai,
+} = storeToRefs(quiz)
 
 const steps = computed(() => quiz.steps)
 const currentStep = computed(() => quiz.resolveCurrentStep(route))
@@ -62,14 +68,23 @@ const completedIds = computed(() => {
   void answersByLoai.value
   void questionsByLoai.value
   void completedStepIds.value
+  void historyCompletedLoai.value
+  void historyByLoai.value
   return steps.value
     .filter((item) => quiz.isStepComplete(item))
     .map((item) => item.id)
 })
 
-onMounted(() => {
-  quiz.ensureLoaded()
-})
+watch(
+  () => route.params.ssid,
+  async (ssid) => {
+    quiz.syncSsidFromRoute(route)
+    await quiz.ensureLoaded()
+    if (!ssid) return
+    await quiz.ensureHistoryLoaded(String(ssid))
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>

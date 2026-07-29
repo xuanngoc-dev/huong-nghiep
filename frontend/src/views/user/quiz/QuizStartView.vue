@@ -111,11 +111,19 @@ async function prepare() {
 async function goNextStep() {
   if (!nextStep.value) return
   starting.value = true
+  error.value = null
   try {
     // Mỗi lần bắt đầu làm bài: xáo lại bộ câu hỏi / đáp án phiên hiện tại
     quiz.resetSession()
+
+    const session = await quiz.startHistorySession()
+    if (!session.ok) {
+      error.value = session.message || 'Không tạo được phiên làm bài.'
+      return
+    }
+
     quiz.markStepCompleted('start')
-    await router.push(quiz.toLocation(nextStep.value))
+    await router.push(quiz.toLocation(nextStep.value, session.ssid))
   } finally {
     starting.value = false
   }

@@ -61,29 +61,32 @@ const router = createRouter({
           },
         },
         {
-          path: 'nganh-phu-hop',
+          path: ':ssid/nganh-phu-hop',
           name: 'quiz-fields',
-          component: () => import('@/views/user/quiz/QuizTakeView.vue'),
+          component: () => import('@/views/user/quiz/QuizFieldsView.vue'),
           meta: {
             quizTitle: 'Ngành phù hợp',
             quizSection: 'fields',
+            requiresQuizSession: true,
             exitTo: { name: 'quiz-start' },
           },
         },
         {
-          path: 'ket-qua',
+          path: ':ssid/ket-qua',
           name: 'quiz-result',
           component: () => import('@/views/user/quiz/QuizResultView.vue'),
           meta: {
             quizTitle: 'Kết quả trắc nghiệm',
+            requiresQuizSession: true,
             exitTo: { name: 'assessments' },
           },
         },
         {
-          path: 'loai/:maLoaiCauHoi',
+          path: ':ssid/loai/:maLoaiCauHoi',
           name: 'quiz-loai',
           component: () => import('@/views/user/quiz/QuizTakeView.vue'),
           meta: {
+            requiresQuizSession: true,
             exitTo: { name: 'quiz-start' },
           },
         },

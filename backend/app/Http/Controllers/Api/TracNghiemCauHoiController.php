@@ -41,7 +41,7 @@ class TracNghiemCauHoiController extends Controller
                 ->where('trang_thai', TrangThaiTracNghiemCauHoi::DangSuDung)
                 ->with([
                     'cauTraLois' => fn ($q) => $q
-                        ->orderByDesc('diem')
+                        ->orderBy('diem')
                         ->orderBy('id')
                         ->select(['id', 'cau_hoi_id', 'noi_dung_cau_tra_loi', 'diem']),
                 ])
@@ -50,6 +50,8 @@ class TracNghiemCauHoiController extends Controller
                 ->get([
                     'id',
                     'loai_cau_hoi_id',
+                    'nganh_hoc_id',
+                    'chuyen_nganh_id',
                     'noi_dung_cau_hoi',
                 ]);
 
