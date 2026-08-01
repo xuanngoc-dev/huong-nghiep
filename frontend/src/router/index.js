@@ -13,32 +13,32 @@ const router = createRouter({
         {
           path: '',
           name: 'home',
-          component: () => import('@/views/user/HomeView.vue'),
+          component: () => import('@/views/user/TrangChuView.vue'),
         },
         {
           path: 'careers',
           name: 'careers',
-          component: () => import('@/views/user/CareersView.vue'),
+          component: () => import('@/views/user/NgheNghiepView.vue'),
         },
         {
           path: 'careers/:id',
           name: 'career-detail',
-          component: () => import('@/views/user/CareerDetailView.vue'),
+          component: () => import('@/views/user/ChiTietNgheNghiepView.vue'),
         },
         {
           path: 'articles',
           name: 'articles',
-          component: () => import('@/views/user/ArticlesView.vue'),
+          component: () => import('@/views/user/BaiVietView.vue'),
         },
         {
           path: 'assessments',
           name: 'assessments',
-          component: () => import('@/views/user/AssessmentsView.vue'),
+          component: () => import('@/views/user/KhaoSatView.vue'),
         },
         {
           path: 'profile',
           name: 'profile',
-          component: () => import('@/views/user/ProfileView.vue'),
+          component: () => import('@/views/user/HoSoView.vue'),
           meta: { requiresAuth: true },
         },
       ],
@@ -54,7 +54,7 @@ const router = createRouter({
         {
           path: 'bat-dau',
           name: 'quiz-start',
-          component: () => import('@/views/user/quiz/QuizStartView.vue'),
+          component: () => import('@/views/user/quiz/TracNghiemBatDauView.vue'),
           meta: {
             quizTitle: 'Bắt đầu làm bài',
             exitTo: { name: 'assessments' },
@@ -63,7 +63,7 @@ const router = createRouter({
         {
           path: ':ssid/nganh-phu-hop',
           name: 'quiz-fields',
-          component: () => import('@/views/user/quiz/QuizFieldsView.vue'),
+          component: () => import('@/views/user/quiz/TracNghiemNganhPhuHopView.vue'),
           meta: {
             quizTitle: 'Ngành phù hợp',
             quizSection: 'fields',
@@ -74,7 +74,7 @@ const router = createRouter({
         {
           path: ':ssid/ket-qua',
           name: 'quiz-result',
-          component: () => import('@/views/user/quiz/QuizResultView.vue'),
+          component: () => import('@/views/user/quiz/TracNghiemKetQuaView.vue'),
           meta: {
             quizTitle: 'Kết quả trắc nghiệm',
             requiresQuizSession: true,
@@ -84,7 +84,7 @@ const router = createRouter({
         {
           path: ':ssid/loai/:maLoaiCauHoi',
           name: 'quiz-loai',
-          component: () => import('@/views/user/quiz/QuizTakeView.vue'),
+          component: () => import('@/views/user/quiz/TracNghiemLamBaiView.vue'),
           meta: {
             requiresQuizSession: true,
             exitTo: { name: 'quiz-start' },
@@ -100,7 +100,7 @@ const router = createRouter({
         {
           path: '',
           name: 'admin-dashboard',
-          component: () => import('@/views/admin/DashboardView.vue'),
+          component: () => import('@/views/admin/TongQuanView.vue'),
           meta: { title: 'Tổng quan' },
         },
 
@@ -180,19 +180,19 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/user/LoginView.vue'),
+      component: () => import('@/views/user/DangNhapView.vue'),
       meta: { guest: true },
     },
     {
       path: '/register',
       name: 'register',
-      component: () => import('@/views/user/RegisterView.vue'),
+      component: () => import('@/views/user/DangKyView.vue'),
       meta: { guest: true },
     },
     {
       path: '/forbidden',
       name: 'forbidden',
-      component: () => import('@/views/user/ForbiddenView.vue'),
+      component: () => import('@/views/user/CamTruyCapView.vue'),
     },
   ],
   scrollBehavior() {

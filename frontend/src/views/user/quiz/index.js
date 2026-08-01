@@ -1,4 +1,4 @@
-export { default as QuizStartView } from './QuizStartView.vue'
-export { default as QuizTakeView } from './QuizTakeView.vue'
-export { default as QuizFieldsView } from './QuizFieldsView.vue'
-export { default as QuizResultView } from './QuizResultView.vue'
+export { default as TracNghiemBatDauView } from './TracNghiemBatDauView.vue'
+export { default as TracNghiemLamBaiView } from './TracNghiemLamBaiView.vue'
+export { default as TracNghiemNganhPhuHopView } from './TracNghiemNganhPhuHopView.vue'
+export { default as TracNghiemKetQuaView } from './TracNghiemKetQuaView.vue'
