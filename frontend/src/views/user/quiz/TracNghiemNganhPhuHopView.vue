@@ -50,111 +50,44 @@
       </p>
     </header>
 
+    <div class="quiz-fields__tabs" role="tablist" aria-label="Các phần ngành phù hợp">
+      <button
+        v-for="tab in tabs"
+        :id="`quiz-fields-tab-${tab.id}`"
+        :key="tab.id"
+        type="button"
+        role="tab"
+        class="quiz-fields__tab"
+        :class="{ 'is-active': activeTab === tab.id }"
+        :aria-selected="activeTab === tab.id"
+        :aria-controls="`quiz-fields-panel-${tab.id}`"
+        :tabindex="activeTab === tab.id ? 0 : -1"
+        @click="activeTab = tab.id"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
     <p v-if="loading" class="muted">Đang tổng hợp kết quả...</p>
     <p v-else-if="error" class="error-text">{{ error }}</p>
 
-    <div v-else class="quiz-fields__panel">
-      <p class="quiz-fields__note">
-        Gợi ý: đây là 5 nhóm ngành và chuyên ngành phù hợp nhất với bạn.
-      </p>
-
-      <div class="quiz-fields__meta muted">
-        <span>Đã chấm {{ summary?.so_cau_da_tra_loi ?? 0 }} câu</span>
-        <span aria-hidden="true">·</span>
-        <span>Tổng điểm phiên: {{ formatScore(summary?.tong_diem) }}</span>
-      </div>
-
-      <QuizFieldsRadarChart
-        :nganh-list="nganhList"
-        :chuyen-list="chuyenList"
+    <div
+      v-else
+      :id="`quiz-fields-panel-${activeTab}`"
+      class="quiz-fields__panel"
+      role="tabpanel"
+      :aria-labelledby="`quiz-fields-tab-${activeTab}`"
+    >
+      <QuizFieldsKetQuaTab
+        v-if="activeTab === 'ket-qua'"
+        :summary="summary"
+        :can-go-prev="Boolean(prevStep)"
+        :can-go-next="Boolean(nextStep)"
+        @prev="goPrev"
+        @next="goNext"
       />
-
-      <section
-        v-if="topNganh || topChuyen"
-        class="quiz-fields__highlight"
-        aria-labelledby="quiz-fields-highlight-title"
-      >
-        <h2 id="quiz-fields-highlight-title" class="quiz-fields__highlight-title">
-          Nhóm ngành phù hợp nhất với bạn
-        </h2>
-
-        <div v-if="topNganh" class="quiz-fields__highlight-block">
-          <p class="quiz-fields__highlight-label">Nhóm ngành</p>
-          <p class="quiz-fields__highlight-name">
-            {{ topNganh.ten_nganh || `Ngành #${topNganh.nganh_hoc_id}` }}
-            <span v-if="topNganh.ma_nganh" class="quiz-fields__highlight-code">
-              ({{ topNganh.ma_nganh }})
-            </span>
-          </p>
-          <p class="quiz-fields__highlight-score muted">
-            Tổng điểm: {{ formatScore(topNganh.tong_diem) }}
-            · {{ topNganh.so_cau ?? 0 }} câu liên quan
-          </p>
-          <p class="quiz-fields__highlight-desc">
-            Đây là nhóm ngành bạn đạt điểm cao nhất trong phiên khảo sát.
-            Kết quả cho thấy định hướng học tập và nghề nghiệp của bạn đang nghiêng về lĩnh vực này.
-          </p>
-        </div>
-
-        <div v-if="topChuyen" class="quiz-fields__highlight-block">
-          <p class="quiz-fields__highlight-label">Chuyên ngành nổi bật</p>
-          <p class="quiz-fields__highlight-name">
-            {{ topChuyen.ten_chuyen_nganh || `Chuyên ngành #${topChuyen.chuyen_nganh_id}` }}
-            <span v-if="topChuyen.ma_chuyen_nganh" class="quiz-fields__highlight-code">
-              ({{ topChuyen.ma_chuyen_nganh }})
-            </span>
-          </p>
-          <p class="quiz-fields__highlight-score muted">
-            Tổng điểm: {{ formatScore(topChuyen.tong_diem) }}
-            · {{ topChuyen.so_cau ?? 0 }} câu liên quan
-            <template v-if="topChuyen.ten_nganh">
-              · thuộc nhóm {{ topChuyen.ten_nganh }}
-            </template>
-          </p>
-          <p class="quiz-fields__highlight-desc">
-            Đây là chuyên ngành cụ thể phù hợp nhất với câu trả lời của bạn.
-            Bạn có thể ưu tiên tìm hiểu chương trình đào tạo và cơ hội nghề nghiệp gắn với chuyên ngành này.
-          </p>
-        </div>
-      </section>
-
-      <section
-        class="quiz-fields__next"
-        aria-labelledby="quiz-fields-next-title"
-      >
-        <h2 id="quiz-fields-next-title" class="quiz-fields__next-title">
-          <span aria-hidden="true">🎯</span>
-          Tiếp theo, bạn nên làm gì?
-        </h2>
-
-        <p class="quiz-fields__next-lead">
-          <span aria-hidden="true">👉</span>
-          <template v-if="topGroupLabel">
-            Chọn ngành cụ thể trong nhóm
-            <strong>“{{ topGroupLabel }}”</strong>
-            để:
-          </template>
-          <template v-else>
-            Chọn ngành cụ thể phù hợp với bạn để:
-          </template>
-        </p>
-
-        <ul class="quiz-fields__next-list">
-          <li>Xem danh sách các trường đại học đào tạo chuyên ngành.</li>
-          <li>
-            So sánh chỉ tiêu tuyển sinh năm gần nhất, Phương thức xét tuyển và điểm chuẩn đầu vào các chuyên ngành.
-          </li>
-        </ul>
-
-        <div class="quiz-fields__actions">
-          <button class="btn btn-outline" type="button" :disabled="!prevStep" @click="goPrev">
-            Quay lại
-          </button>
-          <button class="btn" type="button" :disabled="!nextStep" @click="goNext">
-            Tiếp tục
-          </button>
-        </div>
-      </section>
+      <QuizFieldsNganhUocMoTab v-else-if="activeTab === 'nganh-uoc-mo'" />
+      <QuizFieldsKhaoSatCaNhanTab v-else-if="activeTab === 'khao-sat'" />
     </div>
   </section>
 </template>
@@ -164,11 +97,18 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { quizFieldsCelebration } from '@/data/quiz-fields-celebration'
-import QuizFieldsRadarChart from '@/components/quiz/QuizFieldsRadarChart.vue'
+import QuizFieldsKetQuaTab from '@/components/quiz/QuizFieldsKetQuaTab.vue'
+import QuizFieldsNganhUocMoTab from '@/components/quiz/QuizFieldsNganhUocMoTab.vue'
+import QuizFieldsKhaoSatCaNhanTab from '@/components/quiz/QuizFieldsKhaoSatCaNhanTab.vue'
 import { useQuizStore } from '@/stores/quiz'
 
-const TOP_LIMIT = 5
 const FIREWORK_COLORS = ['#1f7a4c', '#2f9e66', '#f4b942', '#e85d4c', '#4c8fe8', '#9b59b6']
+
+const tabs = [
+  { id: 'ket-qua', label: 'Kết quả trắc nghiệm' },
+  { id: 'nganh-uoc-mo', label: 'Ngành học ước mơ' },
+  { id: 'khao-sat', label: 'Khảo sát cá nhân' },
+]
 
 const celebration = quizFieldsCelebration
 
@@ -196,6 +136,7 @@ const router = useRouter()
 const quiz = useQuizStore()
 const { fieldsSummary } = storeToRefs(quiz)
 
+const activeTab = ref('ket-qua')
 const loading = ref(true)
 const error = ref(null)
 const fireworksCanvas = ref(null)
@@ -208,35 +149,10 @@ const prevStep = computed(() => quiz.getAdjacent(route, -1))
 const nextStep = computed(() => quiz.getAdjacent(route, 1))
 const summary = computed(() => fieldsSummary.value)
 
-const nganhList = computed(() => {
-  const list = Array.isArray(summary.value?.nganh_hoc) ? summary.value.nganh_hoc : []
-  return list.slice(0, TOP_LIMIT)
-})
-
-const chuyenList = computed(() => {
-  const list = Array.isArray(summary.value?.chuyen_nganh) ? summary.value.chuyen_nganh : []
-  return list.slice(0, TOP_LIMIT)
-})
-
-const topNganh = computed(() => nganhList.value[0] || null)
-const topChuyen = computed(() => chuyenList.value[0] || null)
-const topGroupLabel = computed(() => {
-  const name = topNganh.value?.ten_nganh?.trim()
-  if (!name) return ''
-  const code = topNganh.value?.ma_nganh?.trim()
-  return code ? `${name} (${code})` : name
-})
-
 let fireworksRaf = 0
 let fireworksResizeHandler = null
 let fireworksPlayed = false
 let congratsHideTimer = 0
-
-function formatScore(value) {
-  const n = Number(value)
-  if (!Number.isFinite(n)) return '0'
-  return Number.isInteger(n) ? String(n) : n.toFixed(1)
-}
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -668,139 +584,60 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
+.quiz-fields__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 1.15rem;
+  padding: 0.3rem;
+  background: #f4f7f5;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+}
+
+.quiz-fields__tab {
+  flex: 1 1 auto;
+  min-width: max-content;
+  margin: 0;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.quiz-fields__tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.quiz-fields__tab.is-active {
+  color: var(--text);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(24, 48, 36, 0.08);
+  font-weight: 600;
+}
+
+.quiz-fields__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .quiz-fields__panel {
   padding: 1.25rem;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) + 4px);
   box-shadow: var(--shadow);
-}
-
-.quiz-fields__note {
-  margin: 0 0 0.9rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: 10px;
-  background: #f3faf6;
-  border: 1px solid #c5dfd0;
-  color: #2f5d45;
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-
-.quiz-fields__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin: 0 0 1.15rem;
-  font-size: 0.92rem;
-}
-
-.quiz-fields__highlight {
-  margin-top: 1.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-}
-
-.quiz-fields__highlight-title {
-  margin: 0 0 1.1rem;
-  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.35;
-}
-
-.quiz-fields__highlight-block + .quiz-fields__highlight-block {
-  margin-top: 1.25rem;
-  padding-top: 1.15rem;
-  border-top: 1px dashed #dde5e0;
-}
-
-.quiz-fields__highlight-label {
-  margin: 0 0 0.35rem;
-  color: var(--accent);
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.quiz-fields__highlight-name {
-  margin: 0 0 0.35rem;
-  font-size: 1.08rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text);
-}
-
-.quiz-fields__highlight-code {
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.quiz-fields__highlight-score {
-  margin: 0 0 0.65rem;
-  font-size: 0.9rem;
-}
-
-.quiz-fields__highlight-desc {
-  margin: 0;
-  max-width: 42rem;
-  color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-.quiz-fields__next {
-  margin-top: 1.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-}
-
-.quiz-fields__next-title {
-  margin: 0 0 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.35;
-}
-
-.quiz-fields__next-lead {
-  margin: 0 0 0.85rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-  max-width: 42rem;
-  color: var(--text);
-  font-size: 0.98rem;
-  line-height: 1.55;
-}
-
-.quiz-fields__next-lead strong {
-  font-weight: 600;
-}
-
-.quiz-fields__next-list {
-  margin: 0;
-  padding-left: 1.35rem;
-  max-width: 42rem;
-  color: var(--text);
-  font-size: 0.95rem;
-  line-height: 1.65;
-}
-
-.quiz-fields__next-list li + li {
-  margin-top: 0.35rem;
-}
-
-.quiz-fields__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-btn);
-  margin-top: 1.75rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -824,6 +661,10 @@ onUnmounted(() => {
   .quiz-congrats-leave-to {
     transform: none;
     filter: none;
+  }
+
+  .quiz-fields__tab {
+    transition: none;
   }
 }
 </style>

@@ -132,6 +132,12 @@ const router = createRouter({
           meta: { title: 'Trường học', icon: 'School' },
         },
         {
+          path: 'danh-muc/tuyen-sinh-theo-nam',
+          name: 'admin-tuyen-sinh-theo-nam',
+          component: () => import('@/views/admin/TuyenSinhTheoNamView.vue'),
+          meta: { title: 'Tuyển sinh theo năm', icon: 'Calendar' },
+        },
+        {
           path: 'danh-muc/loai-truong',
           name: 'admin-loai-truong',
           component: () => import('@/views/admin/LoaiTruongView.vue'),
@@ -160,6 +166,24 @@ const router = createRouter({
           name: 'admin-loai-cau-hoi',
           component: () => import('@/views/admin/LoaiCauHoiView.vue'),
           meta: { title: 'Loại câu hỏi', icon: 'Document' },
+        },
+        {
+          path: 'danh-muc/mon-hoc',
+          name: 'admin-mon-hoc',
+          component: () => import('@/views/admin/MonHocView.vue'),
+          meta: { title: 'Môn học', icon: 'Notebook' },
+        },
+        {
+          path: 'danh-muc/phuong-thuc-xet-tuyen',
+          name: 'admin-phuong-thuc-xet-tuyen',
+          component: () => import('@/views/admin/PhuongThucXetTuyenView.vue'),
+          meta: { title: 'Phương thức xét tuyển', icon: 'Checked' },
+        },
+        {
+          path: 'danh-muc/to-hop-mon-hoc',
+          name: 'admin-to-hop-mon-hoc',
+          component: () => import('@/views/admin/ToHopMonHocView.vue'),
+          meta: { title: 'Tổ hợp môn học', icon: 'Files' },
         },
 
         // Trắc nghiệm

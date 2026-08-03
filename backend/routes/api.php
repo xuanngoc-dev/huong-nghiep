@@ -9,11 +9,15 @@ use App\Http\Controllers\Api\Admin\HeDaoTaoController as AdminHeDaoTaoController
 use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
 use App\Http\Controllers\Api\Admin\LoaiCauHoiController as AdminLoaiCauHoiController;
 use App\Http\Controllers\Api\Admin\LoaiTruongController as AdminLoaiTruongController;
+use App\Http\Controllers\Api\Admin\MonHocController as AdminMonHocController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
+use App\Http\Controllers\Api\Admin\PhuongThucXetTuyenController as AdminPhuongThucXetTuyenController;
 use App\Http\Controllers\Api\Admin\TinhThanhController as AdminTinhThanhController;
+use App\Http\Controllers\Api\Admin\ToHopMonHocController as AdminToHopMonHocController;
 use App\Http\Controllers\Api\Admin\TracNghiemCauHoiController as AdminTracNghiemCauHoiController;
 use App\Http\Controllers\Api\Admin\TracNghiemCauTraLoiController as AdminTracNghiemCauTraLoiController;
 use App\Http\Controllers\Api\Admin\TruongHocController as AdminTruongHocController;
+use App\Http\Controllers\Api\Admin\TruongHocTuyenSinhTheoNamController as AdminTruongHocTuyenSinhTheoNamController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
@@ -104,10 +108,26 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('truong-hoc', AdminTruongHocController::class)
                 ->parameters(['truong-hoc' => 'truongHoc']);
 
+            Route::post('truong-hoc-tuyen-sinh-theo-nam/bulk-delete', [AdminTruongHocTuyenSinhTheoNamController::class, 'bulkDestroy']);
+            Route::apiResource('truong-hoc-tuyen-sinh-theo-nam', AdminTruongHocTuyenSinhTheoNamController::class)
+                ->parameters(['truong-hoc-tuyen-sinh-theo-nam' => 'truongHocTuyenSinhTheoNam']);
+
             Route::post('loai-cau-hoi/bulk-delete', [AdminLoaiCauHoiController::class, 'bulkDestroy']);
             Route::post('loai-cau-hoi/bulk-status', [AdminLoaiCauHoiController::class, 'bulkUpdateStatus']);
             Route::apiResource('loai-cau-hoi', AdminLoaiCauHoiController::class)
                 ->parameters(['loai-cau-hoi' => 'loaiCauHoi']);
+
+            Route::post('mon-hoc/bulk-delete', [AdminMonHocController::class, 'bulkDestroy']);
+            Route::apiResource('mon-hoc', AdminMonHocController::class)
+                ->parameters(['mon-hoc' => 'monHoc']);
+
+            Route::post('phuong-thuc-xet-tuyen/bulk-delete', [AdminPhuongThucXetTuyenController::class, 'bulkDestroy']);
+            Route::apiResource('phuong-thuc-xet-tuyen', AdminPhuongThucXetTuyenController::class)
+                ->parameters(['phuong-thuc-xet-tuyen' => 'phuongThucXetTuyen']);
+
+            Route::post('to-hop-mon-hoc/bulk-delete', [AdminToHopMonHocController::class, 'bulkDestroy']);
+            Route::apiResource('to-hop-mon-hoc', AdminToHopMonHocController::class)
+                ->parameters(['to-hop-mon-hoc' => 'toHopMonHoc']);
 
             Route::post('trac-nghiem-cau-hoi/bulk-delete', [AdminTracNghiemCauHoiController::class, 'bulkDestroy']);
             Route::post('trac-nghiem-cau-hoi/bulk-status', [AdminTracNghiemCauHoiController::class, 'bulkUpdateStatus']);

@@ -46,6 +46,11 @@
         "icon": "School"
       },
       {
+        "index": "/admin/danh-muc/tuyen-sinh-theo-nam",
+        "title": "Tuyển sinh theo năm",
+        "icon": "Calendar"
+      },
+      {
         "index": "/admin/danh-muc/loai-truong",
         "title": "Loại trường",
         "icon": "OfficeBuilding"
@@ -69,6 +74,21 @@
         "index": "/admin/danh-muc/loai-cau-hoi",
         "title": "Loại câu hỏi",
         "icon": "Document"
+      },
+      {
+        "index": "/admin/danh-muc/mon-hoc",
+        "title": "Môn học",
+        "icon": "Notebook"
+      },
+      {
+        "index": "/admin/danh-muc/phuong-thuc-xet-tuyen",
+        "title": "Phương thức xét tuyển",
+        "icon": "Checked"
+      },
+      {
+        "index": "/admin/danh-muc/to-hop-mon-hoc",
+        "title": "Tổ hợp môn học",
+        "icon": "Files"
       }
     ]
   }

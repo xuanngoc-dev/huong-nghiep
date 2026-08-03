@@ -67,6 +67,36 @@ export const API_LOAI_TRUONG = {
   BULK_DELETE: { url: '/admin/loai-truong/bulk-delete', method: 'post' },
 }
 
+/** Admin — Môn học */
+export const API_MON_HOC = {
+  LIST: { url: '/admin/mon-hoc', method: 'get' },
+  CREATE: { url: '/admin/mon-hoc', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/mon-hoc/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/mon-hoc/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/mon-hoc/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/mon-hoc/bulk-delete', method: 'post' },
+}
+
+/** Admin — Phương thức xét tuyển */
+export const API_PHUONG_THUC_XET_TUYEN = {
+  LIST: { url: '/admin/phuong-thuc-xet-tuyen', method: 'get' },
+  CREATE: { url: '/admin/phuong-thuc-xet-tuyen', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/phuong-thuc-xet-tuyen/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/phuong-thuc-xet-tuyen/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/phuong-thuc-xet-tuyen/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/phuong-thuc-xet-tuyen/bulk-delete', method: 'post' },
+}
+
+/** Admin — Tổ hợp môn học */
+export const API_TO_HOP_MON_HOC = {
+  LIST: { url: '/admin/to-hop-mon-hoc', method: 'get' },
+  CREATE: { url: '/admin/to-hop-mon-hoc', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/to-hop-mon-hoc/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/to-hop-mon-hoc/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/to-hop-mon-hoc/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/to-hop-mon-hoc/bulk-delete', method: 'post' },
+}
+
 /** Admin — Hệ đào tạo */
 export const API_HE_DAO_TAO = {
   LIST: { url: '/admin/he-dao-tao', method: 'get' },
@@ -86,6 +116,16 @@ export const API_TRUONG_HOC = {
   DELETE: (id) => ({ url: `/admin/truong-hoc/${id}`, method: 'delete' }),
   BULK_DELETE: { url: '/admin/truong-hoc/bulk-delete', method: 'post' },
   BULK_STATUS: { url: '/admin/truong-hoc/bulk-status', method: 'post' },
+}
+
+/** Admin — Tuyển sinh theo năm */
+export const API_TRUONG_HOC_TUYEN_SINH_THEO_NAM = {
+  LIST: { url: '/admin/truong-hoc-tuyen-sinh-theo-nam', method: 'get' },
+  CREATE: { url: '/admin/truong-hoc-tuyen-sinh-theo-nam', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/truong-hoc-tuyen-sinh-theo-nam/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/truong-hoc-tuyen-sinh-theo-nam/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/truong-hoc-tuyen-sinh-theo-nam/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/truong-hoc-tuyen-sinh-theo-nam/bulk-delete', method: 'post' },
 }
 
 /** Admin — Loại câu hỏi */
