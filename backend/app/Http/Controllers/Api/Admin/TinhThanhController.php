@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Enums\TrangThaiTinhThanh;
 use App\Http\Controllers\Controller;
+use App\Models\PhuongXa;
 use App\Models\TinhThanh;
 use App\Support\ApiResponse;
 use App\Support\OffsetPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TinhThanhController extends Controller
 {
@@ -22,6 +24,7 @@ class TinhThanhController extends Controller
 
             $query = TinhThanh::query()
                 ->with(['khuVuc:id,ma_khu_vuc,ten_khu_vuc'])
+                ->withCount(['phuongXas as so_luong_phuong_xa'])
                 ->when($keyword !== '', function ($query) use ($keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('ten_tinh_thanh', 'like', "%{$keyword}%")
@@ -53,6 +56,7 @@ class TinhThanhController extends Controller
     {
         return $this->tryApi(function () use ($tinhThanh) {
             $tinhThanh->load(['khuVuc:id,ma_khu_vuc,ten_khu_vuc']);
+            $tinhThanh->loadCount(['phuongXas as so_luong_phuong_xa']);
 
             return ApiResponse::success($tinhThanh, 'Lấy chi tiết tỉnh thành thành công.');
         });
@@ -70,6 +74,7 @@ class TinhThanhController extends Controller
 
             $item = TinhThanh::create($validated);
             $item->load(['khuVuc:id,ma_khu_vuc,ten_khu_vuc']);
+            $item->loadCount(['phuongXas as so_luong_phuong_xa']);
 
             return ApiResponse::success($item, 'Tạo tỉnh thành thành công.');
         });
@@ -93,7 +98,7 @@ class TinhThanhController extends Controller
             $tinhThanh->update($validated);
 
             return ApiResponse::success(
-                $tinhThanh->fresh(['khuVuc:id,ma_khu_vuc,ten_khu_vuc']),
+                $tinhThanh->fresh(['khuVuc:id,ma_khu_vuc,ten_khu_vuc'])->loadCount(['phuongXas as so_luong_phuong_xa']),
                 'Cập nhật tỉnh thành thành công.',
             );
         });
@@ -102,6 +107,8 @@ class TinhThanhController extends Controller
     public function destroy(TinhThanh $tinhThanh): JsonResponse
     {
         return $this->tryApi(function () use ($tinhThanh) {
+            $this->assertTinhThanhDeletable([(int) $tinhThanh->id]);
+
             $tinhThanh->delete();
 
             return ApiResponse::success(null, 'Đã xóa tỉnh thành.');
@@ -116,13 +123,72 @@ class TinhThanhController extends Controller
                 'ids.*' => ['integer', 'distinct', 'exists:danh_muc_tinh_thanh,id'],
             ]);
 
-            $count = TinhThanh::query()->whereIn('id', $validated['ids'])->delete();
+            $ids = array_values(array_map('intval', $validated['ids']));
+            $this->assertTinhThanhDeletable($ids);
+
+            $count = TinhThanh::query()->whereIn('id', $ids)->delete();
 
             return ApiResponse::success(
                 ['deleted' => $count],
                 "Đã xóa {$count} tỉnh thành.",
             );
         });
+    }
+
+    /**
+     * Chặn xóa khi tỉnh thành vẫn còn phường xã liên kết.
+     *
+     * @param  list<int>  $tinhThanhIds
+     */
+    private function assertTinhThanhDeletable(array $tinhThanhIds): void
+    {
+        $tinhThanhIds = array_values(array_unique(array_filter(
+            array_map('intval', $tinhThanhIds),
+            fn (int $id) => $id > 0,
+        )));
+
+        if ($tinhThanhIds === []) {
+            return;
+        }
+
+        $maTinhById = TinhThanh::query()
+            ->whereIn('id', $tinhThanhIds)
+            ->pluck('ma_tinh_thanh', 'id');
+
+        if ($maTinhById->isEmpty()) {
+            return;
+        }
+
+        $linkedMaTinh = PhuongXa::query()
+            ->whereIn('ma_tinh_thanh', $maTinhById->values()->all())
+            ->distinct()
+            ->pluck('ma_tinh_thanh')
+            ->map(fn ($ma) => (string) $ma)
+            ->all();
+
+        if ($linkedMaTinh === []) {
+            return;
+        }
+
+        $blocked = TinhThanh::query()
+            ->whereIn('ma_tinh_thanh', $linkedMaTinh)
+            ->whereIn('id', $tinhThanhIds)
+            ->orderBy('ten_tinh_thanh')
+            ->get(['id', 'ten_tinh_thanh']);
+
+        if ($blocked->count() === 1) {
+            $ten = $blocked->first()->ten_tinh_thanh;
+
+            throw ValidationException::withMessages([
+                'ids' => ["Không thể xóa tỉnh thành «{$ten}» vì vẫn còn phường xã thuộc tỉnh này."],
+            ]);
+        }
+
+        $tenList = $blocked->pluck('ten_tinh_thanh')->implode(', ');
+
+        throw ValidationException::withMessages([
+            'ids' => ["Không thể xóa các tỉnh thành sau vì vẫn còn phường xã liên kết: {$tenList}."],
+        ]);
     }
 
     public function bulkUpdateStatus(Request $request): JsonResponse

@@ -6,6 +6,7 @@ use App\Enums\TrangThaiTinhThanh;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['ten_tinh_thanh', 'ma_tinh_thanh', 'khu_vuc_id', 'trang_thai'])]
 class TinhThanh extends Model
@@ -25,5 +26,10 @@ class TinhThanh extends Model
     public function khuVuc(): BelongsTo
     {
         return $this->belongsTo(KhuVuc::class, 'khu_vuc_id');
+    }
+
+    public function phuongXas(): HasMany
+    {
+        return $this->hasMany(PhuongXa::class, 'ma_tinh_thanh', 'ma_tinh_thanh');
     }
 }
