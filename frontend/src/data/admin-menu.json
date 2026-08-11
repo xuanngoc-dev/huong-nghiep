@@ -77,6 +77,11 @@
         "icon": "Medal"
       },
       {
+        "index": "/admin/danh-muc/nhom-nganh",
+        "title": "Nhóm ngành",
+        "icon": "Collection"
+      },
+      {
         "index": "/admin/danh-muc/nganh-hoc",
         "title": "Ngành học",
         "icon": "Book"

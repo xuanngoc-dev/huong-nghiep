@@ -150,6 +150,12 @@ const router = createRouter({
           meta: { title: 'Hệ đào tạo', icon: 'Medal' },
         },
         {
+          path: 'danh-muc/nhom-nganh',
+          name: 'admin-nhom-nganh',
+          component: () => import('@/views/admin/NhomNganhView.vue'),
+          meta: { title: 'Nhóm ngành', icon: 'Collection' },
+        },
+        {
           path: 'danh-muc/nganh-hoc',
           name: 'admin-nganh-hoc',
           component: () => import('@/views/admin/NganhHocView.vue'),

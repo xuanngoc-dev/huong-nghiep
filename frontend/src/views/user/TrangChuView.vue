@@ -1,6 +1,10 @@
 <template>
   <div class="home">
-    <div class="home-block home-block--hero">
+    <div
+      class="home-block home-block--hero"
+      data-aos="fade-up"
+      data-aos-duration="850"
+    >
       <HomeHero />
       <div class="section-wave" aria-hidden="true">
         <svg viewBox="0 0 1440 72" preserveAspectRatio="none" focusable="false">
@@ -12,7 +16,12 @@
       </div>
     </div>
 
-    <div class="home-block home-block--audiences">
+    <div
+      class="home-block home-block--audiences"
+      data-aos="fade-up"
+      data-aos-delay="60"
+      data-aos-duration="850"
+    >
       <HomeAudiences />
       <div class="section-wave" aria-hidden="true">
         <svg viewBox="0 0 1440 72" preserveAspectRatio="none" focusable="false">
@@ -24,7 +33,12 @@
       </div>
     </div>
 
-    <div class="home-block home-block--services">
+    <div
+      class="home-block home-block--services"
+      data-aos="fade-up"
+      data-aos-delay="80"
+      data-aos-duration="850"
+    >
       <HomeServices />
       <div class="section-wave" aria-hidden="true">
         <svg viewBox="0 0 1440 72" preserveAspectRatio="none" focusable="false">
@@ -36,7 +50,12 @@
       </div>
     </div>
 
-    <div class="home-block home-block--admission">
+    <div
+      class="home-block home-block--admission"
+      data-aos="zoom-in"
+      data-aos-delay="100"
+      data-aos-duration="900"
+    >
       <HomeAdmission />
     </div>
   </div>

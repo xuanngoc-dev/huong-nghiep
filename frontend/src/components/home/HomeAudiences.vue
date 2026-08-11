@@ -1,7 +1,10 @@
 <template>
   <section class="audiences" aria-labelledby="home-audiences-title">
     <div class="container">
-      <header class="section-head">
+      <header
+        class="section-head wow animate__fadeInUp"
+        data-wow-duration="0.85s"
+      >
         <p class="section-eyebrow">{{ content.eyebrow }}</p>
         <h2 id="home-audiences-title">{{ content.title }}</h2>
         <p class="section-desc">{{ content.description }}</p>
@@ -13,7 +16,12 @@
           :key="item.id"
           class="col-12 col-md-6 col-xl-3"
         >
-          <article class="audience" :style="{ '--delay': `${index * 70}ms` }">
+          <article
+            class="audience wow animate__fadeInUp"
+            :data-wow-delay="`${0.08 + index * 0.1}s`"
+            data-wow-duration="0.8s"
+            :style="{ '--delay': `${index * 70}ms` }"
+          >
             <div class="audience__icon" aria-hidden="true">
               <el-icon :size="28"><component :is="item.icon" /></el-icon>
             </div>

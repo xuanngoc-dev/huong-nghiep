@@ -15,7 +15,10 @@
 
         <div class="hero__inner">
           <div class="hero__layout">
-            <div class="hero__copy">
+            <div
+              class="hero__copy wow animate__fadeInLeft"
+              data-wow-duration="0.9s"
+            >
               <p class="hero__brand">{{ content.brand }}</p>
               <p class="hero__eyebrow">{{ content.eyebrow }}</p>
               <h1 id="home-hero-title" class="hero__title">
@@ -43,7 +46,13 @@
               </div>
             </div>
 
-            <ul ref="statsRef" class="hero__stats" aria-label="Thống kê">
+            <ul
+              ref="statsRef"
+              class="hero__stats wow animate__fadeInRight"
+              data-wow-delay="0.15s"
+              data-wow-duration="0.9s"
+              aria-label="Thống kê"
+            >
               <li
                 v-for="(stat, index) in content.stats"
                 :key="stat.label"

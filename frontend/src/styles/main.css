@@ -1,15 +1,15 @@
 :root {
   --bg: #f4f7f5;
   --surface: #ffffff;
-  --text: #1a2e24;
-  --muted: #5c7268;
+  --text: #0f241a;
+  --muted: #3d564b;
   --accent: #1f7a4c;
   --accent-soft: #e7f4ec;
   --border: #d7e3dc;
   --danger: #b42318;
   --shadow: 0 10px 30px rgba(26, 46, 36, 0.06);
   --radius: 14px;
-  --font: "Roboto", "Segoe UI", sans-serif;
+  --font: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
   /* UI spacing chuẩn */
   --space-section: 1rem;
   --space-btn: 1rem;
@@ -28,8 +28,12 @@ body,
 
 body {
   font-family: var(--font);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text);
+  letter-spacing: -0.011em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background:
     radial-gradient(circle at top left, rgba(31, 122, 76, 0.08), transparent 40%),
     linear-gradient(180deg, #f7faf8 0%, var(--bg) 100%);

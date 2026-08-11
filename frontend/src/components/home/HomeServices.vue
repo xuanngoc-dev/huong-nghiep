@@ -1,7 +1,10 @@
 <template>
   <section class="services" aria-labelledby="home-services-title">
     <div class="container">
-      <header class="section-head">
+      <header
+        class="section-head wow animate__fadeInUp"
+        data-wow-duration="0.85s"
+      >
         <p class="section-eyebrow">{{ content.eyebrow }}</p>
         <h2 id="home-services-title">{{ content.title }}</h2>
         <p class="section-desc">{{ content.description }}</p>
@@ -15,7 +18,9 @@
         >
           <RouterLink
             :to="item.to"
-            class="service"
+            class="service wow animate__fadeInUp"
+            :data-wow-delay="`${0.1 + index * 0.12}s`"
+            data-wow-duration="0.85s"
             :style="{ '--delay': `${index * 80}ms` }"
           >
             <div class="service__icon" aria-hidden="true">

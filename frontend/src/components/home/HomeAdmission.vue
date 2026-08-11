@@ -1,13 +1,17 @@
 <template>
   <section class="admission" aria-labelledby="home-admission-title">
     <div class="container">
-      <div class="admission__banner">
+      <div class="admission__banner wow animate__zoomIn" data-wow-duration="0.9s">
         <div class="admission__glow" aria-hidden="true" />
         <div class="admission__copy">
           <p class="admission__eyebrow">{{ content.eyebrow }}</p>
           <h2 id="home-admission-title">{{ content.title }}</h2>
           <p class="admission__desc">{{ content.description }}</p>
-          <div class="admission__cta">
+          <div
+            class="admission__cta wow animate__fadeInUp"
+            data-wow-delay="0.18s"
+            data-wow-duration="0.75s"
+          >
             <RouterLink class="btn admission__btn-primary" :to="content.primaryCta.to">
               {{ content.primaryCta.label }}
             </RouterLink>

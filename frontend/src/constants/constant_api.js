@@ -107,6 +107,17 @@ export const API_HE_DAO_TAO = {
   BULK_DELETE: { url: '/admin/he-dao-tao/bulk-delete', method: 'post' },
 }
 
+/** Admin — Nhóm ngành */
+export const API_NHOM_NGANH = {
+  LIST: { url: '/admin/nhom-nganh', method: 'get' },
+  CREATE: { url: '/admin/nhom-nganh', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/nhom-nganh/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/nhom-nganh/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/nhom-nganh/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/nhom-nganh/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/nhom-nganh/bulk-status', method: 'post' },
+}
+
 /** Admin — Trường học */
 export const API_TRUONG_HOC = {
   LIST: { url: '/admin/truong-hoc', method: 'get' },
@@ -214,5 +225,8 @@ export const API_PUBLIC = {
       url: `/trac-nghiem-lich-su-tra-loi/${ssid}/tong-hop`,
       method: 'get',
     }),
+  },
+  NGUOI_DUNG: {
+    STORE: { url: '/nguoi-dung', method: 'post' },
   },
 }

@@ -110,15 +110,19 @@
       </div>
     </main>
 
-    <footer class="footer">
+    <footer class="footer" data-aos="fade-up" data-aos-duration="700">
       <div class="container footer-inner">
-        <div class="footer-brand">
+        <div class="footer-brand wow animate__fadeInUp" data-wow-duration="0.8s">
           <p class="footer-title">Hướng Nghiệp</p>
           <p class="muted">
             Nền tảng hỗ trợ khám phá bản thân, chọn ngành học và định hướng nghề nghiệp.
           </p>
         </div>
-        <div class="footer-links">
+        <div
+          class="footer-links wow animate__fadeInUp"
+          data-wow-delay="0.12s"
+          data-wow-duration="0.8s"
+        >
           <RouterLink
             v-for="item in publicMenu"
             :key="item.to"
@@ -127,7 +131,13 @@
             {{ item.label }}
           </RouterLink>
         </div>
-        <p class="muted footer-copy">© {{ year }} Hướng Nghiệp. Tất cả quyền được bảo lưu.</p>
+        <p
+          class="muted footer-copy wow animate__fadeInUp"
+          data-wow-delay="0.2s"
+          data-wow-duration="0.7s"
+        >
+          © {{ year }} Hướng Nghiệp. Tất cả quyền được bảo lưu.
+        </p>
       </div>
     </footer>
   </div>
@@ -137,6 +147,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { Close, Menu } from '@element-plus/icons-vue'
+import { useScrollReveal } from '@/composables/useScrollReveal'
 import { useAuthStore } from '@/stores/auth'
 import userMenu from '@/data/user-menu.json'
 
@@ -146,6 +157,8 @@ const router = useRouter()
 const year = new Date().getFullYear()
 const isHome = computed(() => route.name === 'home')
 const menuOpen = ref(false)
+
+useScrollReveal()
 
 const publicMenu = computed(() =>
   userMenu.filter((item) => !item.auth && !item.admin),
@@ -212,12 +225,42 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .layout {
+  --text: #0f241a;
+  --muted: #3d564b;
+  --font: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  color: var(--text);
   font-family: var(--font);
-  font-weight: 400;
+  font-weight: 500;
+  letter-spacing: -0.011em;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.layout :deep(h1),
+.layout :deep(h2),
+.layout :deep(h3),
+.layout :deep(h4) {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.layout :deep(p),
+.layout :deep(li),
+.layout :deep(label),
+.layout :deep(span),
+.layout :deep(a),
+.layout :deep(button) {
+  text-rendering: optimizeLegibility;
+}
+
+.layout :deep(.muted) {
+  color: var(--muted);
 }
 
 .header {
@@ -225,7 +268,7 @@ onBeforeUnmount(() => {
   top: 0;
   z-index: 100;
   backdrop-filter: blur(10px);
-  background: rgba(247, 250, 248, 0.95);
+  background: rgba(247, 250, 248, 0.97);
   border-bottom: 1px solid var(--border);
 }
 
@@ -271,11 +314,12 @@ onBeforeUnmount(() => {
 
 .brand__text {
   display: none;
-  font-weight: 500;
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-size: 1.08rem;
+  letter-spacing: -0.03em;
   line-height: 1.2;
   white-space: nowrap;
+  color: var(--text);
 }
 
 .header-right {
@@ -297,13 +341,14 @@ onBeforeUnmount(() => {
 
 .nav--desktop a {
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.96rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .nav--desktop a.router-link-active {
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .actions {
@@ -394,13 +439,13 @@ onBeforeUnmount(() => {
   padding: 0.75rem 0.25rem;
   color: var(--text);
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 600;
   border-bottom: 1px solid var(--border);
 }
 
 .nav-mobile-link.router-link-active {
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .nav-mobile-actions {
@@ -438,15 +483,17 @@ onBeforeUnmount(() => {
 
 .footer-title {
   margin: 0 0 0.4rem;
-  font-weight: 500;
-  font-size: 1.05rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.03em;
 }
 
 .footer-brand .muted {
   margin: 0;
   max-width: 28rem;
-  line-height: 1.5;
-  font-size: 0.92rem;
+  line-height: 1.55;
+  font-size: 0.94rem;
+  font-weight: 500;
 }
 
 .footer-links {
@@ -457,7 +504,8 @@ onBeforeUnmount(() => {
 
 .footer-links a {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.94rem;
+  font-weight: 600;
 }
 
 .footer-links a:hover {
@@ -466,7 +514,8 @@ onBeforeUnmount(() => {
 
 .footer-copy {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 500;
 }
 
 /* Tablet: hiện actions, vẫn dùng menu toggle vì nhiều mục */
@@ -519,6 +568,15 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .nav--mobile {
     transition: none;
+  }
+
+  .layout :deep(.wow),
+  .layout :deep([data-aos]) {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
   }
 }
 </style>
