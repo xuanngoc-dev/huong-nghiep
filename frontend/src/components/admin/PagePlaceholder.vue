@@ -1,12 +1,12 @@
 <template>
   <div class="page-placeholder">
-    <CustomEmpty :description="description">
+    <CustomEmpty :description="featureName">
       <template #image>
         <CustomIcon :size="64" color="var(--el-color-info)">
           <component :is="iconComponent" />
         </CustomIcon>
       </template>
-      <p class="hint">Trang đang chờ triển khai giao diện.</p>
+      <p class="hint">Chức năng đang phát triển</p>
     </CustomEmpty>
   </div>
 </template>
@@ -31,8 +31,8 @@ const props = defineProps({
 
 const route = useRoute()
 
-const description = computed(
-  () => props.title || route.meta.title || 'Đang phát triển',
+const featureName = computed(
+  () => props.title || route.meta.title || 'Chức năng',
 )
 
 const iconComponent = computed(() => {
@@ -52,6 +52,6 @@ const iconComponent = computed(() => {
 .hint {
   margin: 8px 0 0;
   color: var(--el-text-color-secondary);
-  font-size: 13px;
+  font-size: 0.875rem;
 }
 </style>

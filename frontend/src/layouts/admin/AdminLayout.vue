@@ -170,7 +170,8 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const layoutStore = useLayoutStore()
-const { navbarFixed, sidebarFixed, sidebarPushContent } = storeToRefs(layoutStore)
+const { navbarFixed, sidebarPushContent } = storeToRefs(layoutStore)
+const sidebarFixed = true
 
 const pinnedCollapsed = ref(false)
 const hoverExpanded = ref(false)

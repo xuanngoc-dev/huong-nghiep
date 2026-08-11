@@ -34,11 +34,8 @@ export const FONT_OPTIONS = [
 const FONT_MAP = Object.fromEntries(FONT_OPTIONS.map((item) => [item.value, item.stack]))
 
 const defaults = {
-  menuGroupCollapsible: false,
-  menuUniqueOpened: true,
-  menuGroupHeaderVisible: true,
+  menuSpread: true,
   navbarFixed: true,
-  sidebarFixed: true,
   sidebarPushContent: true,
   fontFamily: 'be-vietnam-pro',
   fontSize: 16,
@@ -76,7 +73,14 @@ function loadSettings() {
     parsed.fontFamily = normalizeFontFamily(parsed.fontFamily)
     parsed.fontSize = clampFontSize(parsed.fontSize)
     parsed.uiScale = clampScale(parsed.uiScale)
-    return parsed
+    return {
+      menuSpread: !!parsed.menuSpread,
+      navbarFixed: !!parsed.navbarFixed,
+      sidebarPushContent: !!parsed.sidebarPushContent,
+      fontFamily: parsed.fontFamily,
+      fontSize: parsed.fontSize,
+      uiScale: parsed.uiScale,
+    }
   } catch {
     return { ...defaults }
   }
@@ -102,11 +106,8 @@ function applyAppearance(fontFamily, fontSize, uiScale) {
 export const useLayoutStore = defineStore('layout', () => {
   const saved = loadSettings()
 
-  const menuGroupCollapsible = ref(saved.menuGroupCollapsible)
-  const menuUniqueOpened = ref(saved.menuUniqueOpened)
-  const menuGroupHeaderVisible = ref(saved.menuGroupHeaderVisible)
+  const menuSpread = ref(saved.menuSpread)
   const navbarFixed = ref(saved.navbarFixed)
-  const sidebarFixed = ref(saved.sidebarFixed)
   const sidebarPushContent = ref(saved.sidebarPushContent)
   const fontFamily = ref(saved.fontFamily)
   const fontSize = ref(saved.fontSize)
@@ -116,11 +117,8 @@ export const useLayoutStore = defineStore('layout', () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        menuGroupCollapsible: menuGroupCollapsible.value,
-        menuUniqueOpened: menuUniqueOpened.value,
-        menuGroupHeaderVisible: menuGroupHeaderVisible.value,
+        menuSpread: menuSpread.value,
         navbarFixed: navbarFixed.value,
-        sidebarFixed: sidebarFixed.value,
         sidebarPushContent: sidebarPushContent.value,
         fontFamily: fontFamily.value,
         fontSize: fontSize.value,
@@ -135,11 +133,8 @@ export const useLayoutStore = defineStore('layout', () => {
 
   watch(
     [
-      menuGroupCollapsible,
-      menuUniqueOpened,
-      menuGroupHeaderVisible,
+      menuSpread,
       navbarFixed,
-      sidebarFixed,
       sidebarPushContent,
       fontFamily,
       fontSize,
@@ -151,11 +146,8 @@ export const useLayoutStore = defineStore('layout', () => {
   watch([fontFamily, fontSize, uiScale], syncAppearance, { immediate: true })
 
   function reset() {
-    menuGroupCollapsible.value = defaults.menuGroupCollapsible
-    menuUniqueOpened.value = defaults.menuUniqueOpened
-    menuGroupHeaderVisible.value = defaults.menuGroupHeaderVisible
+    menuSpread.value = defaults.menuSpread
     navbarFixed.value = defaults.navbarFixed
-    sidebarFixed.value = defaults.sidebarFixed
     sidebarPushContent.value = defaults.sidebarPushContent
     fontFamily.value = defaults.fontFamily
     fontSize.value = defaults.fontSize
@@ -163,11 +155,8 @@ export const useLayoutStore = defineStore('layout', () => {
   }
 
   return {
-    menuGroupCollapsible,
-    menuUniqueOpened,
-    menuGroupHeaderVisible,
+    menuSpread,
     navbarFixed,
-    sidebarFixed,
     sidebarPushContent,
     fontFamily,
     fontSize,

@@ -243,6 +243,56 @@ const router = createRouter({
           component: placeholder,
           meta: { title: 'Lịch sử trắc nghiệm', icon: 'Document' },
         },
+
+        // Cấu hình
+        {
+          path: 'cau-hinh/chu-so-huu',
+          name: 'admin-chu-so-huu',
+          component: placeholder,
+          meta: { title: 'Chủ sở hữu', icon: 'Avatar' },
+        },
+        {
+          path: 'cau-hinh/ngan-hang-thanh-toan',
+          name: 'admin-ngan-hang-thanh-toan',
+          component: placeholder,
+          meta: { title: 'Ngân hàng thanh toán', icon: 'CreditCard' },
+        },
+
+        // Blog
+        {
+          path: 'blog/tin-tuc',
+          name: 'admin-tin-tuc',
+          component: placeholder,
+          meta: { title: 'Tin tức', icon: 'Newspaper' },
+        },
+        {
+          path: 'blog/tuyen-dung',
+          name: 'admin-tuyen-dung',
+          component: placeholder,
+          meta: { title: 'Tuyển dụng', icon: 'Briefcase' },
+        },
+
+        // Hỗ trợ
+        {
+          path: 'ho-tro/kenh-ho-tro',
+          name: 'admin-kenh-ho-tro',
+          component: placeholder,
+          meta: { title: 'Kênh hỗ trợ', icon: 'Headset' },
+        },
+        {
+          path: 'ho-tro/chat-ho-tro',
+          name: 'admin-chat-ho-tro',
+          component: placeholder,
+          meta: { title: 'Chat hỗ trợ', icon: 'ChatDotRound' },
+        },
+
+        // 404 trong khu vực admin
+        {
+          path: ':pathMatch(.*)*',
+          name: 'admin-not-found',
+          component: () => import('@/views/admin/KhongTimThayView.vue'),
+          meta: { title: 'Không tìm thấy' },
+        },
       ],
     },
     {
@@ -261,6 +311,11 @@ const router = createRouter({
       path: '/forbidden',
       name: 'forbidden',
       component: () => import('@/views/user/CamTruyCapView.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/user/KhongTimThayView.vue'),
     },
   ],
   scrollBehavior() {

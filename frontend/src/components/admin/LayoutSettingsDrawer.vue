@@ -7,33 +7,14 @@
   >
     <div class="settings-body">
       <section class="settings-section">
-        <h4 class="settings-section__title">Menu bên</h4>
+        <h4 class="settings-section__title">Thanh điều hướng</h4>
 
         <div class="settings-row">
           <div class="settings-row__meta">
-            <span class="settings-row__label">Thu gọn theo nhóm</span>
-            <span class="settings-row__desc">Cho phép mở rộng / thu gọn từng nhóm menu</span>
+            <span class="settings-row__label">Trải dài menu</span>
+            <span class="settings-row__desc">Hiện đủ mọi nhóm menu và phân bố đều theo chiều cao</span>
           </div>
-          <el-switch v-model="layoutStore.menuGroupCollapsible" />
-        </div>
-
-        <div class="settings-row" :class="{ 'is-disabled': !layoutStore.menuGroupCollapsible }">
-          <div class="settings-row__meta">
-            <span class="settings-row__label">Chỉ mở một nhóm</span>
-            <span class="settings-row__desc">Đóng các nhóm khác khi mở một nhóm mới</span>
-          </div>
-          <el-switch
-            v-model="layoutStore.menuUniqueOpened"
-            :disabled="!layoutStore.menuGroupCollapsible"
-          />
-        </div>
-
-        <div class="settings-row">
-          <div class="settings-row__meta">
-            <span class="settings-row__label">Hiện tên nhóm menu</span>
-            <span class="settings-row__desc">Hiện tiêu đề nhóm; khi thu gọn hiện viết tắt</span>
-          </div>
-          <el-switch v-model="layoutStore.menuGroupHeaderVisible" />
+          <el-switch v-model="layoutStore.menuSpread" />
         </div>
 
         <div class="settings-row">
@@ -43,10 +24,6 @@
           </div>
           <el-switch v-model="layoutStore.sidebarPushContent" />
         </div>
-      </section>
-
-      <section class="settings-section">
-        <h4 class="settings-section__title">Thanh điều hướng</h4>
 
         <div class="settings-row">
           <div class="settings-row__meta">
@@ -58,14 +35,6 @@
             :options="navbarOptions"
             size="small"
           />
-        </div>
-
-        <div class="settings-row">
-          <div class="settings-row__meta">
-            <span class="settings-row__label">Sidebar cố định</span>
-            <span class="settings-row__desc">Giữ menu bên trái cố định khi cuộn trang</span>
-          </div>
-          <el-switch v-model="layoutStore.sidebarFixed" />
         </div>
       </section>
 
@@ -263,10 +232,6 @@ function onDarkChange(val) {
   justify-content: space-between;
   gap: 16px;
   padding: 10px 0;
-
-  &.is-disabled {
-    opacity: 0.5;
-  }
 
   &--stack {
     flex-direction: column;

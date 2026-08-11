@@ -147,13 +147,13 @@
         </CustomTableColumn>
         <CustomTableColumn
           prop="phuong_thuc_xet_tuyen"
-          label="Phương thức XT"
+          label="Phương thức"
           min-width="140"
           show-overflow-tooltip
         />
         <CustomTableColumn
           prop="to_hop_xet_tuyen"
-          label="Tổ hợp XT"
+          label="Tổ hợp"
           min-width="120"
           show-overflow-tooltip
         />
@@ -162,7 +162,7 @@
             {{ row.chi_tieu ?? '—' }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn prop="diem_chuan" label="Điểm chuẩn" width="110" align="center">
+        <CustomTableColumn prop="diem_chuan" label="Điểm chuẩn" width="140" align="center">
           <template #default="{ row }">
             {{ row.diem_chuan ?? '—' }}
           </template>

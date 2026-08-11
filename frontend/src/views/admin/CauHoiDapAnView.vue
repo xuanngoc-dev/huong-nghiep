@@ -276,7 +276,7 @@
             }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Số đáp án" width="100" align="center">
+        <CustomTableColumn label="Số đáp án" width="130" align="center">
           <template #default="{ row }">
             {{ row.cau_tra_lois_count ?? 0 }}
           </template>

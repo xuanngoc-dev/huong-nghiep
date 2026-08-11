@@ -4,20 +4,30 @@
     :collapse="collapsed"
     router
     class="side-menu"
+    :class="{ 'is-spread': menuSpread && !collapsed }"
   >
     <div
       v-for="(group, groupIndex) in menuGroups"
       :key="group.header || `group-${groupIndex}`"
       class="menu-group"
-      :class="{ 'is-collapsible': isGroupCollapsible(group) }"
+      :class="{
+        'is-open': isGroupOpen(groupIndex),
+        'is-active': isGroupActive(groupIndex),
+      }"
     >
       <button
-        v-if="showGroupHeader(group) && layoutStore.menuGroupCollapsible"
+        v-if="group.header"
         type="button"
         class="menu-group__toggle"
-        :class="{ 'is-collapsed': collapsed }"
-        :tabindex="collapsed ? -1 : undefined"
-        @click="!collapsed && toggleGroup(groupIndex)"
+        :class="{
+          'is-collapsed': collapsed,
+          'is-active': isGroupActive(groupIndex),
+          'is-static': menuSpread,
+        }"
+        :aria-expanded="isGroupOpen(groupIndex)"
+        :aria-current="isGroupActive(groupIndex) ? 'true' : undefined"
+        :tabindex="collapsed || menuSpread ? -1 : undefined"
+        @click="!collapsed && !menuSpread && toggleGroup(groupIndex)"
       >
         <el-tooltip
           :content="group.header"
@@ -31,6 +41,7 @@
           </span>
         </el-tooltip>
         <el-icon
+          v-if="!menuSpread"
           class="menu-group__arrow"
           :class="{ 'is-open': isGroupOpen(groupIndex) }"
         >
@@ -39,42 +50,28 @@
       </button>
 
       <div
-        v-else-if="showGroupHeader(group)"
-        class="menu-group__header menu-group__header--static"
-        :class="{ 'is-collapsed': collapsed }"
-      >
-        <el-tooltip
-          :content="group.header"
-          placement="right"
-          :disabled="!collapsed"
-          :show-after="200"
-        >
-          <span class="menu-group__face">
-            <span class="menu-group__abbr">{{ group.abbr || groupAbbr(group.header) }}</span>
-            <span class="menu-group__title">{{ group.header }}</span>
-          </span>
-        </el-tooltip>
-      </div>
-
-      <div
-        v-show="!showGroupHeader(group) || !layoutStore.menuGroupCollapsible || isGroupOpen(groupIndex) || collapsed"
         class="menu-group__items"
+        :class="{
+          'is-expanded': !group.header || isGroupOpen(groupIndex) || collapsed,
+        }"
       >
-        <el-tooltip
-          v-for="item in group.items"
-          :key="item.index"
-          :content="item.title"
-          placement="right"
-          :disabled="!collapsed"
-          :show-after="280"
-        >
-          <el-menu-item :index="item.index">
-            <el-icon>
-              <component :is="resolveIcon(item.icon)" />
-            </el-icon>
-            <span class="menu-label" :class="{ 'is-hidden': collapsed }">{{ item.title }}</span>
-          </el-menu-item>
-        </el-tooltip>
+        <div class="menu-group__items-inner">
+          <el-tooltip
+            v-for="item in group.items"
+            :key="item.index"
+            :content="item.title"
+            placement="right"
+            :disabled="!collapsed"
+            :show-after="280"
+          >
+            <el-menu-item :index="item.index">
+              <el-icon>
+                <component :is="resolveIcon(item.icon)" />
+              </el-icon>
+              <span class="menu-label" :class="{ 'is-hidden': collapsed }">{{ item.title }}</span>
+            </el-menu-item>
+          </el-tooltip>
+        </div>
       </div>
     </div>
   </el-menu>
@@ -85,6 +82,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import * as Icons from '@element-plus/icons-vue'
 import { ArrowDown } from '@element-plus/icons-vue'
+import { storeToRefs } from 'pinia'
 import menuGroups from '@/data/admin-menu.json'
 import { useLayoutStore } from '@/stores/layout'
 
@@ -97,20 +95,34 @@ const props = defineProps({
 
 const route = useRoute()
 const layoutStore = useLayoutStore()
+const { menuSpread } = storeToRefs(layoutStore)
 const activeMenu = computed(() => route.path)
 const collapsed = computed(() => props.collapsed)
 const openGroups = ref(new Set())
 
+function findActiveGroupIndex() {
+  return menuGroups.findIndex((group) =>
+    group.items?.some((item) => item.index === route.path),
+  )
+}
+
+function openAllGroups() {
+  openGroups.value = new Set(
+    menuGroups.map((_, index) => index).filter((index) => menuGroups[index].header),
+  )
+}
+
 function initOpenGroups() {
+  if (menuSpread.value) {
+    openAllGroups()
+    return
+  }
+
   const next = new Set()
-  menuGroups.forEach((group, index) => {
-    if (!group.header) return
-    const hasActive = group.items?.some((item) => item.index === route.path)
-    if (hasActive || !layoutStore.menuGroupCollapsible) {
-      next.add(index)
-    }
-  })
-  if (layoutStore.menuGroupCollapsible && next.size === 0) {
+  const activeIndex = findActiveGroupIndex()
+  if (activeIndex >= 0) {
+    next.add(activeIndex)
+  } else {
     const first = menuGroups.findIndex((g) => g.header)
     if (first >= 0) next.add(first)
   }
@@ -119,42 +131,23 @@ function initOpenGroups() {
 
 initOpenGroups()
 
-watch(
-  () => layoutStore.menuGroupCollapsible,
-  (enabled) => {
-    if (!enabled) {
-      openGroups.value = new Set(menuGroups.map((_, i) => i))
-    } else {
-      initOpenGroups()
-    }
-  },
-)
+watch(menuSpread, (enabled) => {
+  if (enabled) {
+    openAllGroups()
+  } else {
+    initOpenGroups()
+  }
+})
 
 watch(
   () => route.path,
   () => {
-    if (!layoutStore.menuGroupCollapsible) return
-    const activeIndex = menuGroups.findIndex((group) =>
-      group.items?.some((item) => item.index === route.path),
-    )
+    if (menuSpread.value) return
+    const activeIndex = findActiveGroupIndex()
     if (activeIndex < 0) return
-    if (layoutStore.menuUniqueOpened) {
-      openGroups.value = new Set([activeIndex])
-    } else {
-      const next = new Set(openGroups.value)
-      next.add(activeIndex)
-      openGroups.value = next
-    }
+    openGroups.value = new Set([activeIndex])
   },
 )
-
-function isGroupCollapsible(group) {
-  return !!(group.header && layoutStore.menuGroupHeaderVisible && layoutStore.menuGroupCollapsible)
-}
-
-function showGroupHeader(group) {
-  return !!(group.header && layoutStore.menuGroupHeaderVisible)
-}
 
 function groupAbbr(header) {
   const words = String(header || '').trim().split(/\s+/).filter(Boolean)
@@ -164,17 +157,20 @@ function groupAbbr(header) {
 }
 
 function isGroupOpen(groupIndex) {
-  return openGroups.value.has(groupIndex)
+  return menuSpread.value || openGroups.value.has(groupIndex)
+}
+
+function isGroupActive(groupIndex) {
+  return findActiveGroupIndex() === groupIndex
 }
 
 function toggleGroup(groupIndex) {
-  const next = new Set(layoutStore.menuUniqueOpened ? [] : openGroups.value)
-  if (openGroups.value.has(groupIndex) && !layoutStore.menuUniqueOpened) {
-    next.delete(groupIndex)
-  } else if (!openGroups.value.has(groupIndex)) {
-    next.add(groupIndex)
+  if (menuSpread.value) return
+  if (openGroups.value.has(groupIndex)) {
+    openGroups.value = new Set()
+    return
   }
-  openGroups.value = next
+  openGroups.value = new Set([groupIndex])
 }
 
 function resolveIcon(name) {
@@ -187,6 +183,33 @@ function resolveIcon(name) {
   border-right: none;
   width: 100%;
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.is-spread {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    box-sizing: border-box;
+
+    .menu-group {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 0;
+
+      & + & {
+        margin-top: 0;
+      }
+    }
+
+    .menu-group__toggle {
+      cursor: default;
+      padding-top: 10px;
+      padding-bottom: 4px;
+    }
+  }
 
   :deep(.el-menu-item),
   :deep(.el-sub-menu__title) {
@@ -283,11 +306,6 @@ function resolveIcon(name) {
     user-select: none;
   }
 
-  &__title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   &__toggle {
     width: 100%;
     display: flex;
@@ -303,8 +321,20 @@ function resolveIcon(name) {
     text-align: left;
     box-sizing: border-box;
 
-    &:hover:not(.is-collapsed) .menu-group__header {
+    &:hover:not(.is-collapsed):not(.is-static) .menu-group__header,
+    &:hover:not(.is-collapsed):not(.is-static) .menu-group__arrow {
       color: var(--el-color-primary);
+    }
+
+    &.is-active:not(.is-collapsed) {
+      .menu-group__header,
+      .menu-group__arrow {
+        color: var(--el-color-primary);
+      }
+
+      .menu-group__abbr {
+        color: var(--el-color-primary);
+      }
     }
 
     &.is-collapsed {
@@ -320,50 +350,57 @@ function resolveIcon(name) {
       .menu-group__arrow {
         display: none;
       }
+
+      &.is-active .menu-group__abbr {
+        color: var(--el-color-primary);
+      }
     }
   }
 
   &__header {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: var(--el-text-color-secondary);
+    font-size: var(--el-font-size-base);
+    font-weight: 400;
+    letter-spacing: normal;
+    color: var(--el-text-color-regular);
     line-height: 1.2;
     user-select: none;
     transition: color 0.15s ease;
-
-    &--static {
-      display: flex;
-      align-items: center;
-      min-height: 35px;
-      padding: 16px 20px 6px;
-      overflow: hidden;
-      white-space: nowrap;
-      box-sizing: border-box;
-
-      &.is-collapsed {
-        justify-content: center;
-        padding: 10px 0 6px;
-
-        .menu-group__abbr {
-          display: inline-block;
-        }
-
-        .menu-group__title {
-          display: none;
-        }
-      }
-    }
   }
 
   &__arrow {
     font-size: 0.75rem;
     color: var(--el-text-color-secondary);
-    transition: transform 0.2s ease;
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease;
     flex-shrink: 0;
 
     &.is-open {
       transform: rotate(180deg);
+    }
+  }
+
+  &__items {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.is-expanded {
+      grid-template-rows: 1fr;
+    }
+  }
+
+  &__items-inner {
+    overflow: hidden;
+    min-height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+      opacity 0.22s ease,
+      transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .menu-group__items.is-expanded & {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.04s;
     }
   }
 }
