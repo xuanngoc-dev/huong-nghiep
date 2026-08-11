@@ -18,11 +18,27 @@
         "index": "/admin/cau-hoi-dap-an",
         "title": "Câu hỏi đáp án",
         "icon": "Collection"
+      }
+    ]
+  },
+  {
+    "header": "Người dùng",
+    "abbr": "ND",
+    "items": [
+      {
+        "index": "/admin/nguoi-dung",
+        "title": "Danh sách người dùng",
+        "icon": "User"
       },
       {
-        "index": "/admin/trac-nghiem/lich-su-khao-sat",
-        "title": "Lịch sử khảo sát",
-        "icon": "Calendar"
+        "index": "/admin/nguoi-dung/lich-su-thanh-toan",
+        "title": "Lịch sử thanh toán",
+        "icon": "Wallet"
+      },
+      {
+        "index": "/admin/nguoi-dung/lich-su-trac-nghiem",
+        "title": "Lịch sử trắc nghiệm",
+        "icon": "Document"
       }
     ]
   },

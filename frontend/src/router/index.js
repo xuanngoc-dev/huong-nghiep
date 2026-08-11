@@ -199,6 +199,26 @@ const router = createRouter({
           component: placeholder,
           meta: { title: 'Lịch sử khảo sát', icon: 'Calendar' },
         },
+
+        // Người dùng
+        {
+          path: 'nguoi-dung',
+          name: 'admin-nguoi-dung',
+          component: placeholder,
+          meta: { title: 'Danh sách người dùng', icon: 'User' },
+        },
+        {
+          path: 'nguoi-dung/lich-su-thanh-toan',
+          name: 'admin-lich-su-thanh-toan',
+          component: placeholder,
+          meta: { title: 'Lịch sử thanh toán', icon: 'Wallet' },
+        },
+        {
+          path: 'nguoi-dung/lich-su-trac-nghiem',
+          name: 'admin-lich-su-trac-nghiem',
+          component: placeholder,
+          meta: { title: 'Lịch sử trắc nghiệm', icon: 'Document' },
+        },
       ],
     },
     {
