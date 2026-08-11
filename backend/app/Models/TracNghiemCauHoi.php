@@ -9,8 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'nganh_hoc_id',
-    'chuyen_nganh_id',
+    'nhom_nganh_id',
     'loai_cau_hoi_id',
     'noi_dung_cau_hoi',
     'ghi_chu',
@@ -30,14 +29,9 @@ class TracNghiemCauHoi extends Model
         ];
     }
 
-    public function nganhHoc(): BelongsTo
+    public function nhomNganh(): BelongsTo
     {
-        return $this->belongsTo(NganhHoc::class, 'nganh_hoc_id');
-    }
-
-    public function chuyenNganh(): BelongsTo
-    {
-        return $this->belongsTo(ChuyenNganh::class, 'chuyen_nganh_id');
+        return $this->belongsTo(NhomNganh::class, 'nhom_nganh_id');
     }
 
     public function loaiCauHoi(): BelongsTo

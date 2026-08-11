@@ -15,37 +15,18 @@
             </CustomFormItem>
           </CustomCol>
           <CustomCol>
-            <CustomFormItem label="Ngành học">
+            <CustomFormItem label="Nhóm ngành">
               <CustomSelect
-                v-model="filters.nganh_hoc_id"
+                v-model="filters.nhom_nganh_id"
                 clearable
                 filterable
                 class="filter-control"
-                placeholder="Chọn ngành học"
-                @change="onFilterNganhChange"
+                placeholder="Chọn nhóm ngành"
               >
                 <CustomOption
-                  v-for="opt in nganhHocOptions"
+                  v-for="opt in nhomNganhOptions"
                   :key="opt.id"
-                  :label="`${opt.ma_nganh} — ${opt.ten_nganh}`"
-                  :value="opt.id"
-                />
-              </CustomSelect>
-            </CustomFormItem>
-          </CustomCol>
-          <CustomCol>
-            <CustomFormItem label="Chuyên ngành">
-              <CustomSelect
-                v-model="filters.chuyen_nganh_id"
-                clearable
-                filterable
-                class="filter-control"
-                placeholder="Chọn chuyên ngành"
-              >
-                <CustomOption
-                  v-for="opt in filterChuyenNganhOptions"
-                  :key="opt.id"
-                  :label="`${opt.ma_chuyen_nganh} — ${opt.ten_chuyen_nganh}`"
+                  :label="opt.ten_nhom_nganh"
                   :value="opt.id"
                 />
               </CustomSelect>
@@ -281,18 +262,9 @@
           </template>
         </CustomTableColumn>
         <CustomTableColumn prop="noi_dung_cau_hoi" label="Nội dung câu hỏi" min-width="240" show-overflow-tooltip />
-        <CustomTableColumn label="Ngành học" min-width="160" show-overflow-tooltip>
+        <CustomTableColumn label="Nhóm ngành" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
-            {{ row.nganh_hoc ? `${row.nganh_hoc.ma_nganh} — ${row.nganh_hoc.ten_nganh}` : '—' }}
-          </template>
-        </CustomTableColumn>
-        <CustomTableColumn label="Chuyên ngành" min-width="160" show-overflow-tooltip>
-          <template #default="{ row }">
-            {{
-              row.chuyen_nganh
-                ? `${row.chuyen_nganh.ma_chuyen_nganh} — ${row.chuyen_nganh.ten_chuyen_nganh}`
-                : '—'
-            }}
+            {{ row.nhom_nganh?.ten_nhom_nganh || '—' }}
           </template>
         </CustomTableColumn>
         <CustomTableColumn label="Loại câu hỏi" min-width="140" show-overflow-tooltip>
@@ -361,43 +333,24 @@
     >
       <CustomForm ref="formRef" :model="form" :rules="rules">
         <CustomRow :gutter="16">
-          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <CustomFormItem label="Ngành học" prop="nganh_hoc_id">
+          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
+            <CustomFormItem label="Nhóm ngành" prop="nhom_nganh_id">
               <CustomSelect
-                v-model="form.nganh_hoc_id"
+                v-model="form.nhom_nganh_id"
                 filterable
-                placeholder="Chọn ngành học"
+                placeholder="Chọn nhóm ngành"
                 style="width: 100%"
-                @change="onFormNganhChange"
               >
                 <CustomOption
-                  v-for="opt in nganhHocOptions"
+                  v-for="opt in nhomNganhOptions"
                   :key="opt.id"
-                  :label="`${opt.ma_nganh} — ${opt.ten_nganh}`"
+                  :label="opt.ten_nhom_nganh"
                   :value="opt.id"
                 />
               </CustomSelect>
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <CustomFormItem label="Chuyên ngành" prop="chuyen_nganh_id">
-              <CustomSelect
-                v-model="form.chuyen_nganh_id"
-                filterable
-                placeholder="Chọn chuyên ngành"
-                style="width: 100%"
-                :disabled="!form.nganh_hoc_id"
-              >
-                <CustomOption
-                  v-for="opt in formChuyenNganhOptions"
-                  :key="opt.id"
-                  :label="`${opt.ma_chuyen_nganh} — ${opt.ten_chuyen_nganh}`"
-                  :value="opt.id"
-                />
-              </CustomSelect>
-            </CustomFormItem>
-          </CustomCol>
-          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
+          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
             <CustomFormItem label="Loại câu hỏi" prop="loai_cau_hoi_id">
               <CustomSelect
                 v-model="form.loai_cau_hoi_id"
@@ -414,7 +367,7 @@
               </CustomSelect>
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
+          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
             <CustomFormItem label="Trạng thái" prop="trang_thai">
               <CustomSelect v-model="form.trang_thai" placeholder="Chọn trạng thái" style="width: 100%">
                 <CustomOption
@@ -521,9 +474,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Edit, Lock, Plus, Search, Unlock, Check, Close } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import {
-  API_CHUYEN_NGANH,
   API_LOAI_CAU_HOI,
-  API_NGANH_HOC,
+  API_NHOM_NGANH,
   API_TRAC_NGHIEM_CAU_HOI,
   API_TRAC_NGHIEM_CAU_TRA_LOI,
 } from '@/constants/constant_api'
@@ -567,8 +519,7 @@ function createAnswerRow(partial = {}) {
 
 const tableRef = ref(null)
 const items = ref([])
-const nganhHocOptions = ref([])
-const chuyenNganhOptions = ref([])
+const nhomNganhOptions = ref([])
 const loaiCauHoiOptions = ref([])
 const selectedRows = ref([])
 const statusLoadingId = ref(null)
@@ -587,8 +538,7 @@ const formRef = ref(null)
 
 const filters = reactive({
   keyword: '',
-  nganh_hoc_id: '',
-  chuyen_nganh_id: '',
+  nhom_nganh_id: '',
   loai_cau_hoi_id: '',
   trang_thai: '',
 })
@@ -600,8 +550,7 @@ const pagination = reactive({
 })
 
 const form = reactive({
-  nganh_hoc_id: null,
-  chuyen_nganh_id: null,
+  nhom_nganh_id: null,
   loai_cau_hoi_id: null,
   noi_dung_cau_hoi: '',
   ghi_chu: '',
@@ -610,8 +559,7 @@ const form = reactive({
 })
 
 const rules = {
-  nganh_hoc_id: [{ required: true, message: 'Vui lòng chọn ngành học', trigger: 'change' }],
-  chuyen_nganh_id: [{ required: true, message: 'Vui lòng chọn chuyên ngành', trigger: 'change' }],
+  nhom_nganh_id: [{ required: true, message: 'Vui lòng chọn nhóm ngành', trigger: 'change' }],
   loai_cau_hoi_id: [{ required: true, message: 'Vui lòng chọn loại câu hỏi', trigger: 'change' }],
   noi_dung_cau_hoi: [{ required: true, message: 'Vui lòng nhập nội dung câu hỏi', trigger: 'blur' }],
   trang_thai: [{ required: true, message: 'Vui lòng chọn trạng thái', trigger: 'change' }],
@@ -657,16 +605,6 @@ const unlockableRows = computed(() =>
 )
 const lockableCount = computed(() => lockableRows.value.length)
 const unlockableCount = computed(() => unlockableRows.value.length)
-
-const filterChuyenNganhOptions = computed(() => {
-  if (!filters.nganh_hoc_id) return chuyenNganhOptions.value
-  return chuyenNganhOptions.value.filter((opt) => opt.nganh_hoc_id === filters.nganh_hoc_id)
-})
-
-const formChuyenNganhOptions = computed(() => {
-  if (!form.nganh_hoc_id) return []
-  return chuyenNganhOptions.value.filter((opt) => opt.nganh_hoc_id === form.nganh_hoc_id)
-})
 
 function trangThaiLabel(value) {
   return trangThaiOptions.find((o) => o.value === value)?.label || value
@@ -773,14 +711,6 @@ async function saveInlineAnswer(questionRow, answer) {
   cancelInlineAnswer()
 }
 
-function onFilterNganhChange() {
-  filters.chuyen_nganh_id = ''
-}
-
-function onFormNganhChange() {
-  form.chuyen_nganh_id = null
-}
-
 function clearSelection() {
   selectedRows.value = []
   tableRef.value?.clearSelection?.()
@@ -800,8 +730,7 @@ function removeAnswerRow(index) {
 }
 
 function resetForm() {
-  form.nganh_hoc_id = null
-  form.chuyen_nganh_id = null
+  form.nhom_nganh_id = null
   form.loai_cau_hoi_id = null
   form.noi_dung_cau_hoi = ''
   form.ghi_chu = ''
@@ -827,8 +756,7 @@ async function openEdit(row) {
   if (!res.ok || !res.data) return
 
   const data = res.data
-  form.nganh_hoc_id = data.nganh_hoc_id
-  form.chuyen_nganh_id = data.chuyen_nganh_id
+  form.nhom_nganh_id = data.nhom_nganh_id
   form.loai_cau_hoi_id = data.loai_cau_hoi_id
   form.noi_dung_cau_hoi = data.noi_dung_cau_hoi || ''
   form.ghi_chu = data.ghi_chu || ''
@@ -845,16 +773,10 @@ async function openEdit(row) {
 }
 
 async function fetchOptions() {
-  const [nganhRes, chuyenRes, loaiRes] = await Promise.all([
+  const [nhomRes, loaiRes] = await Promise.all([
     request({
-      url: API_NGANH_HOC.LIST,
-      params: { start: 0, limit: 500 },
-      loading: false,
-      silent: true,
-    }),
-    request({
-      url: API_CHUYEN_NGANH.LIST,
-      params: { start: 0, limit: 500 },
+      url: API_NHOM_NGANH.LIST,
+      params: { start: 0, limit: 500, trang_thai: 'dang_su_dung' },
       loading: false,
       silent: true,
     }),
@@ -866,8 +788,7 @@ async function fetchOptions() {
     }),
   ])
 
-  nganhHocOptions.value = nganhRes.ok ? (nganhRes.data ?? []) : []
-  chuyenNganhOptions.value = chuyenRes.ok ? (chuyenRes.data ?? []) : []
+  nhomNganhOptions.value = nhomRes.ok ? (nhomRes.data ?? []) : []
   loaiCauHoiOptions.value = loaiRes.ok ? (loaiRes.data ?? []) : []
 }
 
@@ -876,8 +797,7 @@ async function fetchList() {
   const params = {
     ...(q ? { q } : {}),
     ...(filters.trang_thai ? { trang_thai: filters.trang_thai } : {}),
-    ...(filters.nganh_hoc_id ? { nganh_hoc_id: filters.nganh_hoc_id } : {}),
-    ...(filters.chuyen_nganh_id ? { chuyen_nganh_id: filters.chuyen_nganh_id } : {}),
+    ...(filters.nhom_nganh_id ? { nhom_nganh_id: filters.nhom_nganh_id } : {}),
     ...(filters.loai_cau_hoi_id ? { loai_cau_hoi_id: filters.loai_cau_hoi_id } : {}),
     start: pagination.start,
     limit: pagination.limit,
@@ -927,8 +847,7 @@ async function toggleStatus(row, enabled) {
 
 function buildQuestionBody() {
   return {
-    nganh_hoc_id: form.nganh_hoc_id,
-    chuyen_nganh_id: form.chuyen_nganh_id,
+    nhom_nganh_id: form.nhom_nganh_id,
     loai_cau_hoi_id: form.loai_cau_hoi_id,
     noi_dung_cau_hoi: form.noi_dung_cau_hoi.trim(),
     ghi_chu: form.ghi_chu?.trim() || null,

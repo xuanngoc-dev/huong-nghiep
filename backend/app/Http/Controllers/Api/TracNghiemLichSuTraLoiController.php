@@ -61,8 +61,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                     ->get([
                         'id',
                         'loai_cau_hoi_id',
-                        'nganh_hoc_id',
-                        'chuyen_nganh_id',
+                        'nhom_nganh_id',
                         'noi_dung_cau_hoi',
                     ]);
 
@@ -78,8 +77,8 @@ class TracNghiemLichSuTraLoiController extends Controller
                         'nguoi_dung_id' => $userId,
                         'cau_hoi_id' => $question->id,
                         'cau_tra_loi_id' => null,
-                        'nganh_hoc_id' => $question->nganh_hoc_id,
-                        'chuyen_nganh_id' => $question->chuyen_nganh_id,
+                        'nganh_hoc_id' => null,
+                        'nhom_nganh_id' => $question->nhom_nganh_id,
                         'diem_so' => null,
                         'created_at' => $now,
                         'updated_at' => $now,
@@ -151,7 +150,7 @@ class TracNghiemLichSuTraLoiController extends Controller
     }
 
     /**
-     * Tổng hợp điểm theo nganh_hoc_id / chuyen_nganh_id của một phiên (ssid).
+     * Tổng hợp điểm theo nhom_nganh_id / nganh_hoc_id của một phiên (ssid).
      * Chỉ tính các câu đã có đáp án (diem_so không null).
      * Sau khi tổng hợp, lưu snapshot phiên vào bảng hoàn thành (nếu chưa có).
      */
@@ -231,7 +230,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                     $cauHoi = TracNghiemCauHoi::query()
                         ->whereKey($cauHoiId)
                         ->with('loaiCauHoi:id,ma_loai_cau_hoi')
-                        ->first(['id', 'nganh_hoc_id', 'chuyen_nganh_id', 'loai_cau_hoi_id']);
+                        ->first(['id', 'nhom_nganh_id', 'loai_cau_hoi_id']);
 
                     if (! $cauHoi) {
                         continue;
@@ -256,8 +255,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                         [
                             'cau_tra_loi_id' => $cauTraLoi->id,
                             'nguoi_dung_id' => $userId,
-                            'nganh_hoc_id' => $cauHoi->nganh_hoc_id,
-                            'chuyen_nganh_id' => $cauHoi->chuyen_nganh_id,
+                            'nhom_nganh_id' => $cauHoi->nhom_nganh_id,
                             'diem_so' => $cauTraLoi->diem,
                             'ma_loai_cau_hoi' => $maLoai !== '' ? $maLoai : null,
                         ],
@@ -268,7 +266,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                         'cau_hoi_id' => $record->cau_hoi_id,
                         'cau_tra_loi_id' => $record->cau_tra_loi_id,
                         'nganh_hoc_id' => $record->nganh_hoc_id,
-                        'chuyen_nganh_id' => $record->chuyen_nganh_id,
+                        'nhom_nganh_id' => $record->nhom_nganh_id,
                         'diem_so' => $record->diem_so,
                     ];
                 }
@@ -294,7 +292,7 @@ class TracNghiemLichSuTraLoiController extends Controller
      *   tong_diem: float,
      *   so_cau_da_tra_loi: int,
      *   nganh_hoc: list<array<string, mixed>>,
-     *   chuyen_nganh: list<array<string, mixed>>
+     *   nhom_nganh: list<array<string, mixed>>
      * }
      */
     private function buildTongHopPayload(string $ssid): array
@@ -305,17 +303,17 @@ class TracNghiemLichSuTraLoiController extends Controller
             ->whereNotNull('diem_so')
             ->with([
                 'nganhHoc:id,ma_nganh,ten_nganh',
-                'chuyenNganh:id,ma_chuyen_nganh,ten_chuyen_nganh,nganh_hoc_id',
+                'nhomNganh:id,ten_nhom_nganh',
             ])
             ->get([
                 'id',
                 'nganh_hoc_id',
-                'chuyen_nganh_id',
+                'nhom_nganh_id',
                 'diem_so',
             ]);
 
         $byNganh = [];
-        $byChuyenNganh = [];
+        $byNhomNganh = [];
         $tongDiem = 0.0;
 
         foreach ($records as $record) {
@@ -337,24 +335,18 @@ class TracNghiemLichSuTraLoiController extends Controller
                 $byNganh[$nganhId]['so_cau']++;
             }
 
-            $chuyenId = $record->chuyen_nganh_id ? (int) $record->chuyen_nganh_id : null;
-            if ($chuyenId) {
-                if (! isset($byChuyenNganh[$chuyenId])) {
-                    $byChuyenNganh[$chuyenId] = [
-                        'chuyen_nganh_id' => $chuyenId,
-                        'nganh_hoc_id' => $record->chuyenNganh?->nganh_hoc_id
-                            ? (int) $record->chuyenNganh->nganh_hoc_id
-                            : $nganhId,
-                        'ma_chuyen_nganh' => $record->chuyenNganh?->ma_chuyen_nganh,
-                        'ten_chuyen_nganh' => $record->chuyenNganh?->ten_chuyen_nganh,
-                        'ma_nganh' => $record->nganhHoc?->ma_nganh,
-                        'ten_nganh' => $record->nganhHoc?->ten_nganh,
+            $nhomId = $record->nhom_nganh_id ? (int) $record->nhom_nganh_id : null;
+            if ($nhomId) {
+                if (! isset($byNhomNganh[$nhomId])) {
+                    $byNhomNganh[$nhomId] = [
+                        'nhom_nganh_id' => $nhomId,
+                        'ten_nhom_nganh' => $record->nhomNganh?->ten_nhom_nganh,
                         'tong_diem' => 0.0,
                         'so_cau' => 0,
                     ];
                 }
-                $byChuyenNganh[$chuyenId]['tong_diem'] += $diem;
-                $byChuyenNganh[$chuyenId]['so_cau']++;
+                $byNhomNganh[$nhomId]['tong_diem'] += $diem;
+                $byNhomNganh[$nhomId]['so_cau']++;
             }
         }
 
@@ -370,15 +362,15 @@ class TracNghiemLichSuTraLoiController extends Controller
         $nganhHoc = array_values($byNganh);
         usort($nganhHoc, $sortByScore);
 
-        $chuyenNganh = array_values($byChuyenNganh);
-        usort($chuyenNganh, $sortByScore);
+        $nhomNganh = array_values($byNhomNganh);
+        usort($nhomNganh, $sortByScore);
 
         foreach ($nganhHoc as &$item) {
             $item['tong_diem'] = round((float) $item['tong_diem'], 2);
         }
         unset($item);
 
-        foreach ($chuyenNganh as &$item) {
+        foreach ($nhomNganh as &$item) {
             $item['tong_diem'] = round((float) $item['tong_diem'], 2);
         }
         unset($item);
@@ -387,7 +379,7 @@ class TracNghiemLichSuTraLoiController extends Controller
             'tong_diem' => round($tongDiem, 2),
             'so_cau_da_tra_loi' => $records->count(),
             'nganh_hoc' => $nganhHoc,
-            'chuyen_nganh' => $chuyenNganh,
+            'nhom_nganh' => $nhomNganh,
         ];
     }
 
@@ -420,8 +412,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                 'cauHoi' => fn ($q) => $q->select([
                     'id',
                     'loai_cau_hoi_id',
-                    'nganh_hoc_id',
-                    'chuyen_nganh_id',
+                    'nhom_nganh_id',
                     'noi_dung_cau_hoi',
                 ]),
                 'cauHoi.cauTraLois' => fn ($q) => $q
@@ -489,8 +480,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                 $byLoai[$ma]['questions'][] = [
                     'id' => $cauHoi->id,
                     'loai_cau_hoi_id' => $cauHoi->loai_cau_hoi_id,
-                    'nganh_hoc_id' => $cauHoi->nganh_hoc_id,
-                    'chuyen_nganh_id' => $cauHoi->chuyen_nganh_id,
+                    'nhom_nganh_id' => $cauHoi->nhom_nganh_id,
                     'noi_dung_cau_hoi' => $cauHoi->noi_dung_cau_hoi,
                     'cau_tra_lois' => $cauHoi->cauTraLois
                         ->map(fn ($answer) => [
@@ -514,7 +504,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                 'cau_tra_loi_id' => $record->cau_tra_loi_id,
                 'diem_so' => $record->diem_so,
                 'nganh_hoc_id' => $record->nganh_hoc_id,
-                'chuyen_nganh_id' => $record->chuyen_nganh_id,
+                'nhom_nganh_id' => $record->nhom_nganh_id,
             ];
             $byLoai[$ma]['answered_count'] = count($byLoai[$ma]['answers']);
             $totalAnswered++;
@@ -545,13 +535,13 @@ class TracNghiemLichSuTraLoiController extends Controller
     }
 
     /**
-     * Lưu snapshot tổng hợp ngành / chuyên ngành khi phiên chuyển sang bước hoàn thành.
+     * Lưu snapshot tổng hợp nhóm ngành / ngành học khi phiên chuyển sang bước hoàn thành.
      *
      * @param  array{
      *   tong_diem: float,
      *   so_cau_da_tra_loi: int,
      *   nganh_hoc: list<array<string, mixed>>,
-     *   chuyen_nganh: list<array<string, mixed>>
+     *   nhom_nganh: list<array<string, mixed>>
      * }  $summary
      */
     private function persistCompletedSession(string $ssid, array $summary): TracNghiemPhienDaHoanThanh
@@ -565,7 +555,7 @@ class TracNghiemLichSuTraLoiController extends Controller
             ['ssid' => $ssid],
             [
                 'nganh_hoc' => $summary['nganh_hoc'] ?? [],
-                'chuyen_nganh' => $summary['chuyen_nganh'] ?? [],
+                'nhom_nganh' => $summary['nhom_nganh'] ?? [],
                 'nguoi_khao_sat_id' => $nguoiKhaoSatId,
             ],
         );

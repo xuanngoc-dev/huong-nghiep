@@ -1,7 +1,7 @@
 <template>
   <div class="quiz-fields-ket-qua">
     <p class="quiz-fields-ket-qua__note">
-      Gợi ý: đây là 5 nhóm ngành và chuyên ngành phù hợp nhất với bạn.
+      Gợi ý: đây là 5 nhóm ngành và ngành học phù hợp nhất với bạn.
     </p>
 
     <div class="quiz-fields-ket-qua__meta muted">
@@ -11,12 +11,12 @@
     </div>
 
     <QuizFieldsRadarChart
+      :nhom-list="nhomList"
       :nganh-list="nganhList"
-      :chuyen-list="chuyenList"
     />
 
     <section
-      v-if="topNganh || topChuyen"
+      v-if="topNhom || topNganh"
       class="quiz-fields-ket-qua__highlight"
       aria-labelledby="quiz-fields-highlight-title"
     >
@@ -24,8 +24,23 @@
         Nhóm ngành phù hợp nhất với bạn
       </h2>
 
-      <div v-if="topNganh" class="quiz-fields-ket-qua__highlight-block">
+      <div v-if="topNhom" class="quiz-fields-ket-qua__highlight-block">
         <p class="quiz-fields-ket-qua__highlight-label">Nhóm ngành</p>
+        <p class="quiz-fields-ket-qua__highlight-name">
+          {{ topNhom.ten_nhom_nganh || `Nhóm ngành #${topNhom.nhom_nganh_id}` }}
+        </p>
+        <p class="quiz-fields-ket-qua__highlight-score muted">
+          Tổng điểm: {{ formatScore(topNhom.tong_diem) }}
+          · {{ topNhom.so_cau ?? 0 }} câu liên quan
+        </p>
+        <p class="quiz-fields-ket-qua__highlight-desc">
+          Đây là nhóm ngành bạn đạt điểm cao nhất trong phiên khảo sát.
+          Kết quả cho thấy định hướng học tập và nghề nghiệp của bạn đang nghiêng về lĩnh vực này.
+        </p>
+      </div>
+
+      <div v-if="topNganh" class="quiz-fields-ket-qua__highlight-block">
+        <p class="quiz-fields-ket-qua__highlight-label">Ngành học nổi bật</p>
         <p class="quiz-fields-ket-qua__highlight-name">
           {{ topNganh.ten_nganh || `Ngành #${topNganh.nganh_hoc_id}` }}
           <span v-if="topNganh.ma_nganh" class="quiz-fields-ket-qua__highlight-code">
@@ -35,31 +50,13 @@
         <p class="quiz-fields-ket-qua__highlight-score muted">
           Tổng điểm: {{ formatScore(topNganh.tong_diem) }}
           · {{ topNganh.so_cau ?? 0 }} câu liên quan
-        </p>
-        <p class="quiz-fields-ket-qua__highlight-desc">
-          Đây là nhóm ngành bạn đạt điểm cao nhất trong phiên khảo sát.
-          Kết quả cho thấy định hướng học tập và nghề nghiệp của bạn đang nghiêng về lĩnh vực này.
-        </p>
-      </div>
-
-      <div v-if="topChuyen" class="quiz-fields-ket-qua__highlight-block">
-        <p class="quiz-fields-ket-qua__highlight-label">Chuyên ngành nổi bật</p>
-        <p class="quiz-fields-ket-qua__highlight-name">
-          {{ topChuyen.ten_chuyen_nganh || `Chuyên ngành #${topChuyen.chuyen_nganh_id}` }}
-          <span v-if="topChuyen.ma_chuyen_nganh" class="quiz-fields-ket-qua__highlight-code">
-            ({{ topChuyen.ma_chuyen_nganh }})
-          </span>
-        </p>
-        <p class="quiz-fields-ket-qua__highlight-score muted">
-          Tổng điểm: {{ formatScore(topChuyen.tong_diem) }}
-          · {{ topChuyen.so_cau ?? 0 }} câu liên quan
-          <template v-if="topChuyen.ten_nganh">
-            · thuộc nhóm {{ topChuyen.ten_nganh }}
+          <template v-if="topNhom?.ten_nhom_nganh">
+            · thuộc nhóm {{ topNhom.ten_nhom_nganh }}
           </template>
         </p>
         <p class="quiz-fields-ket-qua__highlight-desc">
-          Đây là chuyên ngành cụ thể phù hợp nhất với câu trả lời của bạn.
-          Bạn có thể ưu tiên tìm hiểu chương trình đào tạo và cơ hội nghề nghiệp gắn với chuyên ngành này.
+          Đây là ngành học cụ thể phù hợp nhất với câu trả lời của bạn.
+          Bạn có thể ưu tiên tìm hiểu chương trình đào tạo và cơ hội nghề nghiệp gắn với ngành này.
         </p>
       </div>
     </section>
@@ -86,9 +83,9 @@
       </p>
 
       <ul class="quiz-fields-ket-qua__next-list">
-        <li>Xem danh sách các trường đại học đào tạo chuyên ngành.</li>
+        <li>Xem danh sách các trường đại học đào tạo ngành học.</li>
         <li>
-          So sánh chỉ tiêu tuyển sinh năm gần nhất, Phương thức xét tuyển và điểm chuẩn đầu vào các chuyên ngành.
+          So sánh chỉ tiêu tuyển sinh năm gần nhất, phương thức xét tuyển và điểm chuẩn đầu vào các ngành.
         </li>
       </ul>
 
@@ -127,24 +124,19 @@ const props = defineProps({
 
 const emit = defineEmits(['prev', 'next'])
 
+const nhomList = computed(() => {
+  const list = Array.isArray(props.summary?.nhom_nganh) ? props.summary.nhom_nganh : []
+  return list.slice(0, TOP_LIMIT)
+})
+
 const nganhList = computed(() => {
   const list = Array.isArray(props.summary?.nganh_hoc) ? props.summary.nganh_hoc : []
   return list.slice(0, TOP_LIMIT)
 })
 
-const chuyenList = computed(() => {
-  const list = Array.isArray(props.summary?.chuyen_nganh) ? props.summary.chuyen_nganh : []
-  return list.slice(0, TOP_LIMIT)
-})
-
+const topNhom = computed(() => nhomList.value[0] || null)
 const topNganh = computed(() => nganhList.value[0] || null)
-const topChuyen = computed(() => chuyenList.value[0] || null)
-const topGroupLabel = computed(() => {
-  const name = topNganh.value?.ten_nganh?.trim()
-  if (!name) return ''
-  const code = topNganh.value?.ma_nganh?.trim()
-  return code ? `${name} (${code})` : name
-})
+const topGroupLabel = computed(() => topNhom.value?.ten_nhom_nganh?.trim() || '')
 
 function formatScore(value) {
   const n = Number(value)

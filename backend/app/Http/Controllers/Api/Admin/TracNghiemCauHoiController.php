@@ -18,14 +18,12 @@ class TracNghiemCauHoiController extends Controller
         return $this->tryApi(function () use ($request) {
             $keyword = trim((string) $request->query('q', ''));
             $trangThai = trim((string) $request->query('trang_thai', ''));
-            $nganhHocId = $request->query('nganh_hoc_id');
-            $chuyenNganhId = $request->query('chuyen_nganh_id');
+            $nhomNganhId = $request->query('nhom_nganh_id');
             $loaiCauHoiId = $request->query('loai_cau_hoi_id');
 
             $query = TracNghiemCauHoi::query()
                 ->with([
-                    'nganhHoc:id,ma_nganh,ten_nganh',
-                    'chuyenNganh:id,ma_chuyen_nganh,ten_chuyen_nganh',
+                    'nhomNganh:id,ten_nhom_nganh',
                     'loaiCauHoi:id,ma_loai_cau_hoi,ten_loai_cau_hoi',
                 ])
                 ->withCount('cauTraLois')
@@ -40,12 +38,8 @@ class TracNghiemCauHoiController extends Controller
                     fn ($query) => $query->where('trang_thai', $trangThai),
                 )
                 ->when(
-                    filled($nganhHocId) && is_numeric($nganhHocId),
-                    fn ($query) => $query->where('nganh_hoc_id', (int) $nganhHocId),
-                )
-                ->when(
-                    filled($chuyenNganhId) && is_numeric($chuyenNganhId),
-                    fn ($query) => $query->where('chuyen_nganh_id', (int) $chuyenNganhId),
+                    filled($nhomNganhId) && is_numeric($nhomNganhId),
+                    fn ($query) => $query->where('nhom_nganh_id', (int) $nhomNganhId),
                 )
                 ->when(
                     filled($loaiCauHoiId) && is_numeric($loaiCauHoiId),
@@ -67,8 +61,7 @@ class TracNghiemCauHoiController extends Controller
     {
         return $this->tryApi(function () use ($tracNghiemCauHoi) {
             $tracNghiemCauHoi->load([
-                'nganhHoc:id,ma_nganh,ten_nganh',
-                'chuyenNganh:id,ma_chuyen_nganh,ten_chuyen_nganh',
+                'nhomNganh:id,ten_nhom_nganh',
                 'loaiCauHoi:id,ma_loai_cau_hoi,ten_loai_cau_hoi',
                 'cauTraLois' => fn ($q) => $q->orderBy('id'),
             ]);
@@ -81,8 +74,7 @@ class TracNghiemCauHoiController extends Controller
     {
         return $this->tryApi(function () use ($request) {
             $validated = $request->validate([
-                'nganh_hoc_id' => ['required', 'integer', 'exists:danh_muc_nganh_hoc,id'],
-                'chuyen_nganh_id' => ['required', 'integer', 'exists:danh_muc_chuyen_nganh,id'],
+                'nhom_nganh_id' => ['required', 'integer', 'exists:danh_muc_nhom_nganh,id'],
                 'loai_cau_hoi_id' => ['required', 'integer', 'exists:danh_muc_loai_cau_hoi,id'],
                 'noi_dung_cau_hoi' => ['required', 'string'],
                 'ghi_chu' => ['nullable', 'string'],
@@ -91,8 +83,7 @@ class TracNghiemCauHoiController extends Controller
 
             $item = TracNghiemCauHoi::create($validated);
             $item->load([
-                'nganhHoc:id,ma_nganh,ten_nganh',
-                'chuyenNganh:id,ma_chuyen_nganh,ten_chuyen_nganh',
+                'nhomNganh:id,ten_nhom_nganh',
                 'loaiCauHoi:id,ma_loai_cau_hoi,ten_loai_cau_hoi',
             ]);
 
@@ -104,8 +95,7 @@ class TracNghiemCauHoiController extends Controller
     {
         return $this->tryApi(function () use ($request, $tracNghiemCauHoi) {
             $validated = $request->validate([
-                'nganh_hoc_id' => ['sometimes', 'integer', 'exists:danh_muc_nganh_hoc,id'],
-                'chuyen_nganh_id' => ['sometimes', 'integer', 'exists:danh_muc_chuyen_nganh,id'],
+                'nhom_nganh_id' => ['sometimes', 'integer', 'exists:danh_muc_nhom_nganh,id'],
                 'loai_cau_hoi_id' => ['sometimes', 'integer', 'exists:danh_muc_loai_cau_hoi,id'],
                 'noi_dung_cau_hoi' => ['sometimes', 'string'],
                 'ghi_chu' => ['nullable', 'string'],
@@ -116,8 +106,7 @@ class TracNghiemCauHoiController extends Controller
 
             return ApiResponse::success(
                 $tracNghiemCauHoi->fresh([
-                    'nganhHoc:id,ma_nganh,ten_nganh',
-                    'chuyenNganh:id,ma_chuyen_nganh,ten_chuyen_nganh',
+                    'nhomNganh:id,ten_nhom_nganh',
                     'loaiCauHoi:id,ma_loai_cau_hoi,ten_loai_cau_hoi',
                     'cauTraLois',
                 ]),

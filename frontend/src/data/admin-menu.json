@@ -77,6 +77,11 @@
         "icon": "Medal"
       },
       {
+        "index": "/admin/danh-muc/loai-cau-hoi",
+        "title": "Loại câu hỏi",
+        "icon": "Document"
+      },
+      {
         "index": "/admin/danh-muc/nhom-nganh",
         "title": "Nhóm ngành",
         "icon": "Collection"
@@ -90,11 +95,6 @@
         "index": "/admin/danh-muc/chuyen-nganh",
         "title": "Chuyên ngành",
         "icon": "Reading"
-      },
-      {
-        "index": "/admin/danh-muc/loai-cau-hoi",
-        "title": "Loại câu hỏi",
-        "icon": "Document"
       },
       {
         "index": "/admin/danh-muc/mon-hoc",

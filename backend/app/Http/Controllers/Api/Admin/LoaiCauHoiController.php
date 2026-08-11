@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Enums\TrangThaiLoaiCauHoi;
 use App\Http\Controllers\Controller;
 use App\Models\LoaiCauHoi;
+use App\Models\TracNghiemCauHoi;
 use App\Support\ApiResponse;
 use App\Support\OffsetPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LoaiCauHoiController extends Controller
 {
@@ -20,6 +22,7 @@ class LoaiCauHoiController extends Controller
             $trangThai = trim((string) $request->query('trang_thai', ''));
 
             $query = LoaiCauHoi::query()
+                ->withCount(['cauHois as so_luong_cau_hoi'])
                 ->when($keyword !== '', function ($query) use ($keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('ten_loai_cau_hoi', 'like', "%{$keyword}%")
@@ -46,6 +49,8 @@ class LoaiCauHoiController extends Controller
     public function show(LoaiCauHoi $loaiCauHoi): JsonResponse
     {
         return $this->tryApi(function () use ($loaiCauHoi) {
+            $loaiCauHoi->loadCount(['cauHois as so_luong_cau_hoi']);
+
             return ApiResponse::success($loaiCauHoi, 'Lấy chi tiết loại câu hỏi thành công.');
         });
     }
@@ -62,6 +67,7 @@ class LoaiCauHoiController extends Controller
             ]);
 
             $item = LoaiCauHoi::create($validated);
+            $item->loadCount(['cauHois as so_luong_cau_hoi']);
 
             return ApiResponse::success($item, 'Tạo loại câu hỏi thành công.');
         });
@@ -84,14 +90,18 @@ class LoaiCauHoiController extends Controller
             ]);
 
             $loaiCauHoi->update($validated);
+            $loaiCauHoi = $loaiCauHoi->fresh();
+            $loaiCauHoi->loadCount(['cauHois as so_luong_cau_hoi']);
 
-            return ApiResponse::success($loaiCauHoi->fresh(), 'Cập nhật loại câu hỏi thành công.');
+            return ApiResponse::success($loaiCauHoi, 'Cập nhật loại câu hỏi thành công.');
         });
     }
 
     public function destroy(LoaiCauHoi $loaiCauHoi): JsonResponse
     {
         return $this->tryApi(function () use ($loaiCauHoi) {
+            $this->assertLoaiCauHoiDeletable([(int) $loaiCauHoi->id]);
+
             $loaiCauHoi->delete();
 
             return ApiResponse::success(null, 'Đã xóa loại câu hỏi.');
@@ -106,13 +116,63 @@ class LoaiCauHoiController extends Controller
                 'ids.*' => ['integer', 'distinct', 'exists:danh_muc_loai_cau_hoi,id'],
             ]);
 
-            $count = LoaiCauHoi::query()->whereIn('id', $validated['ids'])->delete();
+            $ids = array_values(array_map('intval', $validated['ids']));
+            $this->assertLoaiCauHoiDeletable($ids);
+
+            $count = LoaiCauHoi::query()->whereIn('id', $ids)->delete();
 
             return ApiResponse::success(
                 ['deleted' => $count],
                 "Đã xóa {$count} loại câu hỏi.",
             );
         });
+    }
+
+    /**
+     * Chặn xóa khi loại câu hỏi vẫn còn câu hỏi liên kết.
+     *
+     * @param  list<int>  $loaiCauHoiIds
+     */
+    private function assertLoaiCauHoiDeletable(array $loaiCauHoiIds): void
+    {
+        $loaiCauHoiIds = array_values(array_unique(array_filter(
+            array_map('intval', $loaiCauHoiIds),
+            fn (int $id) => $id > 0,
+        )));
+
+        if ($loaiCauHoiIds === []) {
+            return;
+        }
+
+        $linkedIds = TracNghiemCauHoi::query()
+            ->whereIn('loai_cau_hoi_id', $loaiCauHoiIds)
+            ->distinct()
+            ->pluck('loai_cau_hoi_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($linkedIds === []) {
+            return;
+        }
+
+        $blocked = LoaiCauHoi::query()
+            ->whereIn('id', $linkedIds)
+            ->orderBy('ten_loai_cau_hoi')
+            ->get(['id', 'ten_loai_cau_hoi']);
+
+        if ($blocked->count() === 1) {
+            $ten = $blocked->first()->ten_loai_cau_hoi;
+
+            throw ValidationException::withMessages([
+                'ids' => ["Không thể xóa loại câu hỏi «{$ten}» vì vẫn còn câu hỏi thuộc loại này."],
+            ]);
+        }
+
+        $tenList = $blocked->pluck('ten_loai_cau_hoi')->implode(', ');
+
+        throw ValidationException::withMessages([
+            'ids' => ["Không thể xóa các loại câu hỏi sau vì vẫn còn câu hỏi liên kết: {$tenList}."],
+        ]);
     }
 
     public function bulkUpdateStatus(Request $request): JsonResponse

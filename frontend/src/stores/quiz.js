@@ -334,8 +334,7 @@ export const useQuizStore = defineStore('quiz', () => {
         cau_tra_loi_id: answer?.id ?? null,
         noi_dung_cau_tra_loi: answer?.noi_dung_cau_tra_loi ?? null,
         diem: answer?.diem ?? null,
-        nganh_hoc_id: q.nganh_hoc_id ?? null,
-        chuyen_nganh_id: q.chuyen_nganh_id ?? null,
+        nhom_nganh_id: q.nhom_nganh_id ?? null,
       }
     })
 

@@ -3,7 +3,7 @@
     <div class="quiz-radar__head">
       <h2 class="quiz-radar__title">Biểu đồ điểm phù hợp</h2>
       <p class="quiz-radar__lead muted">
-        So sánh top ngành học và chuyên ngành theo tổng điểm khảo sát.
+        So sánh top nhóm ngành và ngành học theo tổng điểm khảo sát.
       </p>
     </div>
 
@@ -23,6 +23,27 @@
         <section class="quiz-radar__key-block">
           <h3 class="quiz-radar__key-title quiz-radar__key-title--nganh">
             <span class="quiz-radar__key-dot" aria-hidden="true" />
+            Nhóm ngành
+          </h3>
+          <ol class="quiz-radar__key-list">
+            <li
+              v-for="(item, index) in nhomKeyItems"
+              :key="`nhom-key-${item.id}`"
+              class="quiz-radar__key-item"
+            >
+              <span class="quiz-radar__key-rank">Top {{ index + 1 }}</span>
+              <span class="quiz-radar__key-name">{{ item.name }}</span>
+              <span class="quiz-radar__key-score">{{ formatScore(item.score) }} điểm</span>
+            </li>
+            <li v-if="!nhomKeyItems.length" class="quiz-radar__key-empty muted">
+              Chưa có nhóm ngành
+            </li>
+          </ol>
+        </section>
+
+        <section class="quiz-radar__key-block">
+          <h3 class="quiz-radar__key-title quiz-radar__key-title--chuyen">
+            <span class="quiz-radar__key-dot" aria-hidden="true" />
             Ngành học
           </h3>
           <ol class="quiz-radar__key-list">
@@ -40,27 +61,6 @@
             </li>
           </ol>
         </section>
-
-        <section class="quiz-radar__key-block">
-          <h3 class="quiz-radar__key-title quiz-radar__key-title--chuyen">
-            <span class="quiz-radar__key-dot" aria-hidden="true" />
-            Chuyên ngành
-          </h3>
-          <ol class="quiz-radar__key-list">
-            <li
-              v-for="(item, index) in chuyenKeyItems"
-              :key="`chuyen-key-${item.id}`"
-              class="quiz-radar__key-item"
-            >
-              <span class="quiz-radar__key-rank">Top {{ index + 1 }}</span>
-              <span class="quiz-radar__key-name">{{ item.name }}</span>
-              <span class="quiz-radar__key-score">{{ formatScore(item.score) }} điểm</span>
-            </li>
-            <li v-if="!chuyenKeyItems.length" class="quiz-radar__key-empty muted">
-              Chưa có chuyên ngành
-            </li>
-          </ol>
-        </section>
       </div>
     </div>
   </div>
@@ -71,11 +71,11 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 
 const props = defineProps({
-  nganhList: {
+  nhomList: {
     type: Array,
     default: () => [],
   },
-  chuyenList: {
+  nganhList: {
     type: Array,
     default: () => [],
   },
@@ -97,23 +97,23 @@ onUnmounted(() => {
 })
 
 const axisCount = computed(() =>
-  Math.max(props.nganhList.length, props.chuyenList.length, 0),
+  Math.max(props.nhomList.length, props.nganhList.length, 0),
 )
 
 const hasData = computed(() => axisCount.value > 0)
+
+const nhomKeyItems = computed(() =>
+  props.nhomList.map((item) => ({
+    id: item.nhom_nganh_id,
+    name: item.ten_nhom_nganh || `Nhóm ngành #${item.nhom_nganh_id}`,
+    score: Number(item.tong_diem) || 0,
+  })),
+)
 
 const nganhKeyItems = computed(() =>
   props.nganhList.map((item) => ({
     id: item.nganh_hoc_id,
     name: item.ten_nganh || `Ngành #${item.nganh_hoc_id}`,
-    score: Number(item.tong_diem) || 0,
-  })),
-)
-
-const chuyenKeyItems = computed(() =>
-  props.chuyenList.map((item) => ({
-    id: item.chuyen_nganh_id,
-    name: item.ten_chuyen_nganh || `Chuyên ngành #${item.chuyen_nganh_id}`,
     score: Number(item.tong_diem) || 0,
   })),
 )
@@ -149,19 +149,19 @@ function padScores(list, length) {
 
 const chartSeries = computed(() => [
   {
-    name: 'Ngành học',
-    data: padScores(props.nganhList, axisCount.value),
+    name: 'Nhóm ngành',
+    data: padScores(props.nhomList, axisCount.value),
   },
   {
-    name: 'Chuyên ngành',
-    data: padScores(props.chuyenList, axisCount.value),
+    name: 'Ngành học',
+    data: padScores(props.nganhList, axisCount.value),
   },
 ])
 
 const maxScore = computed(() => {
   const values = [
+    ...padScores(props.nhomList, axisCount.value),
     ...padScores(props.nganhList, axisCount.value),
-    ...padScores(props.chuyenList, axisCount.value),
   ]
   const peak = Math.max(0, ...values)
   if (peak <= 0) return 10
@@ -169,22 +169,22 @@ const maxScore = computed(() => {
 })
 
 const chartOptions = computed(() => {
+  const nhom = props.nhomList
   const nganh = props.nganhList
-  const chuyen = props.chuyenList
   const count = axisCount.value
   const compact = isCompact.value
   const desktop = isDesktop.value
+
+  const nhomLabel = (index) => {
+    const item = nhom[index]
+    if (!item) return '—'
+    return item.ten_nhom_nganh || `Nhóm ngành #${item.nhom_nganh_id}`
+  }
 
   const nganhLabel = (index) => {
     const item = nganh[index]
     if (!item) return '—'
     return item.ten_nganh || `Ngành #${item.nganh_hoc_id}`
-  }
-
-  const chuyenLabel = (index) => {
-    const item = chuyen[index]
-    if (!item) return '—'
-    return item.ten_chuyen_nganh || `Chuyên ngành #${item.chuyen_nganh_id}`
   }
 
   const escapeHtml = (value) =>
@@ -270,11 +270,11 @@ const chartOptions = computed(() => {
       intersect: false,
       custom({ series, dataPointIndex, w }) {
         const rank = dataPointIndex + 1
+        const nhomName = escapeHtml(nhomLabel(dataPointIndex))
         const nganhName = escapeHtml(nganhLabel(dataPointIndex))
-        const chuyenName = escapeHtml(chuyenLabel(dataPointIndex))
-        const nganhScore = series?.[0]?.[dataPointIndex] ?? 0
-        const chuyenScore = series?.[1]?.[dataPointIndex] ?? 0
-        const seriesNames = w?.globals?.seriesNames || ['Ngành học', 'Chuyên ngành']
+        const nhomScore = series?.[0]?.[dataPointIndex] ?? 0
+        const nganhScore = series?.[1]?.[dataPointIndex] ?? 0
+        const seriesNames = w?.globals?.seriesNames || ['Nhóm ngành', 'Ngành học']
 
         return `
           <div class="quiz-radar__tooltip">
@@ -283,16 +283,16 @@ const chartOptions = computed(() => {
               <span class="quiz-radar__tooltip-dot" style="background:#1f7a4c"></span>
               <div>
                 <strong>${escapeHtml(seriesNames[0])}</strong>
-                <div>${nganhName}</div>
-                <div>Điểm: ${nganhScore}</div>
+                <div>${nhomName}</div>
+                <div>Điểm: ${nhomScore}</div>
               </div>
             </div>
             <div class="quiz-radar__tooltip-row">
               <span class="quiz-radar__tooltip-dot" style="background:#e67e22"></span>
               <div>
                 <strong>${escapeHtml(seriesNames[1])}</strong>
-                <div>${chuyenName}</div>
-                <div>Điểm: ${chuyenScore}</div>
+                <div>${nganhName}</div>
+                <div>Điểm: ${nganhScore}</div>
               </div>
             </div>
           </div>

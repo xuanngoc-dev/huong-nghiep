@@ -127,7 +127,7 @@
         </CustomTableColumn>
         <CustomTableColumn prop="ten_nhom_nganh" label="Tên nhóm ngành" min-width="200" />
         <CustomTableColumn prop="mo_ta" label="Mô tả" min-width="220" show-overflow-tooltip />
-        <CustomTableColumn label="Số lượng ngành" width="140" align="center">
+        <CustomTableColumn label="Số lượng ngành" width="190" align="center">
           <template #default="{ row }">
             <CustomButton
               link

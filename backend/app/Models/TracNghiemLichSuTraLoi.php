@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'cau_tra_loi_id',
     'nguoi_dung_id',
     'nganh_hoc_id',
-    'chuyen_nganh_id',
+    'nhom_nganh_id',
     'diem_so',
     'ssid',
     'ma_loai_cau_hoi',
@@ -50,8 +50,8 @@ class TracNghiemLichSuTraLoi extends Model
         return $this->belongsTo(NganhHoc::class, 'nganh_hoc_id');
     }
 
-    public function chuyenNganh(): BelongsTo
+    public function nhomNganh(): BelongsTo
     {
-        return $this->belongsTo(ChuyenNganh::class, 'chuyen_nganh_id');
+        return $this->belongsTo(NhomNganh::class, 'nhom_nganh_id');
     }
 }

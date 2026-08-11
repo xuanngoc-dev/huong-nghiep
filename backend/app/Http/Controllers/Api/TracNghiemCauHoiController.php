@@ -50,8 +50,7 @@ class TracNghiemCauHoiController extends Controller
                 ->get([
                     'id',
                     'loai_cau_hoi_id',
-                    'nganh_hoc_id',
-                    'chuyen_nganh_id',
+                    'nhom_nganh_id',
                     'noi_dung_cau_hoi',
                 ]);
 

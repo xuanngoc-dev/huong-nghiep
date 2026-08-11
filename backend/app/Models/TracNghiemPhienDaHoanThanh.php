@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'ssid',
     'nganh_hoc',
-    'chuyen_nganh',
+    'nhom_nganh',
     'nguoi_khao_sat_id',
 ])]
 class TracNghiemPhienDaHoanThanh extends Model
@@ -23,7 +23,7 @@ class TracNghiemPhienDaHoanThanh extends Model
     {
         return [
             'nganh_hoc' => 'array',
-            'chuyen_nganh' => 'array',
+            'nhom_nganh' => 'array',
         ];
     }
 

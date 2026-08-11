@@ -127,6 +127,11 @@
         </CustomTableColumn>
         <CustomTableColumn prop="ma_loai_cau_hoi" label="Mã loại" width="140" />
         <CustomTableColumn prop="ten_loai_cau_hoi" label="Tên loại câu hỏi" min-width="200" />
+        <CustomTableColumn label="Tổng số câu hỏi" width="150" align="center">
+          <template #default="{ row }">
+            <span class="count-value">{{ row.so_luong_cau_hoi ?? 0 }}</span>
+          </template>
+        </CustomTableColumn>
         <CustomTableColumn prop="thu_tu_uu_tien" label="Ưu tiên" width="100" align="center" />
         <CustomTableColumn prop="ghi_chu" label="Ghi chú" min-width="180" show-overflow-tooltip />
         <CustomTableColumn label="Trạng thái" width="200" align="center">
@@ -243,7 +248,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Edit, Lock, Plus, Search, Unlock } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import { API_LOAI_CAU_HOI } from '@/constants/constant_api'
@@ -452,6 +457,13 @@ async function submitForm() {
 }
 
 async function confirmRemove(row) {
+  if ((row.so_luong_cau_hoi ?? 0) > 0) {
+    ElMessage.warning(
+      `Không thể xóa loại câu hỏi «${row.ten_loai_cau_hoi}» vì vẫn còn ${row.so_luong_cau_hoi} câu hỏi thuộc loại này.`,
+    )
+    return
+  }
+
   try {
     await ElMessageBox.confirm(
       `Xóa loại câu hỏi «${row.ten_loai_cau_hoi}»? Thao tác không thể hoàn tác.`,
@@ -470,6 +482,17 @@ async function confirmRemove(row) {
 
 async function confirmBulkRemove() {
   if (!hasSelection.value) return
+
+  const blocked = selectedRows.value.filter((row) => (row.so_luong_cau_hoi ?? 0) > 0)
+  if (blocked.length) {
+    const tenList = blocked.map((row) => row.ten_loai_cau_hoi).join(', ')
+    ElMessage.warning(
+      blocked.length === 1
+        ? `Không thể xóa loại câu hỏi «${tenList}» vì vẫn còn câu hỏi thuộc loại này.`
+        : `Không thể xóa các loại câu hỏi sau vì vẫn còn câu hỏi liên kết: ${tenList}.`,
+    )
+    return
+  }
 
   try {
     await ElMessageBox.confirm(
@@ -519,3 +542,9 @@ async function confirmBulkStatus(trangThai) {
 
 onMounted(fetchList)
 </script>
+
+<style scoped>
+.count-value {
+  font-weight: 600;
+}
+</style>
