@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\LoaiCauHoiController;
+use App\Http\Controllers\Api\NguoiDungController;
 use App\Http\Controllers\Api\TracNghiemCauHoiController;
 use App\Http\Controllers\Api\TracNghiemLichSuTraLoiController;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/trac-nghiem-lich-su-tra-loi', [TracNghiemLichSuTraLoiController::class, 'store']);
     Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}/tong-hop', [TracNghiemLichSuTraLoiController::class, 'tongHop']);
     Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}', [TracNghiemLichSuTraLoiController::class, 'show']);
+
+    Route::post('/nguoi-dung', [NguoiDungController::class, 'store']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/assessments/{id}/submit', [AssessmentController::class, 'submit']);
