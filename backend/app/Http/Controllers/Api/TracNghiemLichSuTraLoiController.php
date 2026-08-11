@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\TrangThaiLoaiCauHoi;
+use App\Enums\TrangThaiNhomNganh;
 use App\Enums\TrangThaiTracNghiemCauHoi;
 use App\Http\Controllers\Controller;
 use App\Models\LoaiCauHoi;
+use App\Models\NhomNganh;
 use App\Models\TracNghiemCauHoi;
 use App\Models\TracNghiemCauTraLoi;
 use App\Models\TracNghiemLichSuTraLoi;
@@ -19,22 +21,24 @@ use Illuminate\Support\Str;
 
 class TracNghiemLichSuTraLoiController extends Controller
 {
-    private const QUESTIONS_PER_LOAI = 10;
+    /** Số câu hỏi ngẫu nhiên lấy cho mỗi nhóm ngành trong một loại. */
+    private const QUESTIONS_PER_NHOM = 2;
 
     /**
      * Bắt đầu phiên làm bài:
      * - Tạo ssid
-     * - Random đủ câu hỏi cho mọi loại đang dùng
+     * - Mỗi loại câu hỏi: chọn ngẫu nhiên QUESTIONS_PER_NHOM câu / nhóm ngành
+     *   (tổng mỗi loại = số nhóm ngành × QUESTIONS_PER_NHOM)
      * - Ghi đầy đủ vào lịch sử (chưa có đáp án)
      */
     public function start(Request $request): JsonResponse
     {
         return $this->tryApi(function () use ($request) {
             $validated = $request->validate([
-                'limit' => ['nullable', 'integer', 'min:1', 'max:50'],
+                'per_nhom' => ['nullable', 'integer', 'min:1', 'max:20'],
             ]);
 
-            $limit = (int) ($validated['limit'] ?? self::QUESTIONS_PER_LOAI);
+            $perNhom = (int) ($validated['per_nhom'] ?? self::QUESTIONS_PER_NHOM);
             $userId = $request->user('sanctum')?->id;
 
             $loaiList = LoaiCauHoi::query()
@@ -47,17 +51,29 @@ class TracNghiemLichSuTraLoiController extends Controller
                 return ApiResponse::error('Chưa có loại câu hỏi khả dụng.');
             }
 
+            $nhomIds = NhomNganh::query()
+                ->where('trang_thai', TrangThaiNhomNganh::DangSuDung)
+                ->orderBy('id')
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            if (! count($nhomIds)) {
+                return ApiResponse::error('Chưa có nhóm ngành khả dụng.');
+            }
+
+            $expectedPerLoai = count($nhomIds) * $perNhom;
             $ssid = (string) Str::uuid();
             $now = now();
             $historyRows = [];
             $missingLoai = [];
 
             foreach ($loaiList as $loai) {
-                $questions = TracNghiemCauHoi::query()
+                $pool = TracNghiemCauHoi::query()
                     ->where('loai_cau_hoi_id', $loai->id)
                     ->where('trang_thai', TrangThaiTracNghiemCauHoi::DangSuDung)
+                    ->whereIn('nhom_nganh_id', $nhomIds)
                     ->inRandomOrder()
-                    ->limit($limit)
                     ->get([
                         'id',
                         'loai_cau_hoi_id',
@@ -65,15 +81,26 @@ class TracNghiemLichSuTraLoiController extends Controller
                         'noi_dung_cau_hoi',
                     ]);
 
+                $questions = collect();
+                foreach ($nhomIds as $nhomId) {
+                    $picked = $pool
+                        ->where('nhom_nganh_id', $nhomId)
+                        ->take($perNhom)
+                        ->values();
+                    $questions = $questions->concat($picked);
+                }
+
                 if ($questions->isEmpty()) {
                     $missingLoai[] = $loai->ten_loai_cau_hoi ?: $loai->ma_loai_cau_hoi;
                     continue;
                 }
 
+                $maLoai = strtolower(trim((string) $loai->ma_loai_cau_hoi));
+
                 foreach ($questions as $question) {
                     $historyRows[] = [
                         'ssid' => $ssid,
-                        'ma_loai_cau_hoi' => strtolower(trim((string) $loai->ma_loai_cau_hoi)),
+                        'ma_loai_cau_hoi' => $maLoai,
                         'nguoi_dung_id' => $userId,
                         'cau_hoi_id' => $question->id,
                         'cau_tra_loi_id' => null,
@@ -107,7 +134,10 @@ class TracNghiemLichSuTraLoiController extends Controller
                     'ssid' => $ssid,
                     'nguoi_dung_id' => $userId,
                     'question_count' => count($historyRows),
+                    'per_nhom' => $perNhom,
+                    'nhom_nganh_count' => count($nhomIds),
                     ...$payload,
+                    'expected_per_loai' => $expectedPerLoai,
                 ],
                 'Bắt đầu phiên trắc nghiệm thành công.',
                 httpStatus: 201,
@@ -523,8 +553,17 @@ class TracNghiemLichSuTraLoiController extends Controller
             'completed_loai' => $completedLoai,
             'total_answered' => $totalAnswered,
             'total_questions' => $records->whereNotNull('cau_hoi_id')->count(),
-            'expected_per_loai' => self::QUESTIONS_PER_LOAI,
+            'expected_per_loai' => $this->expectedQuestionsPerLoai(),
         ];
+    }
+
+    private function expectedQuestionsPerLoai(): int
+    {
+        $nhomCount = NhomNganh::query()
+            ->where('trang_thai', TrangThaiNhomNganh::DangSuDung)
+            ->count();
+
+        return $nhomCount * self::QUESTIONS_PER_NHOM;
     }
 
     private function isSessionCompleted(string $ssid): bool

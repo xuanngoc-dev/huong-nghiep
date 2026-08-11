@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { request } from '@/api'
 import { API_PUBLIC } from '@/constants/constant_api'
 
-/** Số câu hỏi ngẫu nhiên lấy ra cho mỗi loại (Holland-style). */
-export const QUESTIONS_PER_LOAI = 10
+/** Số câu hỏi ngẫu nhiên lấy cho mỗi nhóm ngành trong một loại. */
+export const QUESTIONS_PER_NHOM_NGANH = 2
 
 function normalizeMa(ma) {
   return String(ma || '').trim().toLowerCase()
@@ -350,12 +350,12 @@ export const useQuizStore = defineStore('quiz', () => {
 
   /**
    * Tạo phiên lịch sử trả lời (ssid) khi ấn Bắt đầu.
-   * Backend random đủ câu hỏi mọi bước và ghi vào lịch sử.
+   * Backend chọn ngẫu nhiên QUESTIONS_PER_NHOM_NGANH câu / nhóm ngành cho mỗi loại.
    */
   async function startHistorySession() {
     const res = await request({
       url: API_PUBLIC.TRAC_NGHIEM_LICH_SU_TRA_LOI.START,
-      body: { limit: QUESTIONS_PER_LOAI },
+      body: { per_nhom: QUESTIONS_PER_NHOM_NGANH },
       loading: false,
       silent: true,
     })

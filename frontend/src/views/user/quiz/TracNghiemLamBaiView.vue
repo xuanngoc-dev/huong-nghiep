@@ -10,7 +10,7 @@
           </template>
           <template v-else>
             Chọn mức độ phù hợp nhất với bạn cho từng câu hỏi
-            ({{ questions.length }} câu ngẫu nhiên trong nhóm này).
+            ({{ questions.length }} câu — 2 câu ngẫu nhiên / nhóm ngành).
             Nhấn phím
             <kbd>1</kbd>–<kbd>5</kbd>
             để chọn nhanh,
@@ -134,6 +134,8 @@ const highlightedQuestionId = ref(null)
 const focusedQuestionIndex = ref(-1)
 const shakingQuestionId = ref(null)
 const saving = ref(false)
+/** Thứ tự đáp án đã xáo theo câu hỏi — tạo lại mỗi lần tải trang / đổi bước */
+const shuffledAnswersByQuestionId = ref({})
 const questionEls = new Map()
 let highlightTimer = null
 let shakeTimer = null
@@ -171,8 +173,31 @@ const nextButtonLabel = computed(() => {
   return 'Bước tiếp theo'
 })
 
-function answersOf(question) {
+function rawAnswersOf(question) {
   return question?.cau_tra_lois || question?.cauTraLois || []
+}
+
+function shuffleList(list) {
+  const arr = Array.isArray(list) ? [...list] : []
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
+function rebuildShuffledAnswers(questionList) {
+  const next = {}
+  for (const question of questionList || []) {
+    if (question?.id == null) continue
+    next[question.id] = shuffleList(rawAnswersOf(question))
+  }
+  shuffledAnswersByQuestionId.value = next
+}
+
+function answersOf(question) {
+  if (!question?.id) return []
+  return shuffledAnswersByQuestionId.value[question.id] || rawAnswersOf(question)
 }
 
 function setQuestionEl(questionId, el) {
@@ -446,7 +471,11 @@ watch(
 watch(
   () => [loading.value, isLoaiStep.value, questions.value.map((q) => q.id).join(',')],
   ([isLoading, isLoai, ids]) => {
-    if (isLoading || !isLoai || !ids) return
+    if (isLoading || !isLoai || !ids) {
+      shuffledAnswersByQuestionId.value = {}
+      return
+    }
+    rebuildShuffledAnswers(questions.value)
     nextTick(() => bootFocusFirstQuestion())
   },
 )
