@@ -196,7 +196,7 @@
             {{ row.tinh_thanh?.ten_tinh_thanh || '—' }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn prop="so_dien_thoai" label="Điện thoại" width="130" />
+        <CustomTableColumn prop="so_dien_thoai" label="Điện thoại" width="150" />
         <CustomTableColumn label="Trạng thái" width="200" align="center">
           <template #default="{ row }">
             <div class="status-cell">
@@ -219,9 +219,12 @@
             </div>
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Thao tác" width="100" fixed="right" align="center">
+        <CustomTableColumn label="Thao tác" width="130" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-btns">
+              <CustomTooltip content="Xem" placement="top">
+                <CustomButton link type="primary" :icon="View" @click="openView(row)" />
+              </CustomTooltip>
               <CustomTooltip content="Sửa" placement="top">
                 <CustomButton link type="primary" :icon="Edit" @click="openEdit(row)" />
               </CustomTooltip>
@@ -244,14 +247,19 @@
 
     <CustomDialog
       v-model="dialogVisible"
-      :title="isEdit ? 'Sửa trường học' : 'Thêm trường học'"
+      :title="dialogTitle"
       :width="1400"
     >
-      <CustomForm ref="formRef" :model="form" :rules="rules">
+      <CustomForm ref="formRef" :model="form" :rules="isView ? {} : rules">
         <CustomRow :gutter="16">
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Mã trường" prop="ma_truong">
-              <CustomInput v-model="form.ma_truong" placeholder="Ví dụ: BKAHN" maxlength="50" />
+              <CustomInput
+                v-model="form.ma_truong"
+                placeholder="Ví dụ: BKAHN"
+                maxlength="50"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
@@ -260,6 +268,7 @@
                 v-model="form.ten_truong"
                 placeholder="Nhập tên trường"
                 maxlength="255"
+                :disabled="isView"
                 @blur="maybeFillSlug"
               />
             </CustomFormItem>
@@ -270,6 +279,7 @@
                 v-model="form.ten_truong_tieng_anh"
                 placeholder="English name"
                 maxlength="255"
+                :disabled="isView"
               />
             </CustomFormItem>
           </CustomCol>
@@ -279,6 +289,7 @@
                 v-model="form.slug_ten_truong"
                 placeholder="Tự tạo nếu để trống"
                 maxlength="255"
+                :disabled="isView"
                 @input="slugTouched = true"
               />
             </CustomFormItem>
@@ -291,6 +302,7 @@
                 filterable
                 placeholder="Chọn loại hình"
                 style="width: 100%"
+                :disabled="isView"
               >
                 <CustomOption
                   v-for="opt in loaiTruongOptions"
@@ -309,6 +321,7 @@
                 filterable
                 placeholder="Chọn hệ đào tạo"
                 style="width: 100%"
+                :disabled="isView"
               >
                 <CustomOption
                   v-for="opt in heDaoTaoOptions"
@@ -327,6 +340,7 @@
                 filterable
                 placeholder="Chọn tỉnh thành"
                 style="width: 100%"
+                :disabled="isView"
               >
                 <CustomOption
                   v-for="opt in tinhThanhOptions"
@@ -339,7 +353,12 @@
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Năm học" prop="nam_hoc">
-              <CustomInput v-model="form.nam_hoc" placeholder="Ví dụ: 2025-2026" maxlength="20" />
+              <CustomInput
+                v-model="form.nam_hoc"
+                placeholder="Ví dụ: 2025-2026"
+                maxlength="20"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
@@ -348,12 +367,18 @@
                 v-model="form.nam_thanh_lap"
                 placeholder="Ví dụ: 1956"
                 maxlength="4"
+                :disabled="isView"
               />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Trạng thái" prop="trang_thai">
-              <CustomSelect v-model="form.trang_thai" placeholder="Chọn trạng thái" style="width: 100%">
+              <CustomSelect
+                v-model="form.trang_thai"
+                placeholder="Chọn trạng thái"
+                style="width: 100%"
+                :disabled="isView"
+              >
                 <CustomOption
                   v-for="opt in trangThaiOptions"
                   :key="opt.value"
@@ -365,62 +390,112 @@
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Thứ tự" prop="thu_tu">
-              <CustomInput v-model="form.thu_tu" placeholder="0" />
+              <CustomInput v-model="form.thu_tu" placeholder="0" :disabled="isView" />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Người đại diện" prop="nguoi_dai_dien">
-              <CustomInput v-model="form.nguoi_dai_dien" placeholder="Hiệu trưởng / đại diện" maxlength="255" />
+              <CustomInput
+                v-model="form.nguoi_dai_dien"
+                placeholder="Hiệu trưởng / đại diện"
+                maxlength="255"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Mã số thuế" prop="ma_so_thue">
-              <CustomInput v-model="form.ma_so_thue" placeholder="MST (nếu có)" maxlength="50" />
+              <CustomInput
+                v-model="form.ma_so_thue"
+                placeholder="MST (nếu có)"
+                maxlength="50"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Điện thoại" prop="so_dien_thoai">
-              <CustomInput v-model="form.so_dien_thoai" placeholder="Số điện thoại" maxlength="30" />
+              <CustomInput
+                v-model="form.so_dien_thoai"
+                placeholder="Số điện thoại"
+                maxlength="30"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Hotline" prop="hotline">
-              <CustomInput v-model="form.hotline" placeholder="Hotline tuyển sinh" maxlength="30" />
+              <CustomInput
+                v-model="form.hotline"
+                placeholder="Hotline tuyển sinh"
+                maxlength="30"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Fax" prop="fax">
-              <CustomInput v-model="form.fax" placeholder="Fax" maxlength="30" />
+              <CustomInput v-model="form.fax" placeholder="Fax" maxlength="30" :disabled="isView" />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Email" prop="email">
-              <CustomInput v-model="form.email" placeholder="email@truong.edu.vn" maxlength="255" />
+              <CustomInput
+                v-model="form.email"
+                placeholder="email@truong.edu.vn"
+                maxlength="255"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Website" prop="website">
-              <CustomInput v-model="form.website" placeholder="https://..." maxlength="255" />
+              <CustomInput
+                v-model="form.website"
+                placeholder="https://..."
+                maxlength="255"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Facebook" prop="facebook">
-              <CustomInput v-model="form.facebook" placeholder="https://facebook.com/..." maxlength="255" />
+              <CustomInput
+                v-model="form.facebook"
+                placeholder="https://facebook.com/..."
+                maxlength="255"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="YouTube" prop="youtube">
-              <CustomInput v-model="form.youtube" placeholder="https://youtube.com/..." maxlength="255" />
+              <CustomInput
+                v-model="form.youtube"
+                placeholder="https://youtube.com/..."
+                maxlength="255"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Logo (URL)" prop="logo">
-              <CustomInput v-model="form.logo" placeholder="Đường dẫn / URL logo" maxlength="255" />
+              <CustomInput
+                v-model="form.logo"
+                placeholder="Đường dẫn / URL logo"
+                maxlength="255"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="8" :lg="6" :xl="4">
             <CustomFormItem label="Địa chỉ" prop="dia_chi">
-              <CustomInput v-model="form.dia_chi" placeholder="Địa chỉ trường" maxlength="500" />
+              <CustomInput
+                v-model="form.dia_chi"
+                placeholder="Địa chỉ trường"
+                maxlength="500"
+                :disabled="isView"
+              />
             </CustomFormItem>
           </CustomCol>
           <CustomCol :span="24">
@@ -430,6 +505,7 @@
                 type="textarea"
                 :rows="4"
                 placeholder="Thông tin tuyển sinh (không bắt buộc)"
+                :disabled="isView"
               />
             </CustomFormItem>
           </CustomCol>
@@ -440,6 +516,7 @@
                 type="textarea"
                 :rows="2"
                 placeholder="Ghi chú (không bắt buộc)"
+                :disabled="isView"
               />
             </CustomFormItem>
           </CustomCol>
@@ -447,8 +524,15 @@
       </CustomForm>
 
       <template #footer>
-        <CustomButton @click="dialogVisible = false">Hủy</CustomButton>
-        <CustomButton type="primary" :loading="isRequestLoading" @click="submitForm">
+        <CustomButton @click="dialogVisible = false">
+          {{ isView ? 'Đóng' : 'Hủy' }}
+        </CustomButton>
+        <CustomButton
+          v-if="!isView"
+          type="primary"
+          :loading="isRequestLoading"
+          @click="submitForm"
+        >
           {{ isEdit ? 'Cập nhật' : 'Tạo mới' }}
         </CustomButton>
       </template>
@@ -459,7 +543,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import { Delete, Edit, Lock, Plus, Search, Unlock } from '@element-plus/icons-vue'
+import { Delete, Edit, Lock, Plus, Search, Unlock, View } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import {
   API_HE_DAO_TAO,
@@ -498,6 +582,7 @@ const tinhThanhOptions = ref([])
 const selectedRows = ref([])
 const statusLoadingId = ref(null)
 const dialogVisible = ref(false)
+const dialogMode = ref('create') // create | edit | view
 const editingId = ref(null)
 const formRef = ref(null)
 const slugTouched = ref(false)
@@ -556,7 +641,13 @@ const rules = {
   trang_thai: [{ required: true, message: 'Vui lòng chọn trạng thái', trigger: 'change' }],
 }
 
-const isEdit = computed(() => editingId.value !== null)
+const isEdit = computed(() => dialogMode.value === 'edit')
+const isView = computed(() => dialogMode.value === 'view')
+const dialogTitle = computed(() => {
+  if (isView.value) return 'Chi tiết trường học'
+  if (isEdit.value) return 'Sửa trường học'
+  return 'Thêm trường học'
+})
 const selectedCount = computed(() => selectedRows.value.length)
 const hasSelection = computed(() => selectedCount.value > 0)
 const selectedIds = computed(() => selectedRows.value.map((row) => row.id))
@@ -661,15 +752,11 @@ function resetForm() {
   form.thu_tu = '0'
   form.trang_thai = 'dang_su_dung'
   editingId.value = null
+  dialogMode.value = 'create'
   slugTouched.value = false
 }
 
-function openCreate() {
-  resetForm()
-  dialogVisible.value = true
-}
-
-function openEdit(row) {
+function fillFormFromRow(row) {
   editingId.value = row.id
   form.ma_truong = row.ma_truong || ''
   form.ten_truong = row.ten_truong || ''
@@ -696,6 +783,23 @@ function openEdit(row) {
   form.thu_tu = row.thu_tu != null ? String(row.thu_tu) : '0'
   form.trang_thai = row.trang_thai
   slugTouched.value = true
+}
+
+function openCreate() {
+  resetForm()
+  dialogMode.value = 'create'
+  dialogVisible.value = true
+}
+
+function openView(row) {
+  fillFormFromRow(row)
+  dialogMode.value = 'view'
+  dialogVisible.value = true
+}
+
+function openEdit(row) {
+  fillFormFromRow(row)
+  dialogMode.value = 'edit'
   dialogVisible.value = true
 }
 
@@ -759,6 +863,8 @@ function toNullableInt(value) {
 }
 
 async function submitForm() {
+  if (isView.value) return
+
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
 

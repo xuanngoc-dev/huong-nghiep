@@ -310,6 +310,7 @@ async function onCommand(cmd) {
 
 onMounted(() => {
   document.documentElement.classList.add('is-admin-layout')
+  layoutStore.syncAppearance()
 
   const saved = localStorage.getItem('darkMode')
   if (saved === '1') {
@@ -328,7 +329,18 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  document.documentElement.classList.remove('is-admin-layout')
+  const root = document.documentElement
+  root.classList.remove('is-admin-layout')
+  root.style.removeProperty('--admin-font')
+  root.style.removeProperty('--admin-font-size')
+  root.style.removeProperty('--admin-ui-scale')
+  root.style.removeProperty('--el-font-size-extra-small')
+  root.style.removeProperty('--el-font-size-small')
+  root.style.removeProperty('--el-font-size-base')
+  root.style.removeProperty('--el-font-size-medium')
+  root.style.removeProperty('--el-font-size-large')
+  root.style.removeProperty('--el-font-size-extra-large')
+  root.style.removeProperty('--el-font-line-height-primary')
   mediaQuery?.removeEventListener('change', syncCollapseByViewport)
   window.removeEventListener('keydown', onGlobalKeydown)
   clearHoverLeaveTimer()
@@ -427,7 +439,7 @@ onUnmounted(() => {
   gap: 10px;
   padding: 0 18px;
   font-weight: 300;
-  font-size: 18px;
+  font-size: 1.125rem;
   letter-spacing: -0.03em;
   color: var(--el-color-primary);
   border-bottom: 1px solid var(--el-border-color);
@@ -520,7 +532,7 @@ onUnmounted(() => {
   flex: 1;
   min-width: 0;
   text-align: left;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 300;
   white-space: nowrap;
   overflow: hidden;
@@ -533,7 +545,7 @@ onUnmounted(() => {
   border-radius: 4px;
   border: 1px solid var(--el-border-color);
   background: var(--el-bg-color);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.4;
   color: var(--el-text-color-placeholder);
   font-family: inherit;
@@ -552,20 +564,20 @@ onUnmounted(() => {
 }
 
 .header-datetime__weekday {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 300;
   color: var(--el-text-color-primary);
 }
 
 .header-datetime__time {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 300;
   letter-spacing: -0.01em;
   color: var(--el-color-primary);
 }
 
 .header-datetime__date {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 300;
   color: var(--el-text-color-secondary);
 }
@@ -618,7 +630,7 @@ onUnmounted(() => {
 }
 
 .page-title {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 300;
   letter-spacing: -0.025em;
 }
@@ -636,7 +648,7 @@ onUnmounted(() => {
   flex: 1;
   min-width: 0;
   max-width: 160px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 300;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -684,13 +696,18 @@ onUnmounted(() => {
 /* Admin system typography — áp dụng cả dialog/popover teleport ra body */
 html.is-admin-layout {
   --admin-font: "Be Vietnam Pro", "Roboto", "Segoe UI", sans-serif;
+  --admin-font-size: 16px;
+  --admin-ui-scale: 1;
   --el-font-family: var(--admin-font);
-  --el-font-size-extra-small: 13px;
-  --el-font-size-small: 14px;
-  --el-font-size-base: 16px;
-  --el-font-size-medium: 16px;
-  --el-font-size-large: 18px;
-  --el-font-size-extra-large: 20px;
+  --el-font-size-extra-small: 0.8125rem;
+  --el-font-size-small: 0.875rem;
+  --el-font-size-base: 1rem;
+  --el-font-size-medium: 1rem;
+  --el-font-size-large: 1.125rem;
+  --el-font-size-extra-large: 1.25rem;
+  --el-font-line-height-primary: 1.5;
+  font-size: var(--admin-font-size);
+  zoom: var(--admin-ui-scale);
 }
 
 /* Chế độ sáng: chữ đen tuyền */
@@ -728,22 +745,43 @@ html.is-admin-layout:not(.dark) h3 {
 
 html.is-admin-layout body {
   font-family: var(--admin-font);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 300;
   letter-spacing: -0.02em;
 }
 
 html.is-admin-layout .el-button,
 html.is-admin-layout .el-menu,
+html.is-admin-layout .el-menu-item,
+html.is-admin-layout .el-sub-menu__title,
 html.is-admin-layout .el-table,
 html.is-admin-layout .el-form,
+html.is-admin-layout .el-form-item__label,
 html.is-admin-layout .el-input,
+html.is-admin-layout .el-input__inner,
 html.is-admin-layout .el-select,
 html.is-admin-layout .el-dialog,
+html.is-admin-layout .el-drawer,
 html.is-admin-layout .el-dropdown-menu,
-html.is-admin-layout .el-pagination {
+html.is-admin-layout .el-pagination,
+html.is-admin-layout .el-radio,
+html.is-admin-layout .el-checkbox,
+html.is-admin-layout .el-textarea,
+html.is-admin-layout .main-layout {
   font-family: var(--admin-font);
+  font-size: var(--el-font-size-base);
   letter-spacing: -0.02em;
+}
+
+html.is-admin-layout .el-button--small,
+html.is-admin-layout .el-input--small,
+html.is-admin-layout .el-select--small {
+  font-size: var(--el-font-size-extra-small);
+}
+
+html.is-admin-layout .el-dialog__title,
+html.is-admin-layout .el-drawer__title {
+  font-size: var(--el-font-size-large);
 }
 
 html.is-admin-layout .el-button,
@@ -761,5 +799,49 @@ html.is-admin-layout h2,
 html.is-admin-layout h3 {
   font-weight: 400;
   letter-spacing: -0.025em;
+}
+
+/* Toast từ runRequest / notifyApi — nền đậm, chữ trắng dễ đọc */
+.el-message.api-request-message {
+  min-width: 280px;
+  padding: 12px 16px;
+  border-width: 1px;
+  border-style: solid;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+
+  .el-message__content {
+    color: #ffffff;
+    font-weight: 400;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+  }
+
+  .el-message__icon {
+    color: #ffffff;
+  }
+
+  .el-message__closeBtn {
+    color: rgba(255, 255, 255, 0.85);
+
+    &:hover {
+      color: #ffffff;
+    }
+  }
+
+  &.el-message--success {
+    --el-message-bg-color: #0b6e3f;
+    --el-message-border-color: #095c34;
+    --el-message-text-color: #ffffff;
+    background-color: #0b6e3f !important;
+    border-color: #095c34 !important;
+  }
+
+  &.el-message--error {
+    --el-message-bg-color: #b42318;
+    --el-message-border-color: #912018;
+    --el-message-text-color: #ffffff;
+    background-color: #b42318 !important;
+    border-color: #912018 !important;
+  }
 }
 </style>

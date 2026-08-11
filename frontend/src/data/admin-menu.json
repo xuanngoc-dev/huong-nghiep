@@ -27,17 +27,17 @@
     "items": [
       {
         "index": "/admin/nguoi-dung",
-        "title": "Danh sách người dùng",
+        "title": "DS người dùng",
         "icon": "User"
       },
       {
         "index": "/admin/nguoi-dung/lich-su-thanh-toan",
-        "title": "Lịch sử thanh toán",
+        "title": "LS thanh toán",
         "icon": "Wallet"
       },
       {
         "index": "/admin/nguoi-dung/lich-su-trac-nghiem",
-        "title": "Lịch sử trắc nghiệm",
+        "title": "LS trắc nghiệm",
         "icon": "Document"
       }
     ]

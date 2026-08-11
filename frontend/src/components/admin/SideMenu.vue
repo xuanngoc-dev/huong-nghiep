@@ -262,7 +262,7 @@ function resolveIcon(name) {
     flex-shrink: 0;
     min-width: 28px;
     padding: 2px 0;
-    font-size: 10px;
+    font-size: 0.625rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     line-height: 1;
@@ -312,7 +312,7 @@ function resolveIcon(name) {
   }
 
   &__header {
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--el-text-color-secondary);
@@ -345,7 +345,7 @@ function resolveIcon(name) {
   }
 
   &__arrow {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: var(--el-text-color-secondary);
     transition: transform 0.2s ease;
     flex-shrink: 0;

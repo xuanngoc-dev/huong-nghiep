@@ -54,6 +54,17 @@ export function apiErrorMessage(errOrBody, fallback = 'Đã xảy ra lỗi.') {
   return errOrBody?.message || fallback
 }
 
+/** Class toast API — style nền đậm ở AdminLayout. */
+const API_MESSAGE_CLASS = 'api-request-message'
+
+function toastSuccess(message) {
+  ElMessage.success({ message, customClass: API_MESSAGE_CLASS })
+}
+
+function toastError(message) {
+  ElMessage.error({ message, customClass: API_MESSAGE_CLASS })
+}
+
 /**
  * Toast theo status — ưu tiên message từ API.
  * @returns {boolean}
@@ -73,9 +84,9 @@ export function notifyApi(body, options = {}) {
   const message = body?.message || (ok ? successFallback : errorFallback)
 
   if (ok) {
-    if (!silentSuccess) ElMessage.success(message)
+    if (!silentSuccess) toastSuccess(message)
   } else if (!silentError) {
-    ElMessage.error(message)
+    toastError(message)
   }
 
   return ok
@@ -137,8 +148,8 @@ async function runRequest(executor, options = {}) {
     const message = resBody?.message || (ok ? successFallback : errorFallback)
 
     if (!silent) {
-      if (ok && !silentSuccess) ElMessage.success(message)
-      if (!ok && !silentError) ElMessage.error(message)
+      if (ok && !silentSuccess) toastSuccess(message)
+      if (!ok && !silentError) toastError(message)
     }
 
     return {
@@ -155,7 +166,7 @@ async function runRequest(executor, options = {}) {
     }
   } catch (error) {
     const message = apiErrorMessage(error, errorFallback)
-    if (!silent && !silentError) ElMessage.error(message)
+    if (!silent && !silentError) toastError(message)
 
     return {
       ok: false,
