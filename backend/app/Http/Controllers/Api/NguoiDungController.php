@@ -12,19 +12,56 @@ use Illuminate\Validation\Rule;
 class NguoiDungController extends Controller
 {
     /**
+     * Lấy hồ sơ khảo sát theo email của user đang đăng nhập.
+     */
+    public function me(Request $request): JsonResponse
+    {
+        return $this->tryApi(function () use ($request) {
+            $user = $request->user();
+            if (! $user?->email) {
+                return ApiResponse::error('Bạn cần đăng nhập để xem hồ sơ khảo sát.');
+            }
+
+            $nguoiDung = NguoiDung::query()
+                ->where('email', strtolower(trim($user->email)))
+                ->first();
+
+            if (! $nguoiDung) {
+                return ApiResponse::success(null, 'Chưa có hồ sơ khảo sát cá nhân.');
+            }
+
+            return ApiResponse::success(
+                $this->toPublicArray($nguoiDung),
+                'Lấy thông tin cá nhân thành công.',
+            );
+        });
+    }
+
+    /**
      * Lưu / cập nhật thông tin khảo sát cá nhân (bảng nguoi_dung).
-     * Trùng email → cập nhật bản ghi hiện có.
+     * Trùng email → cập nhật bản ghi hiện có (không bắt buộc mật khẩu).
      */
     public function store(Request $request): JsonResponse
     {
         return $this->tryApi(function () use ($request) {
+            $emailInput = strtolower(trim((string) $request->input('email', '')));
+            $existing = $emailInput !== ''
+                ? NguoiDung::query()->where('email', $emailInput)->first()
+                : null;
+
             $validated = $request->validate([
                 'ho_ten' => ['required', 'string', 'max:255'],
                 'ngay_sinh' => ['nullable', 'date', 'before_or_equal:today'],
                 'gioi_tinh' => ['nullable', 'string', 'max:20'],
                 'email' => ['required', 'string', 'email', 'max:255'],
                 'so_dien_thoai' => ['nullable', 'string', 'max:30'],
-                'mat_khau' => ['required', 'string', 'min:8', 'confirmed'],
+                'mat_khau' => [
+                    Rule::requiredIf(! $existing),
+                    'nullable',
+                    'string',
+                    'min:8',
+                    'confirmed',
+                ],
                 'dan_toc' => ['nullable', 'string', 'max:100'],
                 'ton_giao' => ['nullable', 'string', 'max:100'],
                 'trinh_do_hoc_van' => ['nullable', 'array'],
@@ -65,7 +102,6 @@ class NguoiDungController extends Controller
             ]);
 
             $email = strtolower(trim($validated['email']));
-            $existing = NguoiDung::query()->where('email', $email)->first();
 
             $payload = [
                 'ho_ten' => trim($validated['ho_ten']),
@@ -73,7 +109,6 @@ class NguoiDungController extends Controller
                 'gioi_tinh' => $validated['gioi_tinh'] ?? null,
                 'email' => $email,
                 'so_dien_thoai' => $validated['so_dien_thoai'] ?? null,
-                'mat_khau' => $validated['mat_khau'],
                 'dan_toc' => $validated['dan_toc'] ?? null,
                 'ton_giao' => $validated['ton_giao'] ?? null,
                 'trinh_do_hoc_van' => $validated['trinh_do_hoc_van'] ?? null,
@@ -81,6 +116,10 @@ class NguoiDungController extends Controller
                 'kha_nang_tai_chinh' => $validated['kha_nang_tai_chinh'] ?? null,
                 'vi_tri_dia_ly' => $validated['vi_tri_dia_ly'] ?? null,
             ];
+
+            if (! empty($validated['mat_khau'])) {
+                $payload['mat_khau'] = $validated['mat_khau'];
+            }
 
             if ($existing) {
                 $existing->fill($payload);
@@ -95,23 +134,31 @@ class NguoiDungController extends Controller
             }
 
             return ApiResponse::success(
-                [
-                    'id' => $nguoiDung->id,
-                    'ho_ten' => $nguoiDung->ho_ten,
-                    'email' => $nguoiDung->email,
-                    'ngay_sinh' => $nguoiDung->ngay_sinh?->format('Y-m-d'),
-                    'gioi_tinh' => $nguoiDung->gioi_tinh,
-                    'so_dien_thoai' => $nguoiDung->so_dien_thoai,
-                    'dan_toc' => $nguoiDung->dan_toc,
-                    'ton_giao' => $nguoiDung->ton_giao,
-                    'trinh_do_hoc_van' => $nguoiDung->trinh_do_hoc_van,
-                    'suc_khoe_the_chat' => $nguoiDung->suc_khoe_the_chat,
-                    'kha_nang_tai_chinh' => $nguoiDung->kha_nang_tai_chinh,
-                    'vi_tri_dia_ly' => $nguoiDung->vi_tri_dia_ly,
-                ],
+                $this->toPublicArray($nguoiDung),
                 $message,
                 httpStatus: $httpStatus,
             );
         });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function toPublicArray(NguoiDung $nguoiDung): array
+    {
+        return [
+            'id' => $nguoiDung->id,
+            'ho_ten' => $nguoiDung->ho_ten,
+            'email' => $nguoiDung->email,
+            'ngay_sinh' => $nguoiDung->ngay_sinh?->format('Y-m-d'),
+            'gioi_tinh' => $nguoiDung->gioi_tinh,
+            'so_dien_thoai' => $nguoiDung->so_dien_thoai,
+            'dan_toc' => $nguoiDung->dan_toc,
+            'ton_giao' => $nguoiDung->ton_giao,
+            'trinh_do_hoc_van' => $nguoiDung->trinh_do_hoc_van,
+            'suc_khoe_the_chat' => $nguoiDung->suc_khoe_the_chat,
+            'kha_nang_tai_chinh' => $nguoiDung->kha_nang_tai_chinh,
+            'vi_tri_dia_ly' => $nguoiDung->vi_tri_dia_ly,
+        ];
     }
 }

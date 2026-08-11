@@ -70,6 +70,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/nguoi-dung', [NguoiDungController::class, 'store']);
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/nguoi-dung/me', [NguoiDungController::class, 'me']);
         Route::post('/assessments/{id}/submit', [AssessmentController::class, 'submit']);
     });
 

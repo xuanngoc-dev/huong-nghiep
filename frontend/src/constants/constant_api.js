@@ -234,6 +234,7 @@ export const API_PUBLIC = {
     }),
   },
   NGUOI_DUNG: {
+    ME: { url: '/nguoi-dung/me', method: 'get' },
     STORE: { url: '/nguoi-dung', method: 'post' },
   },
 }

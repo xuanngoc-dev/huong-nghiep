@@ -4,10 +4,10 @@
       Thu thập thêm thông tin cá nhân để tư vấn hướng nghiệp chính xác hơn.
     </p>
 
-    <form class="form quiz-fields-khao-sat__form" novalidate @submit.prevent="onSubmit">
+    <form class="quiz-fields-khao-sat__form" novalidate @submit.prevent="onSubmit">
       <CustomRow :gutter="12" class="quiz-fields-khao-sat__grid">
         <CustomCol
-          v-for="field in fields"
+          v-for="field in visibleFields"
           :key="field.key"
           :xs="12"
           :sm="12"
@@ -15,7 +15,7 @@
           :lg="6"
           :xl="6"
         >
-          <label class="quiz-fields-khao-sat__field" :for="`khao-sat-${field.key}`">
+          <div class="quiz-fields-khao-sat__field">
             <span class="quiz-fields-khao-sat__label">
               <span
                 class="quiz-fields-khao-sat__stt"
@@ -24,67 +24,71 @@
               {{ field.label }}
             </span>
 
-            <select
+            <CustomSelect
               v-if="field.type === 'select'"
-              :id="`khao-sat-${field.key}`"
               v-model="form[field.key]"
-              :name="field.key"
-              :required="field.required"
+              :placeholder="field.placeholder"
+              clearable
+              style="width: 100%"
             >
-              <option value="">{{ field.placeholder }}</option>
-              <option v-for="opt in field.options" :key="opt.value ?? opt" :value="opt.value ?? opt">
-                {{ opt.label ?? opt }}
-              </option>
-            </select>
-
-            <div
-              v-else-if="field.type === 'password'"
-              class="quiz-fields-khao-sat__password"
-            >
-              <input
-                :id="`khao-sat-${field.key}`"
-                v-model="form[field.key]"
-                :type="passwordVisible[field.key] ? 'text' : 'password'"
-                :name="field.key"
-                :required="field.required"
-                :minlength="field.minlength"
-                :autocomplete="field.autocomplete"
-                :placeholder="field.placeholder"
+              <CustomOption
+                v-for="opt in field.options"
+                :key="opt.value ?? opt"
+                :label="opt.label ?? opt"
+                :value="opt.value ?? opt"
               />
-              <button
-                type="button"
-                class="quiz-fields-khao-sat__password-toggle"
-                :aria-label="passwordVisible[field.key] ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
-                :aria-pressed="passwordVisible[field.key]"
-                @click="togglePassword(field.key)"
-              >
-                <el-icon :size="18">
-                  <Hide v-if="passwordVisible[field.key]" />
-                  <View v-else />
-                </el-icon>
-              </button>
-            </div>
+            </CustomSelect>
 
-            <input
-              v-else
-              :id="`khao-sat-${field.key}`"
+            <CustomDatePicker
+              v-else-if="field.type === 'date'"
               v-model="form[field.key]"
-              :type="field.type"
-              :name="field.key"
-              :required="field.required"
+              type="date"
+              value-format="YYYY-MM-DD"
+              :placeholder="field.placeholder || 'Chọn ngày'"
+              :disabled-date="disabledFutureDate"
+              clearable
+              style="width: 100%"
+            />
+
+            <CustomInput
+              v-else-if="field.type === 'password'"
+              v-model="form[field.key]"
+              type="password"
+              show-password
               :minlength="field.minlength"
-              :maxlength="field.maxlength"
               :autocomplete="field.autocomplete"
-              :inputmode="field.inputmode"
-              :list="field.list"
-              :max="field.max"
               :placeholder="field.placeholder"
             />
 
-            <datalist v-if="field.list" :id="field.list">
-              <option v-for="opt in field.suggestions" :key="opt" :value="opt" />
-            </datalist>
-          </label>
+            <CustomSelect
+              v-else-if="field.suggestions"
+              v-model="form[field.key]"
+              filterable
+              allow-create
+              default-first-option
+              clearable
+              :reserve-keyword="false"
+              :placeholder="field.placeholder"
+              style="width: 100%"
+            >
+              <CustomOption
+                v-for="opt in field.suggestions"
+                :key="`${field.key}-${opt}`"
+                :label="opt"
+                :value="opt"
+              />
+            </CustomSelect>
+
+            <CustomInput
+              v-else
+              v-model="form[field.key]"
+              :type="field.type === 'tel' ? 'text' : field.type"
+              :maxlength="field.maxlength"
+              :autocomplete="field.autocomplete"
+              :placeholder="field.placeholder"
+              :readonly="field.key === 'email' && isExistingProfile"
+            />
+          </div>
         </CustomCol>
       </CustomRow>
 
@@ -101,22 +105,25 @@
 
         <CustomRow :gutter="12">
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-trinh-do">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[10]</span>
                 Trình độ học vấn
               </span>
-              <select id="khao-sat-trinh-do" v-model="form.trinh_do_hoc_van.trinh_do_hoc_van">
-                <option value="">Chọn trình độ</option>
-                <option
+              <CustomSelect
+                v-model="form.trinh_do_hoc_van.trinh_do_hoc_van"
+                placeholder="Chọn trình độ"
+                clearable
+                style="width: 100%"
+              >
+                <CustomOption
                   v-for="opt in trinhDoHocVanOptions"
                   :key="opt.value"
+                  :label="opt.label"
                   :value="opt.value"
-                >
-                  {{ opt.label }}
-                </option>
-              </select>
-            </label>
+                />
+              </CustomSelect>
+            </div>
           </CustomCol>
 
           <CustomCol
@@ -127,57 +134,51 @@
             :lg="6"
             :xl="6"
           >
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-trinh-do-khac">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[10a]</span>
                 Trình độ khác
               </span>
-              <input
-                id="khao-sat-trinh-do-khac"
+              <CustomInput
                 v-model="form.trinh_do_hoc_van.trinh_do_khac"
-                type="text"
                 maxlength="255"
                 placeholder="Nhập trình độ của bạn"
               />
-            </label>
+            </div>
           </CustomCol>
 
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-diem-hoc-ba">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[11]</span>
                 Điểm trung bình học bạ
               </span>
-              <input
-                id="khao-sat-diem-hoc-ba"
+              <CustomInput
                 v-model="form.trinh_do_hoc_van.diem_trung_binh_to_hop_mon.diemHocBa"
                 type="number"
                 min="0"
                 max="10"
                 step="0.01"
-                inputmode="decimal"
                 placeholder="Ví dụ: 8.5"
               />
-            </label>
+            </div>
           </CustomCol>
 
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-diem-thi-thpt">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[12]</span>
                 Điểm thi THPT
               </span>
-              <input
-                id="khao-sat-diem-thi-thpt"
+              <CustomInput
                 v-model="form.trinh_do_hoc_van.diem_trung_binh_to_hop_mon.diemThiTHPT"
                 type="number"
                 min="0"
                 max="30"
                 step="0.01"
-                inputmode="decimal"
                 placeholder="Tổng điểm tổ hợp"
               />
-            </label>
+            </div>
           </CustomCol>
         </CustomRow>
 
@@ -187,13 +188,16 @@
               <span class="quiz-fields-khao-sat__stt">[13]</span>
               Chứng chỉ tiếng Anh
             </span>
-            <button
-              class="btn btn-outline quiz-fields-khao-sat__cert-add"
-              type="button"
-              @click="addChungChi"
-            >
-              Thêm chứng chỉ
-            </button>
+            <CustomTooltip content="Thêm chứng chỉ" placement="top">
+              <CustomButton
+                class="quiz-fields-khao-sat__cert-add"
+                type="primary"
+                circle
+                :icon="Plus"
+                aria-label="Thêm chứng chỉ"
+                @click="addChungChi"
+              />
+            </CustomTooltip>
           </div>
 
           <div
@@ -203,47 +207,57 @@
           >
             <CustomRow :gutter="12">
               <CustomCol :xs="12" :sm="12" :md="10" :lg="10" :xl="10">
-                <label class="quiz-fields-khao-sat__field" :for="`khao-sat-cc-ten-${index}`">
+                <div class="quiz-fields-khao-sat__field">
                   <span class="quiz-fields-khao-sat__label muted">Tên chứng chỉ</span>
-                  <input
-                    :id="`khao-sat-cc-ten-${index}`"
+                  <CustomSelect
                     v-model="item.ten_chung_chi"
-                    type="text"
-                    maxlength="100"
-                    list="quiz-chung-chi-list"
+                    filterable
+                    allow-create
+                    default-first-option
+                    clearable
                     placeholder="IELTS, TOEIC, TOEFL..."
-                  />
-                </label>
+                    style="width: 100%"
+                  >
+                    <CustomOption
+                      v-for="opt in chungChiSuggestions"
+                      :key="opt"
+                      :label="opt"
+                      :value="opt"
+                    />
+                  </CustomSelect>
+                </div>
               </CustomCol>
               <CustomCol :xs="12" :sm="12" :md="10" :lg="10" :xl="10">
-                <label class="quiz-fields-khao-sat__field" :for="`khao-sat-cc-diem-${index}`">
+                <div class="quiz-fields-khao-sat__field">
                   <span class="quiz-fields-khao-sat__label muted">Điểm chứng chỉ</span>
-                  <input
-                    :id="`khao-sat-cc-diem-${index}`"
+                  <CustomInput
                     v-model="item.diem_chung_chi"
-                    type="text"
                     maxlength="50"
                     placeholder="Ví dụ: 6.5 hoặc 750"
                   />
-                </label>
+                </div>
               </CustomCol>
               <CustomCol :xs="12" :sm="12" :md="4" :lg="4" :xl="4">
                 <div class="quiz-fields-khao-sat__cert-remove-wrap">
-                  <button
-                    class="btn btn-outline quiz-fields-khao-sat__cert-remove"
-                    type="button"
+                  <CustomTooltip
+                    content="Xóa chứng chỉ"
+                    placement="top"
                     :disabled="form.trinh_do_hoc_van.chung_chi_tieng_anh.length <= 1"
-                    @click="removeChungChi(index)"
                   >
-                    Xóa
-                  </button>
+                    <CustomButton
+                      class="quiz-fields-khao-sat__cert-remove"
+                      type="danger"
+                      circle
+                      :icon="Delete"
+                      aria-label="Xóa chứng chỉ"
+                      :disabled="form.trinh_do_hoc_van.chung_chi_tieng_anh.length <= 1"
+                      @click="removeChungChi(index)"
+                    />
+                  </CustomTooltip>
                 </div>
               </CustomCol>
             </CustomRow>
           </div>
-          <datalist id="quiz-chung-chi-list">
-            <option v-for="opt in chungChiSuggestions" :key="opt" :value="opt" />
-          </datalist>
         </div>
       </section>
 
@@ -260,55 +274,49 @@
 
         <CustomRow :gutter="12">
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-chieu-cao">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[14]</span>
                 Chiều cao (cm)
               </span>
-              <input
-                id="khao-sat-chieu-cao"
+              <CustomInput
                 v-model="form.suc_khoe_the_chat.chieu_cao"
                 type="number"
                 min="0"
                 max="250"
                 step="0.1"
-                inputmode="decimal"
                 placeholder="Ví dụ: 170"
               />
-            </label>
+            </div>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-can-nang">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[15]</span>
                 Cân nặng (kg)
               </span>
-              <input
-                id="khao-sat-can-nang"
+              <CustomInput
                 v-model="form.suc_khoe_the_chat.can_nang"
                 type="number"
                 min="0"
                 max="300"
                 step="0.1"
-                inputmode="decimal"
                 placeholder="Ví dụ: 60"
               />
-            </label>
+            </div>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-benh-ly">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[16]</span>
                 Bệnh lý / ghi chú sức khoẻ
               </span>
-              <input
-                id="khao-sat-benh-ly"
+              <CustomInput
                 v-model="form.suc_khoe_the_chat.benh_ly"
-                type="text"
                 maxlength="500"
                 placeholder="Để trống nếu không có"
               />
-            </label>
+            </div>
           </CustomCol>
         </CustomRow>
       </section>
@@ -326,21 +334,19 @@
 
         <CustomRow :gutter="12">
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-chi-tra">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[17]</span>
                 Khả năng chi trả cho 1 năm học (triệu/năm)
               </span>
-              <input
-                id="khao-sat-chi-tra"
+              <CustomInput
                 v-model="form.kha_nang_tai_chinh.chi_tra_mot_nam_hoc"
                 type="number"
                 min="0"
                 step="0.1"
-                inputmode="decimal"
                 placeholder="Ví dụ: 30"
               />
-            </label>
+            </div>
           </CustomCol>
         </CustomRow>
       </section>
@@ -358,58 +364,69 @@
 
         <CustomRow :gutter="12">
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-khu-vuc">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[18]</span>
                 Khu vực muốn theo học
               </span>
-              <select id="khao-sat-khu-vuc" v-model="form.vi_tri_dia_ly.khu_vuc_muon_theo_hoc">
-                <option value="">Chọn khu vực</option>
-                <option
+              <CustomSelect
+                v-model="form.vi_tri_dia_ly.khu_vuc_muon_theo_hoc"
+                placeholder="Chọn khu vực"
+                clearable
+                style="width: 100%"
+              >
+                <CustomOption
                   v-for="opt in khuVucHocOptions"
                   :key="opt.value"
+                  :label="opt.label"
                   :value="opt.value"
-                >
-                  {{ opt.label }}
-                </option>
-              </select>
-            </label>
+                />
+              </CustomSelect>
+            </div>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-tinh-hoc">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[19]</span>
                 Tỉnh thành muốn theo học
               </span>
-              <select id="khao-sat-tinh-hoc" v-model="form.vi_tri_dia_ly.tinh_thanh_muon_theo_hoc">
-                <option value="">Chọn tỉnh thành</option>
-                <option
+              <CustomSelect
+                v-model="form.vi_tri_dia_ly.tinh_thanh_muon_theo_hoc"
+                filterable
+                placeholder="Chọn tỉnh thành"
+                clearable
+                style="width: 100%"
+              >
+                <CustomOption
                   v-for="opt in tinhThanhOptions"
                   :key="`hoc-${opt.value}`"
+                  :label="opt.label"
                   :value="opt.value"
-                >
-                  {{ opt.label }}
-                </option>
-              </select>
-            </label>
+                />
+              </CustomSelect>
+            </div>
           </CustomCol>
           <CustomCol :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
-            <label class="quiz-fields-khao-sat__field" for="khao-sat-tinh-song">
+            <div class="quiz-fields-khao-sat__field">
               <span class="quiz-fields-khao-sat__label">
                 <span class="quiz-fields-khao-sat__stt">[20]</span>
                 Tỉnh thành đang sống
               </span>
-              <select id="khao-sat-tinh-song" v-model="form.vi_tri_dia_ly.tinh_thanh_dang_song">
-                <option value="">Chọn tỉnh thành</option>
-                <option
+              <CustomSelect
+                v-model="form.vi_tri_dia_ly.tinh_thanh_dang_song"
+                filterable
+                placeholder="Chọn tỉnh thành"
+                clearable
+                style="width: 100%"
+              >
+                <CustomOption
                   v-for="opt in tinhThanhOptions"
                   :key="`song-${opt.value}`"
+                  :label="opt.label"
                   :value="opt.value"
-                >
-                  {{ opt.label }}
-                </option>
-              </select>
-            </label>
+                />
+              </CustomSelect>
+            </div>
           </CustomCol>
         </CustomRow>
       </section>
@@ -429,13 +446,27 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
-import { Hide, View } from '@element-plus/icons-vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { Delete, Plus } from '@element-plus/icons-vue'
 import { request } from '@/api'
-import { CustomCol, CustomRow } from '@/components/element'
+import {
+  CustomButton,
+  CustomCol,
+  CustomDatePicker,
+  CustomInput,
+  CustomOption,
+  CustomRow,
+  CustomSelect,
+  CustomTooltip,
+} from '@/components/element'
 import { API_PUBLIC } from '@/constants/constant_api'
+import { useAuthStore } from '@/stores/auth'
 
 const emit = defineEmits(['submit', 'saved'])
+const auth = useAuthStore()
+
+/** Đã có hồ sơ nguoi_dung trùng email → ẩn mật khẩu, lưu = cập nhật. */
+const isExistingProfile = ref(false)
 
 const gioiTinhOptions = ['Nam', 'Nữ', 'Khác']
 
@@ -546,8 +577,7 @@ const fields = [
     label: 'Ngày sinh',
     type: 'date',
     required: false,
-    autocomplete: 'bday',
-    max: maxNgaySinh,
+    placeholder: 'Chọn ngày sinh',
   },
   {
     stt: 4,
@@ -597,7 +627,6 @@ const fields = [
     type: 'text',
     required: false,
     maxlength: 100,
-    list: 'quiz-dan-toc-list',
     suggestions: danTocSuggestions,
     placeholder: 'Ví dụ: Kinh',
   },
@@ -608,28 +637,35 @@ const fields = [
     type: 'text',
     required: false,
     maxlength: 100,
-    list: 'quiz-ton-giao-list',
     suggestions: tonGiaoSuggestions,
     placeholder: 'Ví dụ: Không',
   },
 ]
 
+const passwordFieldKeys = new Set(['mat_khau', 'xac_nhan_mat_khau'])
+
+const visibleFields = computed(() =>
+  isExistingProfile.value
+    ? fields.filter((field) => !passwordFieldKeys.has(field.key))
+    : fields,
+)
+
 function emptyChungChi() {
-  return { ten_chung_chi: '', diem_chung_chi: '' }
+  return { ten_chung_chi: undefined, diem_chung_chi: '' }
 }
 
 const form = reactive({
   ho_ten: '',
-  gioi_tinh: '',
-  ngay_sinh: '',
+  gioi_tinh: undefined,
+  ngay_sinh: undefined,
   email: '',
   so_dien_thoai: '',
   mat_khau: '',
   xac_nhan_mat_khau: '',
-  dan_toc: '',
-  ton_giao: '',
+  dan_toc: undefined,
+  ton_giao: undefined,
   trinh_do_hoc_van: {
-    trinh_do_hoc_van: '',
+    trinh_do_hoc_van: undefined,
     trinh_do_khac: '',
     chung_chi_tieng_anh: [emptyChungChi()],
     diem_trung_binh_to_hop_mon: {
@@ -646,23 +682,102 @@ const form = reactive({
     chi_tra_mot_nam_hoc: '',
   },
   vi_tri_dia_ly: {
-    khu_vuc_muon_theo_hoc: '',
-    tinh_thanh_muon_theo_hoc: '',
-    tinh_thanh_dang_song: '',
+    khu_vuc_muon_theo_hoc: undefined,
+    tinh_thanh_muon_theo_hoc: undefined,
+    tinh_thanh_dang_song: undefined,
   },
 })
 
 const error = ref('')
 const successMessage = ref('')
 const saving = ref(false)
-const passwordVisible = reactive({
-  mat_khau: false,
-  xac_nhan_mat_khau: false,
-})
 
-function togglePassword(key) {
-  passwordVisible[key] = !passwordVisible[key]
+function disabledFutureDate(date) {
+  const today = new Date()
+  today.setHours(23, 59, 59, 999)
+  return date.getTime() > today.getTime()
 }
+
+function toFormText(value) {
+  return value == null ? '' : String(value)
+}
+
+/** Giá trị select/date: trống → undefined (Element Plus hiển thị đúng). */
+function toFormSelectValue(value) {
+  if (value == null || value === '') return undefined
+  return String(value)
+}
+
+function toFormNumber(value) {
+  return value == null || value === '' ? '' : value
+}
+
+function applyProfileToForm(data) {
+  if (!data || typeof data !== 'object') return
+
+  form.ho_ten = toFormText(data.ho_ten)
+  form.gioi_tinh = toFormSelectValue(data.gioi_tinh)
+  form.ngay_sinh = toFormSelectValue(data.ngay_sinh)
+  form.email = toFormText(data.email)
+  form.so_dien_thoai = toFormText(data.so_dien_thoai)
+  form.dan_toc = toFormSelectValue(data.dan_toc)
+  form.ton_giao = toFormSelectValue(data.ton_giao)
+  form.mat_khau = ''
+  form.xac_nhan_mat_khau = ''
+
+  const td = data.trinh_do_hoc_van || {}
+  form.trinh_do_hoc_van.trinh_do_hoc_van = toFormSelectValue(td.trinh_do_hoc_van)
+  form.trinh_do_hoc_van.trinh_do_khac = toFormText(td.trinh_do_khac)
+
+  const diem = td.diem_trung_binh_to_hop_mon || {}
+  form.trinh_do_hoc_van.diem_trung_binh_to_hop_mon.diemHocBa = toFormNumber(diem.diemHocBa)
+  form.trinh_do_hoc_van.diem_trung_binh_to_hop_mon.diemThiTHPT = toFormNumber(diem.diemThiTHPT)
+
+  const chungChi = Array.isArray(td.chung_chi_tieng_anh) ? td.chung_chi_tieng_anh : []
+  form.trinh_do_hoc_van.chung_chi_tieng_anh = chungChi.length
+    ? chungChi.map((item) => ({
+        ten_chung_chi: toFormSelectValue(item?.ten_chung_chi),
+        diem_chung_chi: toFormText(item?.diem_chung_chi),
+      }))
+    : [emptyChungChi()]
+
+  const sk = data.suc_khoe_the_chat || {}
+  form.suc_khoe_the_chat.chieu_cao = toFormNumber(sk.chieu_cao)
+  form.suc_khoe_the_chat.can_nang = toFormNumber(sk.can_nang)
+  form.suc_khoe_the_chat.benh_ly = toFormText(sk.benh_ly)
+
+  const tc = data.kha_nang_tai_chinh || {}
+  form.kha_nang_tai_chinh.chi_tra_mot_nam_hoc = toFormNumber(tc.chi_tra_mot_nam_hoc)
+
+  const vt = data.vi_tri_dia_ly || {}
+  form.vi_tri_dia_ly.khu_vuc_muon_theo_hoc = toFormSelectValue(vt.khu_vuc_muon_theo_hoc)
+  form.vi_tri_dia_ly.tinh_thanh_muon_theo_hoc = toFormSelectValue(vt.tinh_thanh_muon_theo_hoc)
+  form.vi_tri_dia_ly.tinh_thanh_dang_song = toFormSelectValue(vt.tinh_thanh_dang_song)
+}
+
+async function loadExistingProfile() {
+  if (!auth.isAuthenticated || !auth.user?.email) return
+
+  // Prefill tối thiểu từ tài khoản đăng nhập nếu chưa có hồ sơ khảo sát.
+  if (!form.ho_ten && auth.user.name) form.ho_ten = auth.user.name
+  if (!form.email) form.email = auth.user.email
+
+  const res = await request({
+    url: API_PUBLIC.NGUOI_DUNG.ME,
+    loading: false,
+    silent: true,
+    errorFallback: 'Không tải được thông tin cá nhân.',
+  })
+
+  if (!res.ok || !res.data) return
+
+  applyProfileToForm(res.data)
+  isExistingProfile.value = true
+}
+
+onMounted(() => {
+  loadExistingProfile()
+})
 
 function addChungChi() {
   form.trinh_do_hoc_van.chung_chi_tieng_anh.push(emptyChungChi())
@@ -746,19 +861,25 @@ function buildViTriDiaLy() {
 }
 
 function validate() {
-  if (!form.ho_ten?.trim()) return 'Vui lòng nhập họ tên.'
-  if (!form.email?.trim()) return 'Vui lòng nhập email.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+  const hoTen = String(form.ho_ten || '').trim()
+  const email = String(form.email || '').trim()
+  const soDienThoai = String(form.so_dien_thoai || '').trim()
+
+  if (!hoTen) return 'Vui lòng nhập họ tên.'
+  if (!email) return 'Vui lòng nhập email.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return 'Email không hợp lệ.'
   }
-  if (form.so_dien_thoai && !/^[0-9+\s()-]{8,30}$/.test(form.so_dien_thoai.trim())) {
+  if (soDienThoai && !/^[0-9+\s()-]{8,30}$/.test(soDienThoai)) {
     return 'Số điện thoại không hợp lệ.'
   }
-  if (!form.mat_khau) return 'Vui lòng nhập mật khẩu.'
-  if (form.mat_khau.length < 8) return 'Mật khẩu phải có tối thiểu 8 ký tự.'
-  if (!form.xac_nhan_mat_khau) return 'Vui lòng xác nhận mật khẩu.'
-  if (form.mat_khau !== form.xac_nhan_mat_khau) {
-    return 'Mật khẩu xác nhận không khớp.'
+  if (!isExistingProfile.value) {
+    if (!form.mat_khau) return 'Vui lòng nhập mật khẩu.'
+    if (form.mat_khau.length < 8) return 'Mật khẩu phải có tối thiểu 8 ký tự.'
+    if (!form.xac_nhan_mat_khau) return 'Vui lòng xác nhận mật khẩu.'
+    if (form.mat_khau !== form.xac_nhan_mat_khau) {
+      return 'Mật khẩu xác nhận không khớp.'
+    }
   }
   if (form.ngay_sinh && form.ngay_sinh > maxNgaySinh) {
     return 'Ngày sinh không hợp lệ.'
@@ -774,21 +895,26 @@ function validate() {
 
 /** Payload khớp API / bảng nguoi_dung. */
 function toPayload() {
-  return {
-    ho_ten: form.ho_ten.trim(),
+  const payload = {
+    ho_ten: String(form.ho_ten || '').trim(),
     gioi_tinh: form.gioi_tinh || null,
     ngay_sinh: form.ngay_sinh || null,
-    email: form.email.trim(),
-    so_dien_thoai: form.so_dien_thoai.trim() || null,
-    mat_khau: form.mat_khau,
-    mat_khau_confirmation: form.xac_nhan_mat_khau,
-    dan_toc: form.dan_toc.trim() || null,
-    ton_giao: form.ton_giao.trim() || null,
+    email: String(form.email || '').trim(),
+    so_dien_thoai: String(form.so_dien_thoai || '').trim() || null,
+    dan_toc: String(form.dan_toc || '').trim() || null,
+    ton_giao: String(form.ton_giao || '').trim() || null,
     trinh_do_hoc_van: buildTrinhDoHocVan(),
     suc_khoe_the_chat: buildSucKhoeTheChat(),
     kha_nang_tai_chinh: buildKhaNangTaiChinh(),
     vi_tri_dia_ly: buildViTriDiaLy(),
   }
+
+  if (!isExistingProfile.value) {
+    payload.mat_khau = form.mat_khau
+    payload.mat_khau_confirmation = form.xac_nhan_mat_khau
+  }
+
+  return payload
 }
 
 async function onSubmit() {
@@ -821,6 +947,9 @@ async function onSubmit() {
     }
 
     successMessage.value = res.message || 'Lưu thông tin cá nhân thành công.'
+    isExistingProfile.value = true
+    form.mat_khau = ''
+    form.xac_nhan_mat_khau = ''
     emit('saved', res.data)
   } finally {
     saving.value = false
@@ -831,6 +960,7 @@ defineExpose({
   form,
   validate,
   toPayload,
+  isExistingProfile,
 })
 </script>
 
@@ -843,6 +973,7 @@ defineExpose({
 }
 
 .quiz-fields-khao-sat__form {
+  display: grid;
   gap: 1.1rem;
 }
 
@@ -901,76 +1032,27 @@ defineExpose({
   color: var(--danger);
 }
 
-.quiz-fields-khao-sat__form :is(input, select) {
+.quiz-fields-khao-sat__field :deep(.el-input),
+.quiz-fields-khao-sat__field :deep(.el-select),
+.quiz-fields-khao-sat__field :deep(.el-date-editor) {
   width: 100%;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--text);
-  font: inherit;
 }
 
-.quiz-fields-khao-sat__password {
-  position: relative;
-  display: block;
-}
-
-.quiz-fields-khao-sat__password input {
-  padding-right: 2.75rem;
-}
-
-.quiz-fields-khao-sat__password-toggle {
-  position: absolute;
-  top: 50%;
-  right: 0.45rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transform: translateY(-50%);
-}
-
-.quiz-fields-khao-sat__password-toggle:hover {
-  color: var(--text);
-  background: rgba(31, 122, 76, 0.08);
-}
-
-.quiz-fields-khao-sat__password-toggle:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+/* Không để style global (.form input) đè lên input nội bộ Element Plus. */
+.quiz-fields-khao-sat__form :deep(.el-input__wrapper input),
+.quiz-fields-khao-sat__form :deep(.el-select__input),
+.quiz-fields-khao-sat__form :deep(.el-date-editor input) {
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .quiz-fields-khao-sat__actions .btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
   transform: none;
-}
-
-.quiz-fields-khao-sat__form select {
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
-    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) calc(50% - 3px),
-    calc(100% - 12px) calc(50% - 3px);
-  background-size: 6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 2.2rem;
-}
-
-.quiz-fields-khao-sat__form :is(input, select):focus {
-  outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  outline-offset: 1px;
-  border-color: var(--accent);
 }
 
 .quiz-fields-khao-sat__cert-block {
@@ -990,8 +1072,19 @@ defineExpose({
 
 .quiz-fields-khao-sat__cert-add,
 .quiz-fields-khao-sat__cert-remove {
-  padding: 0.4rem 0.85rem;
-  font-size: 0.88rem;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.quiz-fields-khao-sat__cert-add :deep(.el-icon),
+.quiz-fields-khao-sat__cert-remove :deep(.el-icon) {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.quiz-fields-khao-sat__cert-add :deep(svg),
+.quiz-fields-khao-sat__cert-remove :deep(svg) {
+  stroke-width: 1.75;
 }
 
 .quiz-fields-khao-sat__cert-row + .quiz-fields-khao-sat__cert-row {
@@ -1001,6 +1094,7 @@ defineExpose({
 .quiz-fields-khao-sat__cert-remove-wrap {
   display: flex;
   align-items: flex-end;
+  justify-content: flex-start;
   height: 100%;
   min-height: 4.4rem;
   padding-bottom: 0.75rem;
