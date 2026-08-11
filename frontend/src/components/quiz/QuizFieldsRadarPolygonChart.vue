@@ -1,15 +1,15 @@
 <template>
-  <div class="quiz-radar">
-    <div class="quiz-radar__head">
-      <h2 class="quiz-radar__title">Biểu đồ điểm phù hợp</h2>
-      <p class="quiz-radar__lead muted">
+  <div class="quiz-radar-polygon">
+    <div class="quiz-radar-polygon__head">
+      <h2 class="quiz-radar-polygon__title">Biểu đồ điểm phù hợp</h2>
+      <p class="quiz-radar-polygon__lead muted">
         So sánh top nhóm ngành theo tổng điểm khảo sát.
       </p>
     </div>
 
     <p v-if="!hasData" class="muted">Chưa đủ dữ liệu để vẽ biểu đồ radar.</p>
-    <div v-else class="quiz-radar__body">
-      <div class="quiz-radar__chart-wrap">
+    <div v-else class="quiz-radar-polygon__body">
+      <div class="quiz-radar-polygon__chart-wrap">
         <VueApexCharts
           :key="chartKey"
           type="radar"
@@ -20,23 +20,20 @@
         />
       </div>
 
-      <div class="quiz-radar__keys" aria-label="Chú thích biểu đồ">
-        <section class="quiz-radar__key-block">
-          <h3 class="quiz-radar__key-title quiz-radar__key-title--nganh">
-            <span class="quiz-radar__key-dot" aria-hidden="true" />
+      <div class="quiz-radar-polygon__keys" aria-label="Chú thích biểu đồ">
+        <section class="quiz-radar-polygon__key-block">
+          <h3 class="quiz-radar-polygon__key-title">
+            <span class="quiz-radar-polygon__key-dot" aria-hidden="true" />
             Nhóm ngành
           </h3>
-          <ol class="quiz-radar__key-list">
+          <ol class="quiz-radar-polygon__key-list">
             <li
               v-for="item in nhomKeyItems"
               :key="`nhom-key-${item.id}`"
-              class="quiz-radar__key-item"
+              class="quiz-radar-polygon__key-item"
             >
-              <span class="quiz-radar__key-name">{{ item.name }}</span>
-              <span class="quiz-radar__key-score">{{ formatScore(item.score) }} điểm</span>
-            </li>
-            <li v-if="!nhomKeyItems.length" class="quiz-radar__key-empty muted">
-              Chưa có nhóm ngành
+              <span class="quiz-radar-polygon__key-name">{{ item.name }}</span>
+              <span class="quiz-radar-polygon__key-score">{{ formatScore(item.score) }} điểm</span>
             </li>
           </ol>
         </section>
@@ -48,6 +45,10 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
+
+/** ApexCharts demo: Radar with Polygon Fill — adapted for nhóm ngành. */
+const ACCENT = '#1f7a4c'
+const RADAR_MIN_AXES = 3
 
 const props = defineProps({
   nhomList: {
@@ -76,39 +77,12 @@ function nhomName(item) {
   return String(item.ten_nhom_nganh || `Nhóm ngành #${item.nhom_nganh_id}`).trim()
 }
 
-/** ApexCharts radar cần ≥ 3 trục; pad nếu thiếu để tránh lỗi render. */
-const RADAR_MIN_AXES = 3
-
-const hasData = computed(() => props.nhomList.length > 0)
-
-const axisItems = computed(() => {
-  const items = props.nhomList.map((item) => ({
-    id: item.nhom_nganh_id,
-    name: nhomName(item),
-    score: Number(item.tong_diem) || 0,
-  }))
-  while (items.length > 0 && items.length < RADAR_MIN_AXES) {
-    items.push({
-      id: `pad-${items.length}`,
-      name: '—',
-      score: 0,
-      padded: true,
-    })
-  }
-  return items
-})
-
-const nhomKeyItems = computed(() =>
-  axisItems.value.filter((item) => !item.padded),
-)
-
 function formatScore(value) {
   const n = Number(value)
   if (!Number.isFinite(n)) return '0'
   return Number.isInteger(n) ? String(n) : n.toFixed(1)
 }
 
-/** Chia tên dài thành tối đa 2 dòng để label radar không làm vỡ layout. */
 function wrapLabel(text, maxLen = 14) {
   const raw = String(text || '').trim()
   if (!raw) return ['—']
@@ -121,10 +95,9 @@ function wrapLabel(text, maxLen = 14) {
 
   const lines = []
   let current = ''
-  let wordIndex = 0
 
-  for (; wordIndex < words.length; wordIndex += 1) {
-    const word = words[wordIndex]
+  for (let i = 0; i < words.length; i += 1) {
+    const word = words[i]
     const next = current ? `${current} ${word}` : word
     if (next.length > maxLen && current) {
       lines.push(current)
@@ -149,28 +122,48 @@ function wrapLabel(text, maxLen = 14) {
   return lines.length ? lines.slice(0, 2) : ['—']
 }
 
+const hasData = computed(() => props.nhomList.length > 0)
+
+const axisItems = computed(() => {
+  const items = props.nhomList.map((item) => ({
+    id: item.nhom_nganh_id,
+    name: nhomName(item),
+    score: Number(item.tong_diem) || 0,
+  }))
+  while (items.length > 0 && items.length < RADAR_MIN_AXES) {
+    items.push({
+      id: `pad-${items.length}`,
+      name: '—',
+      score: 0,
+      padded: true,
+    })
+  }
+  return items
+})
+
+const nhomKeyItems = computed(() => axisItems.value.filter((item) => !item.padded))
+
 const isDesktop = computed(() => viewportWidth.value >= 900)
 const isCompact = computed(() => viewportWidth.value < 640)
 
 const chartHeight = computed(() => {
-  if (viewportWidth.value < 480) return 300
-  if (viewportWidth.value < 640) return 320
-  if (viewportWidth.value < 900) return 360
+  if (viewportWidth.value < 480) return 320
+  if (viewportWidth.value < 640) return 340
+  if (viewportWidth.value < 900) return 380
   if (viewportWidth.value < 1100) return 400
-  return 440
+  return 420
 })
 
-/** Size cố định — tránh ApexCharts tính size âm khi label dài. */
 const radarSize = computed(() => {
   const h = chartHeight.value
-  if (isCompact.value) return Math.round(h * 0.38)
-  if (isDesktop.value) return Math.round(h * 0.42)
-  return Math.round(h * 0.4)
+  if (isCompact.value) return Math.round(h * 0.36)
+  if (isDesktop.value) return Math.round(h * 0.4)
+  return Math.round(h * 0.38)
 })
 
 const chartKey = computed(
   () =>
-    `radar-${axisItems.value.map((i) => `${i.id}:${i.score}`).join('|')}-${chartHeight.value}`,
+    `radar-poly-${axisItems.value.map((i) => `${i.id}:${i.score}`).join('|')}-${chartHeight.value}`,
 )
 
 const categories = computed(() => {
@@ -180,14 +173,13 @@ const categories = computed(() => {
 
 const chartSeries = computed(() => [
   {
-    name: 'Nhóm ngành',
+    name: 'Điểm phù hợp',
     data: axisItems.value.map((item) => item.score),
   },
 ])
 
 const maxScore = computed(() => {
-  const values = axisItems.value.map((item) => item.score)
-  const peak = Math.max(0, ...values)
+  const peak = Math.max(0, ...axisItems.value.map((item) => item.score))
   if (peak <= 0) return 10
   return Math.ceil(peak / 5) * 5
 })
@@ -197,6 +189,7 @@ const chartOptions = computed(() => {
   const count = items.length
   const compact = isCompact.value
   const desktop = isDesktop.value
+  const yMax = maxScore.value
 
   const escapeHtml = (value) =>
     String(value ?? '')
@@ -217,21 +210,55 @@ const chartOptions = computed(() => {
       parentHeightOffset: 0,
       redrawOnParentResize: true,
       redrawOnWindowResize: true,
-      dropShadow: { enabled: false },
     },
-    colors: ['#1f7a4c'],
+    dataLabels: {
+      enabled: true,
+      background: {
+        enabled: true,
+        borderRadius: 2,
+        padding: 3,
+        borderWidth: 0,
+        foreColor: '#fff',
+      },
+      style: {
+        fontSize: compact ? '10px' : '11px',
+        fontWeight: 600,
+        colors: [ACCENT],
+      },
+      formatter(val, opts) {
+        const item = items[opts?.dataPointIndex]
+        if (!item || item.padded) return ''
+        return formatScore(val)
+      },
+    },
+    plotOptions: {
+      radar: {
+        size: radarSize.value,
+        polygons: {
+          strokeColors: '#e2ebe5',
+          connectorColors: '#e2ebe5',
+          fill: {
+            colors: ['#f3faf6', '#ffffff'],
+          },
+        },
+      },
+    },
+    colors: [ACCENT],
+    markers: {
+      size: 4,
+      colors: ['#fff'],
+      strokeColors: ACCENT,
+      strokeWidth: 2,
+      hover: {
+        size: 6,
+      },
+    },
     stroke: {
       width: 2,
-      colors: ['#1f7a4c'],
+      colors: [ACCENT],
     },
     fill: {
-      opacity: 0.18,
-    },
-    markers: {
-      size: compact ? 3 : 4,
-      hover: {
-        size: compact ? 5 : 6,
-      },
+      opacity: 0.22,
     },
     legend: {
       show: false,
@@ -248,43 +275,30 @@ const chartOptions = computed(() => {
       },
     },
     yaxis: {
-      show: false,
       min: 0,
-      max: maxScore.value,
+      max: yMax,
       tickAmount: 5,
-    },
-    plotOptions: {
-      radar: {
-        size: radarSize.value,
-        offsetX: 0,
-        offsetY: 0,
-        polygons: {
-          strokeColors: '#d5ddd8',
-          connectorColors: '#d5ddd8',
-          fill: {
-            colors: ['#ffffff', '#f7faf8'],
-          },
+      labels: {
+        formatter(val, i) {
+          if (i % 2 === 0) return String(val)
+          return ''
         },
       },
     },
     tooltip: {
       enabled: true,
-      shared: true,
-      intersect: false,
       custom({ series, dataPointIndex }) {
         const item = items[dataPointIndex]
         if (!item || item.padded) {
-          return `<div class="quiz-radar__tooltip"><div class="quiz-radar__tooltip-title">—</div></div>`
+          return `<div class="quiz-radar-polygon__tooltip"><div class="quiz-radar-polygon__tooltip-title">—</div></div>`
         }
-        const name = escapeHtml(item.name)
         const score = series?.[0]?.[dataPointIndex] ?? item.score
-
         return `
-          <div class="quiz-radar__tooltip">
-            <div class="quiz-radar__tooltip-title">${name}</div>
-            <div class="quiz-radar__tooltip-row">
-              <span class="quiz-radar__tooltip-dot" style="background:#1f7a4c"></span>
-              <div>Điểm: ${score}</div>
+          <div class="quiz-radar-polygon__tooltip">
+            <div class="quiz-radar-polygon__tooltip-title">${escapeHtml(item.name)}</div>
+            <div class="quiz-radar-polygon__tooltip-row">
+              <span class="quiz-radar-polygon__tooltip-dot" aria-hidden="true"></span>
+              <span>Điểm: ${formatScore(score)}</span>
             </div>
           </div>
         `
@@ -295,7 +309,7 @@ const chartOptions = computed(() => {
 </script>
 
 <style scoped>
-.quiz-radar {
+.quiz-radar-polygon {
   margin: 0 0 1.25rem;
   padding: 0.95rem 0.85rem 0.75rem;
   border: 1px solid #d9e2dc;
@@ -303,49 +317,49 @@ const chartOptions = computed(() => {
   background: #fbfcfb;
 }
 
-.quiz-radar__head {
+.quiz-radar-polygon__head {
   margin-bottom: 0.55rem;
   padding: 0 0.25rem;
 }
 
-.quiz-radar__title {
+.quiz-radar-polygon__title {
   margin: 0 0 0.3rem;
   font-size: 1.05rem;
   font-weight: 600;
 }
 
-.quiz-radar__lead {
+.quiz-radar-polygon__lead {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.45;
 }
 
-.quiz-radar__body {
+.quiz-radar-polygon__body {
   display: grid;
   gap: 0.85rem;
   align-items: start;
 }
 
-.quiz-radar__chart-wrap {
+.quiz-radar-polygon__chart-wrap {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 280px;
+  min-height: 300px;
   overflow: visible;
 }
 
-.quiz-radar__chart-wrap :deep(.apexcharts-canvas) {
+.quiz-radar-polygon__chart-wrap :deep(.apexcharts-canvas) {
   margin: 0 auto;
 }
 
-.quiz-radar__chart-wrap :deep(.apexcharts-tooltip) {
+.quiz-radar-polygon__chart-wrap :deep(.apexcharts-tooltip) {
   border: 0 !important;
   box-shadow: 0 8px 24px rgba(26, 46, 36, 0.14) !important;
   border-radius: 10px !important;
   overflow: hidden;
 }
 
-.quiz-radar__chart-wrap :deep(.quiz-radar__tooltip) {
+.quiz-radar-polygon__chart-wrap :deep(.quiz-radar-polygon__tooltip) {
   min-width: 10rem;
   max-width: min(18rem, 78vw);
   padding: 0.7rem 0.8rem;
@@ -355,36 +369,31 @@ const chartOptions = computed(() => {
   line-height: 1.4;
 }
 
-.quiz-radar__chart-wrap :deep(.quiz-radar__tooltip-title) {
-  margin-bottom: 0.45rem;
+.quiz-radar-polygon__chart-wrap :deep(.quiz-radar-polygon__tooltip-title) {
+  margin-bottom: 0.4rem;
   color: #1f7a4c;
   font-weight: 650;
 }
 
-.quiz-radar__chart-wrap :deep(.quiz-radar__tooltip-row) {
+.quiz-radar-polygon__chart-wrap :deep(.quiz-radar-polygon__tooltip-row) {
   display: flex;
   align-items: center;
   gap: 0.45rem;
 }
 
-.quiz-radar__chart-wrap :deep(.quiz-radar__tooltip-dot) {
+.quiz-radar-polygon__chart-wrap :deep(.quiz-radar-polygon__tooltip-dot) {
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 999px;
+  background: #1f7a4c;
   flex-shrink: 0;
 }
 
-.quiz-radar__keys {
-  display: grid;
-  gap: 0.75rem;
+.quiz-radar-polygon__keys {
   min-width: 0;
 }
 
-.quiz-radar__key-block {
-  min-width: 0;
-}
-
-.quiz-radar__key-title {
+.quiz-radar-polygon__key-title {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -394,18 +403,15 @@ const chartOptions = computed(() => {
   color: var(--text, #24362c);
 }
 
-.quiz-radar__key-dot {
+.quiz-radar-polygon__key-dot {
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 999px;
+  background: #1f7a4c;
   flex-shrink: 0;
 }
 
-.quiz-radar__key-title--nganh .quiz-radar__key-dot {
-  background: #1f7a4c;
-}
-
-.quiz-radar__key-list {
+.quiz-radar-polygon__key-list {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -413,7 +419,7 @@ const chartOptions = computed(() => {
   gap: 0.35rem;
 }
 
-.quiz-radar__key-item {
+.quiz-radar-polygon__key-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.4rem 0.5rem;
@@ -424,7 +430,7 @@ const chartOptions = computed(() => {
   border: 1px solid #e5ece7;
 }
 
-.quiz-radar__key-name {
+.quiz-radar-polygon__key-name {
   min-width: 0;
   color: var(--text, #24362c);
   font-size: 0.88rem;
@@ -433,7 +439,7 @@ const chartOptions = computed(() => {
   overflow-wrap: anywhere;
 }
 
-.quiz-radar__key-score {
+.quiz-radar-polygon__key-score {
   color: #1f7a4c;
   font-size: 0.84rem;
   font-weight: 650;
@@ -441,84 +447,63 @@ const chartOptions = computed(() => {
   white-space: nowrap;
 }
 
-.quiz-radar__key-empty {
-  margin: 0;
-  padding: 0.35rem 0.15rem;
-  font-size: 0.86rem;
-}
-
 @media (min-width: 900px) {
-  .quiz-radar__body {
+  .quiz-radar-polygon__body {
     grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.85fr);
     gap: 1rem;
     align-items: center;
   }
 
-  .quiz-radar__keys {
-    gap: 0.9rem;
-    padding-left: 0.15rem;
-  }
-
-  .quiz-radar__chart-wrap {
+  .quiz-radar-polygon__chart-wrap {
     min-height: 380px;
   }
 }
 
 @media (max-width: 899px) {
-  .quiz-radar {
+  .quiz-radar-polygon {
     padding: 0.8rem 0.55rem 0.65rem;
   }
 
-  .quiz-radar__title {
+  .quiz-radar-polygon__title {
     font-size: 0.98rem;
   }
 
-  .quiz-radar__lead {
+  .quiz-radar-polygon__lead {
     font-size: 0.82rem;
   }
 
-  .quiz-radar__body {
+  .quiz-radar-polygon__body {
     grid-template-columns: 1fr;
   }
 
-  .quiz-radar__chart-wrap {
-    min-height: 280px;
-  }
-
-  .quiz-radar__keys {
+  .quiz-radar-polygon__keys {
     padding-top: 0.65rem;
     border-top: 1px solid #e2ebe5;
   }
 
-  .quiz-radar__key-title {
+  .quiz-radar-polygon__key-title {
     font-size: 0.82rem;
   }
 
-  .quiz-radar__key-item {
+  .quiz-radar-polygon__key-item {
     padding: 0.35rem 0.45rem;
-    gap: 0.3rem 0.4rem;
   }
 
-  .quiz-radar__key-name {
+  .quiz-radar-polygon__key-name {
     font-size: 0.78rem;
   }
 
-  .quiz-radar__key-score {
+  .quiz-radar-polygon__key-score {
     font-size: 0.74rem;
-  }
-
-  .quiz-radar__chart-wrap :deep(.quiz-radar__tooltip) {
-    font-size: 0.78rem;
-    padding: 0.55rem 0.65rem;
   }
 }
 
 @media (max-width: 639px) {
-  .quiz-radar__key-item {
+  .quiz-radar-polygon__key-item {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .quiz-radar__key-score {
+  .quiz-radar-polygon__key-score {
     justify-self: start;
   }
 }

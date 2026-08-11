@@ -214,6 +214,13 @@ export const API_PUBLIC = {
   LOAI_CAU_HOI: {
     LIST: { url: '/loai-cau-hoi', method: 'get' },
   },
+  NGANH_HOC: {
+    LIST: { url: '/nganh-hoc', method: 'get' },
+    TRUONG_TUYEN_SINH: (id) => ({
+      url: `/nganh-hoc/${id}/truong-tuyen-sinh`,
+      method: 'get',
+    }),
+  },
   TRAC_NGHIEM_CAU_HOI: {
     LIST: { url: '/trac-nghiem-cau-hoi', method: 'get' },
   },

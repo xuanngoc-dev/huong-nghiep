@@ -128,7 +128,7 @@
           <div class="settings-row__meta settings-row__meta--inline">
             <div>
               <span class="settings-row__label">Thu phóng màn hình</span>
-              <span class="settings-row__desc">Điều chỉnh mức độ phóng to / thu nhỏ giao diện</span>
+              <span class="settings-row__desc">Thu phóng giao diện, luôn vừa 100% bề ngang trình duyệt</span>
             </div>
             <span class="settings-scale-value">{{ layoutStore.uiScale }}%</span>
           </div>

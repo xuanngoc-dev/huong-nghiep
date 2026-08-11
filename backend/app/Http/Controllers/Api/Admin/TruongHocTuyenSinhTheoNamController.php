@@ -185,6 +185,7 @@ class TruongHocTuyenSinhTheoNamController extends Controller
             'phuong_thuc_xet_tuyen' => ['nullable', 'string', 'max:255'],
             'to_hop_xet_tuyen' => ['nullable', 'string', 'max:255'],
             'chi_tieu' => ['nullable', 'integer', 'min:0'],
+            'diem_chuan' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
             'ghi_chu' => ['nullable', 'string'],
         ], [
             'nam_hoc.unique' => 'Trường này đã có ngành/chuyên ngành tuyển sinh cho năm học đã chọn.',

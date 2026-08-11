@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'phuong_thuc_xet_tuyen',
     'to_hop_xet_tuyen',
     'chi_tieu',
+    'diem_chuan',
     'ghi_chu',
 ])]
 class TruongHocTuyenSinhTheoNam extends Model
@@ -27,6 +28,7 @@ class TruongHocTuyenSinhTheoNam extends Model
     {
         return [
             'chi_tieu' => 'integer',
+            'diem_chuan' => 'float',
         ];
     }
 

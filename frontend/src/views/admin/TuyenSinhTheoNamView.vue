@@ -162,6 +162,11 @@
             {{ row.chi_tieu ?? '—' }}
           </template>
         </CustomTableColumn>
+        <CustomTableColumn prop="diem_chuan" label="Điểm chuẩn" width="110" align="center">
+          <template #default="{ row }">
+            {{ row.diem_chuan ?? '—' }}
+          </template>
+        </CustomTableColumn>
         <CustomTableColumn prop="ghi_chu" label="Ghi chú" min-width="140" show-overflow-tooltip />
         <CustomTableColumn label="Thao tác" width="100" fixed="right" align="center">
           <template #default="{ row }">
@@ -284,6 +289,17 @@
               />
             </CustomFormItem>
           </CustomCol>
+          <CustomCol :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+            <CustomFormItem label="Điểm chuẩn" prop="diem_chuan">
+              <CustomInput
+                v-model.number="form.diem_chuan"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ví dụ: 25.5"
+              />
+            </CustomFormItem>
+          </CustomCol>
           <CustomCol :span="24">
             <CustomFormItem label="Ghi chú" prop="ghi_chu">
               <CustomInput
@@ -366,6 +382,7 @@ const form = reactive({
   phuong_thuc_xet_tuyen: '',
   to_hop_xet_tuyen: '',
   chi_tieu: null,
+  diem_chuan: null,
   ghi_chu: '',
 })
 
@@ -418,6 +435,7 @@ function resetForm() {
   form.phuong_thuc_xet_tuyen = ''
   form.to_hop_xet_tuyen = ''
   form.chi_tieu = null
+  form.diem_chuan = null
   form.ghi_chu = ''
   editingId.value = null
 }
@@ -436,6 +454,7 @@ function openEdit(row) {
   form.phuong_thuc_xet_tuyen = row.phuong_thuc_xet_tuyen || ''
   form.to_hop_xet_tuyen = row.to_hop_xet_tuyen || ''
   form.chi_tieu = row.chi_tieu ?? null
+  form.diem_chuan = row.diem_chuan ?? null
   form.ghi_chu = row.ghi_chu || ''
   dialogVisible.value = true
 }
@@ -510,6 +529,8 @@ async function submitForm() {
     phuong_thuc_xet_tuyen: form.phuong_thuc_xet_tuyen?.trim() || null,
     to_hop_xet_tuyen: form.to_hop_xet_tuyen?.trim() || null,
     chi_tieu: form.chi_tieu === '' || form.chi_tieu === null ? null : Number(form.chi_tieu),
+    diem_chuan:
+      form.diem_chuan === '' || form.diem_chuan === null ? null : Number(form.diem_chuan),
     ghi_chu: form.ghi_chu?.trim() || null,
   }
 

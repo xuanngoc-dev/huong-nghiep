@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\LoaiCauHoiController;
+use App\Http\Controllers\Api\NganhHocController;
 use App\Http\Controllers\Api\NguoiDungController;
 use App\Http\Controllers\Api\TracNghiemCauHoiController;
 use App\Http\Controllers\Api\TracNghiemLichSuTraLoiController;
@@ -58,6 +59,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/assessments', [AssessmentController::class, 'index']);
     Route::get('/assessments/{id}', [AssessmentController::class, 'show']);
     Route::get('/loai-cau-hoi', [LoaiCauHoiController::class, 'index']);
+    Route::get('/nganh-hoc', [NganhHocController::class, 'index']);
+    Route::get('/nganh-hoc/{nganhHoc}/truong-tuyen-sinh', [NganhHocController::class, 'truongTuyenSinh']);
     Route::get('/trac-nghiem-cau-hoi', [TracNghiemCauHoiController::class, 'index']);
     Route::post('/trac-nghiem-lich-su-tra-loi/start', [TracNghiemLichSuTraLoiController::class, 'start']);
     Route::post('/trac-nghiem-lich-su-tra-loi', [TracNghiemLichSuTraLoiController::class, 'store']);

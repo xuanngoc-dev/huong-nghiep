@@ -1,7 +1,7 @@
 <template>
   <div class="quiz-fields-ket-qua">
     <p class="quiz-fields-ket-qua__note">
-      Gợi ý: đây là 5 nhóm ngành và ngành học phù hợp nhất với bạn.
+      Gợi ý: đây là 5 nhóm ngành được sắp xếp theo điểm phù hợp với bạn.
     </p>
 
     <div class="quiz-fields-ket-qua__meta muted">
@@ -10,10 +10,7 @@
       <span>Tổng điểm phiên: {{ formatScore(summary?.tong_diem) }}</span>
     </div>
 
-    <QuizFieldsRadarChart
-      :nhom-list="nhomList"
-      :nganh-list="nganhList"
-    />
+    <QuizFieldsRadarPolygonChart :nhom-list="nhomList" />
 
     <section
       v-if="topNhom || topNganh"
@@ -103,7 +100,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import QuizFieldsRadarChart from '@/components/quiz/QuizFieldsRadarChart.vue'
+import QuizFieldsRadarPolygonChart from '@/components/quiz/QuizFieldsRadarPolygonChart.vue'
 
 const TOP_LIMIT = 5
 
@@ -224,6 +221,7 @@ function formatScore(value) {
   margin-top: 1.75rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
+  width: 100%;
 }
 
 .quiz-fields-ket-qua__next-title {
@@ -242,7 +240,7 @@ function formatScore(value) {
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
-  max-width: 42rem;
+  width: 100%;
   color: var(--text);
   font-size: 0.98rem;
   line-height: 1.55;
@@ -255,7 +253,7 @@ function formatScore(value) {
 .quiz-fields-ket-qua__next-list {
   margin: 0;
   padding-left: 1.35rem;
-  max-width: 42rem;
+  width: 100%;
   color: var(--text);
   font-size: 0.95rem;
   line-height: 1.65;

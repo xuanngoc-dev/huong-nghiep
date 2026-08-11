@@ -82,11 +82,18 @@
         v-if="activeTab === 'ket-qua'"
         :summary="summary"
         :can-go-prev="Boolean(prevStep)"
-        :can-go-next="Boolean(nextStep)"
+        :can-go-next="true"
         @prev="goPrev"
-        @next="goNext"
+        @next="goToTab('nganh-uoc-mo')"
       />
-      <QuizFieldsNganhUocMoTab v-else-if="activeTab === 'nganh-uoc-mo'" />
+      <QuizFieldsNganhUocMoTab
+        v-else-if="activeTab === 'nganh-uoc-mo'"
+        :summary="summary"
+        :can-go-prev="true"
+        :can-go-next="true"
+        @prev="goToTab('ket-qua')"
+        @next="goToTab('khao-sat')"
+      />
       <QuizFieldsKhaoSatCaNhanTab v-else-if="activeTab === 'khao-sat'" />
     </div>
   </section>
@@ -390,6 +397,11 @@ async function loadSummary() {
   } finally {
     loading.value = false
   }
+}
+
+function goToTab(tabId) {
+  if (!tabs.some((tab) => tab.id === tabId)) return
+  activeTab.value = tabId
 }
 
 function goPrev() {

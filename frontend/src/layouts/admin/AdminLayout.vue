@@ -276,6 +276,14 @@ const nowFullLabel = computed(
 let mediaQuery = null
 let clockTimer = null
 
+function syncAdminViewport() {
+  const root = document.documentElement
+  const scale = Math.max(0.8, Math.min(1.25, Number(layoutStore.uiScale) / 100)) || 1
+  // Sau zoom, bề ngang/dọc visual luôn khớp đúng cửa sổ trình duyệt (100%)
+  root.style.setProperty('--admin-layout-width', `${window.innerWidth / scale}px`)
+  root.style.setProperty('--admin-layout-height', `${window.innerHeight / scale}px`)
+}
+
 function syncCollapseByViewport(e) {
   clearHoverLeaveTimer()
   hoverExpanded.value = false
@@ -311,6 +319,7 @@ async function onCommand(cmd) {
 onMounted(() => {
   document.documentElement.classList.add('is-admin-layout')
   layoutStore.syncAppearance()
+  syncAdminViewport()
 
   const saved = localStorage.getItem('darkMode')
   if (saved === '1') {
@@ -322,10 +331,15 @@ onMounted(() => {
   pinnedCollapsed.value = mediaQuery.matches
   mediaQuery.addEventListener('change', syncCollapseByViewport)
   window.addEventListener('keydown', onGlobalKeydown)
+  window.addEventListener('resize', syncAdminViewport)
 
   clockTimer = window.setInterval(() => {
     now.value = new Date()
   }, 1000)
+})
+
+watch(() => layoutStore.uiScale, () => {
+  nextTick(syncAdminViewport)
 })
 
 onUnmounted(() => {
@@ -334,6 +348,8 @@ onUnmounted(() => {
   root.style.removeProperty('--admin-font')
   root.style.removeProperty('--admin-font-size')
   root.style.removeProperty('--admin-ui-scale')
+  root.style.removeProperty('--admin-layout-width')
+  root.style.removeProperty('--admin-layout-height')
   root.style.removeProperty('--el-font-size-extra-small')
   root.style.removeProperty('--el-font-size-small')
   root.style.removeProperty('--el-font-size-base')
@@ -343,6 +359,7 @@ onUnmounted(() => {
   root.style.removeProperty('--el-font-line-height-primary')
   mediaQuery?.removeEventListener('change', syncCollapseByViewport)
   window.removeEventListener('keydown', onGlobalKeydown)
+  window.removeEventListener('resize', syncAdminViewport)
   clearHoverLeaveTimer()
   if (clockTimer != null) window.clearInterval(clockTimer)
 })
@@ -350,16 +367,17 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .main-layout {
-  min-height: 100vh;
+  min-height: var(--admin-layout-height);
   position: relative;
   font-family: var(--admin-font);
   font-size: var(--el-font-size-base);
   font-weight: 300;
   letter-spacing: -0.02em;
+  overflow-x: hidden;
 
   &.is-navbar-fixed,
   &.is-sidebar-fixed {
-    height: 100vh;
+    height: var(--admin-layout-height);
     overflow: hidden;
   }
 }
@@ -393,7 +411,7 @@ onUnmounted(() => {
   flex-direction: column;
 
   &.is-fixed {
-    height: 100vh;
+    height: var(--admin-layout-height);
     position: sticky;
     top: 0;
     overflow: hidden;
@@ -403,7 +421,7 @@ onUnmounted(() => {
     position: fixed;
     left: 0;
     top: 0;
-    height: 100vh;
+    height: var(--admin-layout-height);
     z-index: 100;
     overflow: hidden;
     box-shadow: var(--el-box-shadow-dark);
@@ -480,7 +498,7 @@ onUnmounted(() => {
 
   .is-navbar-fixed &,
   .is-sidebar-fixed & {
-    height: 100vh;
+    height: var(--admin-layout-height);
   }
 
   .is-navbar-fixed & {
@@ -488,6 +506,7 @@ onUnmounted(() => {
   }
 
   .is-sidebar-fixed:not(.is-navbar-fixed) & {
+    overflow-x: hidden;
     overflow-y: auto;
   }
 }
@@ -685,8 +704,10 @@ onUnmounted(() => {
 .main {
   background: var(--el-bg-color-page);
   min-height: 0;
+  overflow-x: hidden;
 
   .is-navbar-fixed & {
+    overflow-x: hidden;
     overflow-y: auto;
   }
 }
@@ -698,6 +719,8 @@ html.is-admin-layout {
   --admin-font: "Be Vietnam Pro", "Roboto", "Segoe UI", sans-serif;
   --admin-font-size: 16px;
   --admin-ui-scale: 1;
+  --admin-layout-width: 100%;
+  --admin-layout-height: 100vh;
   --el-font-family: var(--admin-font);
   --el-font-size-extra-small: 0.8125rem;
   --el-font-size-small: 0.875rem;
@@ -708,6 +731,11 @@ html.is-admin-layout {
   --el-font-line-height-primary: 1.5;
   font-size: var(--admin-font-size);
   zoom: var(--admin-ui-scale);
+  /* Width/height được JS sync theo innerWidth/Height để visual luôn = 100% cửa sổ */
+  width: var(--admin-layout-width);
+  min-height: var(--admin-layout-height);
+  overflow-x: hidden;
+  background-color: var(--el-bg-color-page);
 }
 
 /* Chế độ sáng: chữ đen tuyền */
@@ -748,6 +776,17 @@ html.is-admin-layout body {
   font-size: 1rem;
   font-weight: 300;
   letter-spacing: -0.02em;
+  width: 100%;
+  min-height: var(--admin-layout-height);
+  overflow-x: hidden;
+  background: var(--el-bg-color-page);
+}
+
+html.is-admin-layout #app {
+  width: 100%;
+  min-height: var(--admin-layout-height);
+  overflow-x: hidden;
+  background: var(--el-bg-color-page);
 }
 
 html.is-admin-layout .el-button,
