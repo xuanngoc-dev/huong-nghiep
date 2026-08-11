@@ -46,6 +46,17 @@ export const API_TINH_THANH = {
   BULK_STATUS: { url: '/admin/tinh-thanh/bulk-status', method: 'post' },
 }
 
+/** Admin — Phường xã */
+export const API_PHUONG_XA = {
+  LIST: { url: '/admin/phuong-xa', method: 'get' },
+  CREATE: { url: '/admin/phuong-xa', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/phuong-xa/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/phuong-xa/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/phuong-xa/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/phuong-xa/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/phuong-xa/bulk-status', method: 'post' },
+}
+
 /** Admin — Chuyên ngành */
 export const API_CHUYEN_NGANH = {
   LIST: { url: '/admin/chuyen-nganh', method: 'get' },
@@ -137,6 +148,28 @@ export const API_TRUONG_HOC_TUYEN_SINH_THEO_NAM = {
   UPDATE: (id) => ({ url: `/admin/truong-hoc-tuyen-sinh-theo-nam/${id}`, method: 'put' }),
   DELETE: (id) => ({ url: `/admin/truong-hoc-tuyen-sinh-theo-nam/${id}`, method: 'delete' }),
   BULK_DELETE: { url: '/admin/truong-hoc-tuyen-sinh-theo-nam/bulk-delete', method: 'post' },
+}
+
+/** Admin — Dân tộc */
+export const API_DAN_TOC = {
+  LIST: { url: '/admin/dan-toc', method: 'get' },
+  CREATE: { url: '/admin/dan-toc', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/dan-toc/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/dan-toc/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/dan-toc/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/dan-toc/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/dan-toc/bulk-status', method: 'post' },
+}
+
+/** Admin — Tôn giáo */
+export const API_TON_GIAO = {
+  LIST: { url: '/admin/ton-giao', method: 'get' },
+  CREATE: { url: '/admin/ton-giao', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/ton-giao/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/ton-giao/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/ton-giao/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/ton-giao/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/ton-giao/bulk-status', method: 'post' },
 }
 
 /** Admin — Loại câu hỏi */

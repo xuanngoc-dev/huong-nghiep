@@ -9,27 +9,9 @@
                 v-model="filters.keyword"
                 clearable
                 class="filter-control"
-                placeholder="Tên hoặc mã tỉnh thành..."
+                placeholder="Tên, mã hoặc tên gọi khác..."
                 @keyup.enter="handleSearch"
               />
-            </CustomFormItem>
-          </CustomCol>
-          <CustomCol>
-            <CustomFormItem label="Khu vực">
-              <CustomSelect
-                v-model="filters.khu_vuc_id"
-                clearable
-                filterable
-                class="filter-control"
-                placeholder="Chọn khu vực"
-              >
-                <CustomOption
-                  v-for="opt in khuVucOptions"
-                  :key="opt.id"
-                  :label="`${opt.ma_khu_vuc} — ${opt.ten_khu_vuc}`"
-                  :value="opt.id"
-                />
-              </CustomSelect>
             </CustomFormItem>
           </CustomCol>
           <CustomCol>
@@ -69,7 +51,7 @@
 
     <CustomCard shadow="never">
       <div class="list-toolbar">
-        <h2>Quản lý tỉnh thành</h2>
+        <h2>Quản lý dân tộc</h2>
         <div class="list-actions">
           <CustomTooltip content="Xóa đã chọn" placement="top">
             <span class="action-wrap">
@@ -86,7 +68,7 @@
             </span>
           </CustomTooltip>
 
-          <CustomTooltip content="Khóa các tỉnh thành đang sử dụng" placement="top">
+          <CustomTooltip content="Khóa các dân tộc đang sử dụng" placement="top">
             <span class="action-wrap">
               <el-badge :value="lockableCount" :hidden="!lockableCount" :max="99">
                 <CustomButton
@@ -101,7 +83,7 @@
             </span>
           </CustomTooltip>
 
-          <CustomTooltip content="Mở các tỉnh thành đang ngừng sử dụng" placement="top">
+          <CustomTooltip content="Mở các dân tộc đang ngừng sử dụng" placement="top">
             <span class="action-wrap">
               <el-badge :value="unlockableCount" :hidden="!unlockableCount" :max="99">
                 <CustomButton
@@ -116,7 +98,7 @@
             </span>
           </CustomTooltip>
 
-          <CustomTooltip content="Thêm tỉnh thành" placement="top">
+          <CustomTooltip content="Thêm dân tộc" placement="top">
             <span class="action-wrap">
               <el-badge :value="0" :hidden="true">
                 <CustomButton type="primary" :icon="Plus" @click="openCreate">
@@ -143,13 +125,14 @@
             {{ pagination.start + $index + 1 }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn prop="ma_tinh_thanh" label="Mã tỉnh" width="110" />
-        <CustomTableColumn prop="ten_tinh_thanh" label="Tên tỉnh thành" min-width="200" />
-        <CustomTableColumn label="Khu vực" min-width="220" show-overflow-tooltip>
-          <template #default="{ row }">
-            {{ row.khu_vuc ? `${row.khu_vuc.ma_khu_vuc} — ${row.khu_vuc.ten_khu_vuc}` : '—' }}
-          </template>
-        </CustomTableColumn>
+        <CustomTableColumn prop="ma_dan_toc" label="Mã dân tộc" width="140" />
+        <CustomTableColumn prop="ten_dan_toc" label="Tên dân tộc" min-width="180" />
+        <CustomTableColumn
+          prop="ten_goi_khac"
+          label="Tên gọi khác"
+          min-width="180"
+          show-overflow-tooltip
+        />
         <CustomTableColumn label="Trạng thái" width="200" align="center">
           <template #default="{ row }">
             <div class="status-cell">
@@ -197,44 +180,26 @@
 
     <CustomDialog
       v-model="dialogVisible"
-      :title="isEdit ? 'Sửa tỉnh thành' : 'Thêm tỉnh thành'"
+      :title="isEdit ? 'Sửa dân tộc' : 'Thêm dân tộc'"
       :width="720"
     >
       <CustomForm ref="formRef" :model="form" :rules="rules">
         <CustomRow :gutter="16">
-          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
-            <CustomFormItem label="Mã tỉnh thành" prop="ma_tinh_thanh">
-              <CustomInput v-model="form.ma_tinh_thanh" placeholder="Ví dụ: 1" maxlength="20" />
+          <CustomCol :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+            <CustomFormItem label="Mã dân tộc" prop="ma_dan_toc">
+              <CustomInput v-model="form.ma_dan_toc" placeholder="Ví dụ: KINH" maxlength="50" />
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
-            <CustomFormItem label="Tên tỉnh thành" prop="ten_tinh_thanh">
+          <CustomCol :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+            <CustomFormItem label="Tên dân tộc" prop="ten_dan_toc">
               <CustomInput
-                v-model="form.ten_tinh_thanh"
-                placeholder="Nhập tên tỉnh thành"
+                v-model="form.ten_dan_toc"
+                placeholder="Nhập tên dân tộc"
                 maxlength="255"
               />
             </CustomFormItem>
           </CustomCol>
-          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
-            <CustomFormItem label="Khu vực" prop="khu_vuc_id">
-              <CustomSelect
-                v-model="form.khu_vuc_id"
-                clearable
-                filterable
-                placeholder="Chọn khu vực (không bắt buộc)"
-                style="width: 100%"
-              >
-                <CustomOption
-                  v-for="opt in khuVucOptions"
-                  :key="opt.id"
-                  :label="`${opt.ma_khu_vuc} — ${opt.ten_khu_vuc}`"
-                  :value="opt.id"
-                />
-              </CustomSelect>
-            </CustomFormItem>
-          </CustomCol>
-          <CustomCol :xs="12" :sm="12" :md="8" :lg="8" :xl="8">
+          <CustomCol :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
             <CustomFormItem label="Trạng thái" prop="trang_thai">
               <CustomSelect v-model="form.trang_thai" placeholder="Chọn trạng thái" style="width: 100%">
                 <CustomOption
@@ -244,6 +209,15 @@
                   :value="opt.value"
                 />
               </CustomSelect>
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol :span="24">
+            <CustomFormItem label="Tên gọi khác" prop="ten_goi_khac">
+              <CustomInput
+                v-model="form.ten_goi_khac"
+                placeholder="Tên gọi khác (không bắt buộc)"
+                maxlength="255"
+              />
             </CustomFormItem>
           </CustomCol>
         </CustomRow>
@@ -261,10 +235,10 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { Delete, Edit, Lock, Plus, Search, Unlock } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
-import { API_KHU_VUC, API_TINH_THANH } from '@/constants/constant_api'
+import { API_DAN_TOC } from '@/constants/constant_api'
 import {
   CustomButton,
   CustomCard,
@@ -290,7 +264,6 @@ const trangThaiOptions = [
 
 const tableRef = ref(null)
 const items = ref([])
-const khuVucOptions = ref([])
 const selectedRows = ref([])
 const statusLoadingId = ref(null)
 const dialogVisible = ref(false)
@@ -299,7 +272,6 @@ const formRef = ref(null)
 
 const filters = reactive({
   keyword: '',
-  khu_vuc_id: '',
   trang_thai: '',
 })
 
@@ -310,21 +282,22 @@ const pagination = reactive({
 })
 
 const form = reactive({
-  ma_tinh_thanh: '',
-  ten_tinh_thanh: '',
-  khu_vuc_id: null,
+  ma_dan_toc: '',
+  ten_dan_toc: '',
+  ten_goi_khac: '',
   trang_thai: 'dang_su_dung',
 })
 
 const rules = {
-  ma_tinh_thanh: [
-    { required: true, message: 'Vui lòng nhập mã tỉnh thành', trigger: 'blur' },
-    { max: 20, message: 'Tối đa 20 ký tự', trigger: 'blur' },
+  ma_dan_toc: [
+    { required: true, message: 'Vui lòng nhập mã dân tộc', trigger: 'blur' },
+    { max: 50, message: 'Tối đa 50 ký tự', trigger: 'blur' },
   ],
-  ten_tinh_thanh: [
-    { required: true, message: 'Vui lòng nhập tên tỉnh thành', trigger: 'blur' },
+  ten_dan_toc: [
+    { required: true, message: 'Vui lòng nhập tên dân tộc', trigger: 'blur' },
     { max: 255, message: 'Tối đa 255 ký tự', trigger: 'blur' },
   ],
+  ten_goi_khac: [{ max: 255, message: 'Tối đa 255 ký tự', trigger: 'blur' }],
   trang_thai: [{ required: true, message: 'Vui lòng chọn trạng thái', trigger: 'change' }],
 }
 
@@ -359,7 +332,7 @@ async function toggleStatus(row, enabled) {
   statusLoadingId.value = row.id
 
   const res = await request({
-    url: API_TINH_THANH.UPDATE(row.id),
+    url: API_DAN_TOC.UPDATE(row.id),
     body: { trang_thai: nextStatus },
     loading: false,
   })
@@ -386,11 +359,10 @@ function handleSearch() {
   fetchList()
 }
 
-
 function resetForm() {
-  form.ma_tinh_thanh = ''
-  form.ten_tinh_thanh = ''
-  form.khu_vuc_id = null
+  form.ma_dan_toc = ''
+  form.ten_dan_toc = ''
+  form.ten_goi_khac = ''
   form.trang_thai = 'dang_su_dung'
   editingId.value = null
 }
@@ -402,37 +374,24 @@ function openCreate() {
 
 function openEdit(row) {
   editingId.value = row.id
-  form.ma_tinh_thanh = String(row.ma_tinh_thanh ?? '')
-  form.ten_tinh_thanh = row.ten_tinh_thanh
-  form.khu_vuc_id = row.khu_vuc_id ?? null
+  form.ma_dan_toc = row.ma_dan_toc
+  form.ten_dan_toc = row.ten_dan_toc
+  form.ten_goi_khac = row.ten_goi_khac || ''
   form.trang_thai = row.trang_thai
   dialogVisible.value = true
-}
-
-async function fetchKhuVucOptions() {
-  const res = await request({
-    url: API_KHU_VUC.LIST,
-    params: { start: 0, limit: 500, trang_thai: 'dang_su_dung' },
-    loading: false,
-    silent: true,
-  })
-
-  khuVucOptions.value = res.ok ? (res.data ?? []) : []
 }
 
 async function fetchList() {
   const q = filters.keyword.trim()
   const trangThai = filters.trang_thai || ''
-  const khuVucId = filters.khu_vuc_id || ''
   const params = {
     ...(q ? { q } : {}),
     ...(trangThai ? { trang_thai: trangThai } : {}),
-    ...(khuVucId ? { khu_vuc_id: khuVucId } : {}),
     start: pagination.start,
     limit: pagination.limit,
   }
 
-  const res = await request({ url: API_TINH_THANH.LIST, params })
+  const res = await request({ url: API_DAN_TOC.LIST, params })
 
   if (!res.ok) {
     items.value = []
@@ -450,13 +409,11 @@ async function submitForm() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
 
-  const url = isEdit.value
-    ? API_TINH_THANH.UPDATE(editingId.value)
-    : API_TINH_THANH.CREATE
+  const url = isEdit.value ? API_DAN_TOC.UPDATE(editingId.value) : API_DAN_TOC.CREATE
   const body = {
-    ma_tinh_thanh: form.ma_tinh_thanh.trim(),
-    ten_tinh_thanh: form.ten_tinh_thanh.trim(),
-    khu_vuc_id: form.khu_vuc_id || null,
+    ma_dan_toc: form.ma_dan_toc.trim(),
+    ten_dan_toc: form.ten_dan_toc.trim(),
+    ten_goi_khac: form.ten_goi_khac?.trim() || null,
     trang_thai: form.trang_thai,
   }
 
@@ -468,16 +425,9 @@ async function submitForm() {
 }
 
 async function confirmRemove(row) {
-  if ((row.so_luong_phuong_xa ?? 0) > 0) {
-    ElMessage.warning(
-      `Không thể xóa tỉnh thành «${row.ten_tinh_thanh}» vì vẫn còn ${row.so_luong_phuong_xa} phường xã thuộc tỉnh này.`,
-    )
-    return
-  }
-
   try {
     await ElMessageBox.confirm(
-      `Xóa tỉnh thành «${row.ten_tinh_thanh}»? Thao tác không thể hoàn tác.`,
+      `Xóa dân tộc «${row.ten_dan_toc}»? Thao tác không thể hoàn tác.`,
       'Xác nhận xóa',
       { type: 'warning', confirmButtonText: 'Xóa', cancelButtonText: 'Hủy' },
     )
@@ -485,7 +435,7 @@ async function confirmRemove(row) {
     return
   }
 
-  const res = await request({ url: API_TINH_THANH.DELETE(row.id) })
+  const res = await request({ url: API_DAN_TOC.DELETE(row.id) })
   if (!res.ok) return
 
   await fetchList()
@@ -494,20 +444,9 @@ async function confirmRemove(row) {
 async function confirmBulkRemove() {
   if (!hasSelection.value) return
 
-  const blocked = selectedRows.value.filter((row) => (row.so_luong_phuong_xa ?? 0) > 0)
-  if (blocked.length) {
-    const tenList = blocked.map((row) => row.ten_tinh_thanh).join(', ')
-    ElMessage.warning(
-      blocked.length === 1
-        ? `Không thể xóa tỉnh thành «${tenList}» vì vẫn còn phường xã thuộc tỉnh này.`
-        : `Không thể xóa các tỉnh thành sau vì vẫn còn phường xã liên kết: ${tenList}.`,
-    )
-    return
-  }
-
   try {
     await ElMessageBox.confirm(
-      `Xóa ${selectedCount.value} tỉnh thành đã chọn? Thao tác không thể hoàn tác.`,
+      `Xóa ${selectedCount.value} dân tộc đã chọn? Thao tác không thể hoàn tác.`,
       'Xác nhận xóa',
       { type: 'warning', confirmButtonText: 'Xóa', cancelButtonText: 'Hủy' },
     )
@@ -516,7 +455,7 @@ async function confirmBulkRemove() {
   }
 
   const res = await request({
-    url: API_TINH_THANH.BULK_DELETE,
+    url: API_DAN_TOC.BULK_DELETE,
     body: { ids: selectedIds.value },
   })
   if (!res.ok) return
@@ -534,7 +473,7 @@ async function confirmBulkStatus(trangThai) {
 
   try {
     await ElMessageBox.confirm(
-      `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)} ${ids.length} tỉnh thành (trạng thái: ${statusLabel})?`,
+      `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)} ${ids.length} dân tộc (trạng thái: ${statusLabel})?`,
       `Xác nhận ${actionLabel}`,
       { type: 'warning', confirmButtonText: 'Đồng ý', cancelButtonText: 'Hủy' },
     )
@@ -543,7 +482,7 @@ async function confirmBulkStatus(trangThai) {
   }
 
   const res = await request({
-    url: API_TINH_THANH.BULK_STATUS,
+    url: API_DAN_TOC.BULK_STATUS,
     body: { ids, trang_thai: trangThai },
   })
   if (!res.ok) return
@@ -551,8 +490,5 @@ async function confirmBulkStatus(trangThai) {
   await fetchList()
 }
 
-onMounted(async () => {
-  await fetchKhuVucOptions()
-  await fetchList()
-})
+onMounted(fetchList)
 </script>

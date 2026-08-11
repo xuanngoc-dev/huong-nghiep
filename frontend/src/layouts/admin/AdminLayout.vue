@@ -771,6 +771,15 @@ html.is-admin-layout:not(.dark) h3 {
   color: #000000;
 }
 
+html.is-admin-layout:not(.dark) .el-menu-item.is-active {
+  color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+}
+
+html.is-admin-layout:not(.dark) .el-menu-item.is-active .el-icon {
+  color: var(--el-color-primary);
+}
+
 html.is-admin-layout body {
   font-family: var(--admin-font);
   font-size: 1rem;
@@ -840,9 +849,10 @@ html.is-admin-layout h3 {
   letter-spacing: -0.025em;
 }
 
-/* Toast từ runRequest / notifyApi — nền đậm, chữ trắng dễ đọc */
-.el-message.api-request-message {
+/* Toast ElMessage — nền đậm, chữ trắng dễ đọc (mọi loại, cả API lẫn gọi trực tiếp) */
+html.is-admin-layout .el-message {
   min-width: 280px;
+  max-width: min(520px, calc(100vw - 32px));
   padding: 12px 16px;
   border-width: 1px;
   border-style: solid;
@@ -881,6 +891,22 @@ html.is-admin-layout h3 {
     --el-message-text-color: #ffffff;
     background-color: #b42318 !important;
     border-color: #912018 !important;
+  }
+
+  &.el-message--warning {
+    --el-message-bg-color: #b54708;
+    --el-message-border-color: #93370d;
+    --el-message-text-color: #ffffff;
+    background-color: #b54708 !important;
+    border-color: #93370d !important;
+  }
+
+  &.el-message--info {
+    --el-message-bg-color: #175cd3;
+    --el-message-border-color: #1849a9;
+    --el-message-text-color: #ffffff;
+    background-color: #175cd3 !important;
+    border-color: #1849a9 !important;
   }
 }
 </style>

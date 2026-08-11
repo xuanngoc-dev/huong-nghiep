@@ -120,6 +120,12 @@ const router = createRouter({
           meta: { title: 'Tỉnh thành', icon: 'Location' },
         },
         {
+          path: 'danh-muc/phuong-xa',
+          name: 'admin-phuong-xa',
+          component: () => import('@/views/admin/PhuongXaView.vue'),
+          meta: { title: 'Phường xã', icon: 'Place' },
+        },
+        {
           path: 'danh-muc/khu-vuc',
           name: 'admin-khu-vuc',
           component: () => import('@/views/admin/KhuVucView.vue'),
@@ -190,6 +196,18 @@ const router = createRouter({
           name: 'admin-to-hop-mon-hoc',
           component: () => import('@/views/admin/ToHopMonHocView.vue'),
           meta: { title: 'Tổ hợp môn học', icon: 'Files' },
+        },
+        {
+          path: 'danh-muc/dan-toc',
+          name: 'admin-dan-toc',
+          component: () => import('@/views/admin/DanTocView.vue'),
+          meta: { title: 'Dân tộc', icon: 'Flag' },
+        },
+        {
+          path: 'danh-muc/ton-giao',
+          name: 'admin-ton-giao',
+          component: () => import('@/views/admin/TonGiaoView.vue'),
+          meta: { title: 'Tôn giáo', icon: 'Guide' },
         },
 
         // Trắc nghiệm

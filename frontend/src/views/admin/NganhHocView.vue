@@ -280,7 +280,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Edit, Lock, Plus, Search, Unlock } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import { API_NGANH_HOC, API_NHOM_NGANH } from '@/constants/constant_api'
@@ -492,6 +492,13 @@ async function submitForm() {
 }
 
 async function confirmRemove(row) {
+  if ((row.so_luong_chuyen_nganh ?? 0) > 0) {
+    ElMessage.warning(
+      `Không thể xóa ngành học «${row.ten_nganh}» vì vẫn còn ${row.so_luong_chuyen_nganh} chuyên ngành thuộc ngành này.`,
+    )
+    return
+  }
+
   try {
     await ElMessageBox.confirm(
       `Xóa ngành học «${row.ten_nganh}»? Thao tác không thể hoàn tác.`,
@@ -511,6 +518,17 @@ async function confirmRemove(row) {
 
 async function confirmBulkRemove() {
   if (!hasSelection.value) return
+
+  const blocked = selectedRows.value.filter((row) => (row.so_luong_chuyen_nganh ?? 0) > 0)
+  if (blocked.length) {
+    const tenList = blocked.map((row) => row.ten_nganh).join(', ')
+    ElMessage.warning(
+      blocked.length === 1
+        ? `Không thể xóa ngành học «${tenList}» vì vẫn còn chuyên ngành thuộc ngành này.`
+        : `Không thể xóa các ngành học sau vì vẫn còn chuyên ngành liên kết: ${tenList}.`,
+    )
+    return
+  }
 
   try {
     await ElMessageBox.confirm(

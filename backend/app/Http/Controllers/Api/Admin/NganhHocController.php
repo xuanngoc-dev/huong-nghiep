@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Enums\TrangThaiNganhHoc;
 use App\Http\Controllers\Controller;
+use App\Models\ChuyenNganh;
 use App\Models\NganhHoc;
 use App\Models\NhomNganh;
 use App\Support\ApiResponse;
@@ -23,6 +24,7 @@ class NganhHocController extends Controller
             $nhomNganhId = $request->query('nhom_nganh_id');
 
             $query = NganhHoc::query()
+                ->withCount(['chuyenNganhs as so_luong_chuyen_nganh'])
                 ->when($keyword !== '', function ($query) use ($keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('ten_nganh', 'like', "%{$keyword}%")
@@ -62,6 +64,8 @@ class NganhHocController extends Controller
     public function show(NganhHoc $nganhHoc): JsonResponse
     {
         return $this->tryApi(function () use ($nganhHoc) {
+            $nganhHoc->loadCount(['chuyenNganhs as so_luong_chuyen_nganh']);
+
             return ApiResponse::success(
                 $this->enrichItem($nganhHoc),
                 'Lấy chi tiết ngành học thành công.',
@@ -125,6 +129,8 @@ class NganhHocController extends Controller
     public function destroy(NganhHoc $nganhHoc): JsonResponse
     {
         return $this->tryApi(function () use ($nganhHoc) {
+            $this->assertNganhHocDeletable([(int) $nganhHoc->id]);
+
             $nganhHoc->delete();
 
             return ApiResponse::success(null, 'Đã xóa ngành học.');
@@ -139,13 +145,63 @@ class NganhHocController extends Controller
                 'ids.*' => ['integer', 'distinct', 'exists:danh_muc_nganh_hoc,id'],
             ]);
 
-            $count = NganhHoc::query()->whereIn('id', $validated['ids'])->delete();
+            $ids = array_values(array_map('intval', $validated['ids']));
+            $this->assertNganhHocDeletable($ids);
+
+            $count = NganhHoc::query()->whereIn('id', $ids)->delete();
 
             return ApiResponse::success(
                 ['deleted' => $count],
                 "Đã xóa {$count} ngành học.",
             );
         });
+    }
+
+    /**
+     * Chặn xóa khi ngành học vẫn còn chuyên ngành liên kết.
+     *
+     * @param  list<int>  $nganhHocIds
+     */
+    private function assertNganhHocDeletable(array $nganhHocIds): void
+    {
+        $nganhHocIds = array_values(array_unique(array_filter(
+            array_map('intval', $nganhHocIds),
+            fn (int $id) => $id > 0,
+        )));
+
+        if ($nganhHocIds === []) {
+            return;
+        }
+
+        $linkedIds = ChuyenNganh::query()
+            ->whereIn('nganh_hoc_id', $nganhHocIds)
+            ->distinct()
+            ->pluck('nganh_hoc_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($linkedIds === []) {
+            return;
+        }
+
+        $blocked = NganhHoc::query()
+            ->whereIn('id', $linkedIds)
+            ->orderBy('ten_nganh')
+            ->get(['id', 'ten_nganh']);
+
+        if ($blocked->count() === 1) {
+            $ten = $blocked->first()->ten_nganh;
+
+            throw ValidationException::withMessages([
+                'ids' => ["Không thể xóa ngành học «{$ten}» vì vẫn còn chuyên ngành thuộc ngành này."],
+            ]);
+        }
+
+        $tenList = $blocked->pluck('ten_nganh')->implode(', ');
+
+        throw ValidationException::withMessages([
+            'ids' => ["Không thể xóa các ngành học sau vì vẫn còn chuyên ngành liên kết: {$tenList}."],
+        ]);
     }
 
     public function bulkUpdateStatus(Request $request): JsonResponse

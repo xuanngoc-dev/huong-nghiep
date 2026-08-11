@@ -52,6 +52,11 @@
         "icon": "Location"
       },
       {
+        "index": "/admin/danh-muc/phuong-xa",
+        "title": "Phường xã",
+        "icon": "Place"
+      },
+      {
         "index": "/admin/danh-muc/khu-vuc",
         "title": "Khu vực",
         "icon": "MapLocation"
@@ -110,6 +115,16 @@
         "index": "/admin/danh-muc/to-hop-mon-hoc",
         "title": "Tổ hợp môn học",
         "icon": "Files"
+      },
+      {
+        "index": "/admin/danh-muc/dan-toc",
+        "title": "Dân tộc",
+        "icon": "Flag"
+      },
+      {
+        "index": "/admin/danh-muc/ton-giao",
+        "title": "Tôn giáo",
+        "icon": "Guide"
       }
     ]
   }

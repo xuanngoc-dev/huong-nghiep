@@ -192,7 +192,19 @@ function resolveIcon(name) {
   :deep(.el-sub-menu__title) {
     height: 40px;
     line-height: 40px;
-    transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease;
+    transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease, color 0.15s ease;
+  }
+
+  /* Light mode: active item — xanh primary + nền nhạt */
+  :global(html:not(.dark)) & {
+    :deep(.el-menu-item.is-active) {
+      color: var(--el-color-primary);
+      background-color: var(--el-color-primary-light-9);
+
+      .el-icon {
+        color: var(--el-color-primary);
+      }
+    }
   }
 
   .menu-label {
