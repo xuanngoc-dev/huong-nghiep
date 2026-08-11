@@ -309,6 +309,8 @@ async function onCommand(cmd) {
 }
 
 onMounted(() => {
+  document.documentElement.classList.add('is-admin-layout')
+
   const saved = localStorage.getItem('darkMode')
   if (saved === '1') {
     isDark.value = true
@@ -326,6 +328,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  document.documentElement.classList.remove('is-admin-layout')
   mediaQuery?.removeEventListener('change', syncCollapseByViewport)
   window.removeEventListener('keydown', onGlobalKeydown)
   clearHoverLeaveTimer()
@@ -337,6 +340,10 @@ onUnmounted(() => {
 .main-layout {
   min-height: 100vh;
   position: relative;
+  font-family: var(--admin-font);
+  font-size: var(--el-font-size-base);
+  font-weight: 300;
+  letter-spacing: -0.02em;
 
   &.is-navbar-fixed,
   &.is-sidebar-fixed {
@@ -419,8 +426,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 0 18px;
-  font-weight: 700;
+  font-weight: 300;
   font-size: 18px;
+  letter-spacing: -0.03em;
   color: var(--el-color-primary);
   border-bottom: 1px solid var(--el-border-color);
   overflow: hidden;
@@ -512,7 +520,8 @@ onUnmounted(() => {
   flex: 1;
   min-width: 0;
   text-align: left;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 300;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -524,10 +533,11 @@ onUnmounted(() => {
   border-radius: 4px;
   border: 1px solid var(--el-border-color);
   background: var(--el-bg-color);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.4;
   color: var(--el-text-color-placeholder);
   font-family: inherit;
+  font-weight: 300;
 }
 
 .header-datetime {
@@ -542,20 +552,21 @@ onUnmounted(() => {
 }
 
 .header-datetime__weekday {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 300;
   color: var(--el-text-color-primary);
 }
 
 .header-datetime__time {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
   color: var(--el-color-primary);
 }
 
 .header-datetime__date {
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 300;
   color: var(--el-text-color-secondary);
 }
 
@@ -607,7 +618,9 @@ onUnmounted(() => {
 }
 
 .page-title {
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
 }
 
 .user-trigger {
@@ -623,8 +636,9 @@ onUnmounted(() => {
   flex: 1;
   min-width: 0;
   max-width: 160px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -663,5 +677,89 @@ onUnmounted(() => {
   .is-navbar-fixed & {
     overflow-y: auto;
   }
+}
+</style>
+
+<style lang="scss">
+/* Admin system typography — áp dụng cả dialog/popover teleport ra body */
+html.is-admin-layout {
+  --admin-font: "Be Vietnam Pro", "Roboto", "Segoe UI", sans-serif;
+  --el-font-family: var(--admin-font);
+  --el-font-size-extra-small: 13px;
+  --el-font-size-small: 14px;
+  --el-font-size-base: 16px;
+  --el-font-size-medium: 16px;
+  --el-font-size-large: 18px;
+  --el-font-size-extra-large: 20px;
+}
+
+/* Chế độ sáng: chữ đen tuyền */
+html.is-admin-layout:not(.dark) {
+  --el-text-color-primary: #000000;
+  --el-text-color-regular: #000000;
+  --el-text-color-secondary: #000000;
+  --el-text-color-placeholder: #333333;
+  --el-color-black: #000000;
+  color: #000000;
+}
+
+html.is-admin-layout:not(.dark) body,
+html.is-admin-layout:not(.dark) .main-layout,
+html.is-admin-layout:not(.dark) .el-menu,
+html.is-admin-layout:not(.dark) .el-menu-item,
+html.is-admin-layout:not(.dark) .el-table,
+html.is-admin-layout:not(.dark) .el-table th.el-table__cell,
+html.is-admin-layout:not(.dark) .el-table td.el-table__cell,
+html.is-admin-layout:not(.dark) .el-form-item__label,
+html.is-admin-layout:not(.dark) .el-dialog,
+html.is-admin-layout:not(.dark) .el-dialog__title,
+html.is-admin-layout:not(.dark) .el-dropdown-menu,
+html.is-admin-layout:not(.dark) .el-pagination,
+html.is-admin-layout:not(.dark) .page-title,
+html.is-admin-layout:not(.dark) .user-name,
+html.is-admin-layout:not(.dark) .header-datetime,
+html.is-admin-layout:not(.dark) .header-datetime__weekday,
+html.is-admin-layout:not(.dark) .header-datetime__date,
+html.is-admin-layout:not(.dark) h1,
+html.is-admin-layout:not(.dark) h2,
+html.is-admin-layout:not(.dark) h3 {
+  color: #000000;
+}
+
+html.is-admin-layout body {
+  font-family: var(--admin-font);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+html.is-admin-layout .el-button,
+html.is-admin-layout .el-menu,
+html.is-admin-layout .el-table,
+html.is-admin-layout .el-form,
+html.is-admin-layout .el-input,
+html.is-admin-layout .el-select,
+html.is-admin-layout .el-dialog,
+html.is-admin-layout .el-dropdown-menu,
+html.is-admin-layout .el-pagination {
+  font-family: var(--admin-font);
+  letter-spacing: -0.02em;
+}
+
+html.is-admin-layout .el-button,
+html.is-admin-layout .el-menu-item,
+html.is-admin-layout .el-table,
+html.is-admin-layout .el-form-item__label,
+html.is-admin-layout .el-pagination {
+  font-weight: 300;
+}
+
+html.is-admin-layout .el-menu-item.is-active,
+html.is-admin-layout .el-dialog__title,
+html.is-admin-layout h1,
+html.is-admin-layout h2,
+html.is-admin-layout h3 {
+  font-weight: 400;
+  letter-spacing: -0.025em;
 }
 </style>
