@@ -351,6 +351,8 @@ export const useQuizStore = defineStore('quiz', () => {
   /**
    * Tạo phiên lịch sử trả lời (ssid) khi ấn Bắt đầu.
    * Backend chọn ngẫu nhiên QUESTIONS_PER_NHOM_NGANH câu / nhóm ngành cho mỗi loại.
+   * Nếu request kèm token đăng nhập, backend lưu thêm bản ghi trac_nghiem_lich_su_phien
+   * (trạng thái chưa hoàn thành + nguoi_khao_sat_id) để CSKH theo dõi.
    */
   async function startHistorySession() {
     const res = await request({

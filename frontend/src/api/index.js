@@ -14,7 +14,13 @@
  */
 import api from './axios'
 
-export { default as api } from './axios'
+export {
+  default as api,
+  getRequestToken,
+  AUTH_TOKEN_KEY,
+  AUTH_USER_KEY,
+  ANONYMOUS_TOKEN,
+} from './axios'
 export { request, http, notifyApi, apiErrorMessage, isRequestLoading } from './request'
 export {
   API_AUTH,

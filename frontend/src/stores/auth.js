@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/api'
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from '@/api/axios'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(JSON.parse(localStorage.getItem('auth_user') || 'null'))
-  const token = ref(localStorage.getItem('auth_token') || null)
+  const user = ref(JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null'))
+  const token = ref(localStorage.getItem(AUTH_TOKEN_KEY) || null)
   const loading = ref(false)
   const error = ref(null)
 
@@ -13,17 +14,20 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => role.value === 'admin')
 
   function setSession(nextUser, nextToken) {
+    if (!nextToken) {
+      throw new Error('Thiếu token từ phản hồi đăng nhập.')
+    }
     user.value = nextUser
     token.value = nextToken
-    localStorage.setItem('auth_user', JSON.stringify(nextUser))
-    localStorage.setItem('auth_token', nextToken)
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(nextUser))
+    localStorage.setItem(AUTH_TOKEN_KEY, nextToken)
   }
 
   function clearSession() {
     user.value = null
     token.value = null
-    localStorage.removeItem('auth_user')
-    localStorage.removeItem('auth_token')
+    localStorage.removeItem(AUTH_USER_KEY)
+    localStorage.removeItem(AUTH_TOKEN_KEY)
   }
 
   async function login(credentials) {
@@ -70,7 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token.value) return null
     const { data } = await authApi.me()
     user.value = data.user
-    localStorage.setItem('auth_user', JSON.stringify(data.user))
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user))
     return data.user
   }
 

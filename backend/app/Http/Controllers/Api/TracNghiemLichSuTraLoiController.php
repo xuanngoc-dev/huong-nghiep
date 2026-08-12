@@ -40,7 +40,8 @@ class TracNghiemLichSuTraLoiController extends Controller
             ]);
 
             $perNhom = (int) ($validated['per_nhom'] ?? self::QUESTIONS_PER_NHOM);
-            $userId = $request->user('sanctum')?->id;
+            // Token thật (không phải "anonymous") → gắn người khảo sát để CSKH theo dõi phiên.
+            $userId = $this->resolveAuthenticatedUserId($request);
 
             $loaiList = LoaiCauHoi::query()
                 ->where('trang_thai', TrangThaiLoaiCauHoi::DangSuDung)
@@ -123,11 +124,14 @@ class TracNghiemLichSuTraLoiController extends Controller
             }
 
             DB::transaction(function () use ($historyRows, $ssid, $userId) {
-                TracNghiemPhienDaHoanThanh::query()->create([
-                    'ssid' => $ssid,
-                    'trang_thai' => TrangThaiLichSuPhien::ChuaHoanThanh,
-                    'nguoi_khao_sat_id' => $userId,
-                ]);
+                // Chỉ ghi lịch sử phiên khi user đã đăng nhập — căn cứ hỗ trợ CSKH.
+                if ($userId) {
+                    TracNghiemPhienDaHoanThanh::query()->create([
+                        'ssid' => $ssid,
+                        'trang_thai' => TrangThaiLichSuPhien::ChuaHoanThanh,
+                        'nguoi_khao_sat_id' => $userId,
+                    ]);
+                }
 
                 foreach (array_chunk($historyRows, 500) as $chunk) {
                     TracNghiemLichSuTraLoi::query()->insert($chunk);
@@ -247,7 +251,7 @@ class TracNghiemLichSuTraLoiController extends Controller
                 );
             }
 
-            $userId = $request->user('sanctum')?->id;
+            $userId = $this->resolveAuthenticatedUserId($request);
             $saved = [];
 
             DB::transaction(function () use ($validated, $ssid, $userId, &$saved) {
@@ -571,6 +575,22 @@ class TracNghiemLichSuTraLoiController extends Controller
             ->count();
 
         return $nhomCount * self::QUESTIONS_PER_NHOM;
+    }
+
+    /**
+     * Lấy user id từ Bearer token Sanctum.
+     * Bỏ qua token giả "anonymous" mà frontend gửi khi chưa đăng nhập.
+     */
+    private function resolveAuthenticatedUserId(Request $request): ?int
+    {
+        $bearer = trim((string) $request->bearerToken());
+        if ($bearer === '' || strcasecmp($bearer, 'anonymous') === 0) {
+            return null;
+        }
+
+        $userId = $request->user('sanctum')?->id;
+
+        return $userId ? (int) $userId : null;
     }
 
     private function isSessionCompleted(string $ssid): bool
