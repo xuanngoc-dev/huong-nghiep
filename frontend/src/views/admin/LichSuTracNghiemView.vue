@@ -69,17 +69,7 @@
           </template>
         </CustomTableColumn>
         <CustomTableColumn prop="ssid" label="SSID" min-width="220" show-overflow-tooltip />
-        <CustomTableColumn label="Trạng thái" width="150" align="center">
-          <template #default="{ row }">
-            <CustomTag
-              :type="row.trang_thai === 'hoan_thanh' ? 'success' : 'warning'"
-              effect="light"
-              size="small"
-            >
-              {{ row.trang_thai_label || (row.trang_thai === 'hoan_thanh' ? 'Hoàn thành' : 'Chưa hoàn thành') }}
-            </CustomTag>
-          </template>
-        </CustomTableColumn>
+        
         <CustomTableColumn label="Người khảo sát" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
             <div v-if="row.nguoi_khao_sat">
@@ -104,14 +94,21 @@
             {{ row.so_nhom_nganh ?? 0 }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Thanh toán" width="120" align="center">
+        <CustomTableColumn label="Thanh toán" width="150" align="center">
           <template #default="{ row }">
             <CustomTag :type="row.da_thanh_toan ? 'success' : 'info'" effect="light" size="small">
               {{ row.da_thanh_toan ? 'Đã thanh toán' : 'Chưa thanh toán' }}
             </CustomTag>
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Hoàn thành lúc" width="170" align="center">
+        <CustomTableColumn label="Trạng thái" width="150" align="center">
+          <template #default="{ row }">
+            <CustomTag :type="row.trang_thai === 'hoan_thanh' ? 'success' : 'warning'" effect="light" size="small">
+              {{ row.trang_thai_label || (row.trang_thai === 'hoan_thanh' ? 'Hoàn thành' : 'Chưa hoàn thành') }}
+            </CustomTag>
+          </template>
+        </CustomTableColumn>
+        <CustomTableColumn label="Hoàn thành lúc" width="180" align="center">
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
           </template>
