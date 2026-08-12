@@ -254,7 +254,7 @@ const router = createRouter({
         {
           path: 'cau-hinh/ngan-hang-thanh-toan',
           name: 'admin-ngan-hang-thanh-toan',
-          component: placeholder,
+          component: () => import('@/views/admin/NganHangThanhToanView.vue'),
           meta: { title: 'Ngân hàng thanh toán', icon: 'CreditCard' },
         },
 

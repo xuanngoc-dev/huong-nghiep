@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
 use App\Http\Controllers\Api\Admin\LoaiCauHoiController as AdminLoaiCauHoiController;
 use App\Http\Controllers\Api\Admin\LoaiTruongController as AdminLoaiTruongController;
 use App\Http\Controllers\Api\Admin\MonHocController as AdminMonHocController;
+use App\Http\Controllers\Api\Admin\NganHangThanhToanController as AdminNganHangThanhToanController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\Admin\NguoiDungController as AdminNguoiDungController;
 use App\Http\Controllers\Api\Admin\NhomNganhController as AdminNhomNganhController;
@@ -161,6 +162,11 @@ Route::prefix('v1')->group(function () {
             Route::post('ton-giao/bulk-status', [AdminTonGiaoController::class, 'bulkUpdateStatus']);
             Route::apiResource('ton-giao', AdminTonGiaoController::class)
                 ->parameters(['ton-giao' => 'tonGiao']);
+
+            Route::post('ngan-hang-thanh-toan/bulk-delete', [AdminNganHangThanhToanController::class, 'bulkDestroy']);
+            Route::post('ngan-hang-thanh-toan/bulk-status', [AdminNganHangThanhToanController::class, 'bulkUpdateStatus']);
+            Route::apiResource('ngan-hang-thanh-toan', AdminNganHangThanhToanController::class)
+                ->parameters(['ngan-hang-thanh-toan' => 'nganHangThanhToan']);
 
             Route::post('nguoi-dung/bulk-delete', [AdminNguoiDungController::class, 'bulkDestroy']);
             Route::post('nguoi-dung/bulk-status', [AdminNguoiDungController::class, 'bulkUpdateStatus']);

@@ -220,6 +220,8 @@ class NguoiDungController extends Controller
             'suc_khoe_the_chat' => $profile?->suc_khoe_the_chat,
             'kha_nang_tai_chinh' => $profile?->kha_nang_tai_chinh,
             'vi_tri_dia_ly' => $profile?->vi_tri_dia_ly,
+            'edu_coin' => (int) ($profile?->edu_coin ?? 0),
+            'xu_he_thong' => (int) ($profile?->xu_he_thong ?? 0),
             'has_profile' => $profile !== null,
             'created_at' => $user->created_at?->toIso8601String(),
             'updated_at' => $user->updated_at?->toIso8601String(),

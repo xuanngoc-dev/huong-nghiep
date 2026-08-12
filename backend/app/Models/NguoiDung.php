@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'suc_khoe_the_chat',
     'kha_nang_tai_chinh',
     'vi_tri_dia_ly',
+    'edu_coin',
+    'xu_he_thong',
 ])]
 class NguoiDung extends Model
 {
@@ -32,6 +34,8 @@ class NguoiDung extends Model
             'suc_khoe_the_chat' => 'array',
             'kha_nang_tai_chinh' => 'array',
             'vi_tri_dia_ly' => 'array',
+            'edu_coin' => 'integer',
+            'xu_he_thong' => 'integer',
         ];
     }
 

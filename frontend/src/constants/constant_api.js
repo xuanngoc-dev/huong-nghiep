@@ -172,6 +172,17 @@ export const API_TON_GIAO = {
   BULK_STATUS: { url: '/admin/ton-giao/bulk-status', method: 'post' },
 }
 
+/** Admin — Ngân hàng thanh toán */
+export const API_NGAN_HANG_THANH_TOAN = {
+  LIST: { url: '/admin/ngan-hang-thanh-toan', method: 'get' },
+  CREATE: { url: '/admin/ngan-hang-thanh-toan', method: 'post' },
+  SHOW: (id) => ({ url: `/admin/ngan-hang-thanh-toan/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/ngan-hang-thanh-toan/${id}`, method: 'put' }),
+  DELETE: (id) => ({ url: `/admin/ngan-hang-thanh-toan/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/ngan-hang-thanh-toan/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/ngan-hang-thanh-toan/bulk-status', method: 'post' },
+}
+
 /** Admin — Loại câu hỏi */
 export const API_LOAI_CAU_HOI = {
   LIST: { url: '/admin/loai-cau-hoi', method: 'get' },

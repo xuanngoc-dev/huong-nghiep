@@ -155,6 +155,16 @@
             {{ trinhDoLabel(row.trinh_do_hoc_van) }}
           </template>
         </CustomTableColumn>
+        <CustomTableColumn prop="edu_coin" label="Edu Coin" width="110" align="right">
+          <template #default="{ row }">
+            {{ formatNumber(row.edu_coin) }}
+          </template>
+        </CustomTableColumn>
+        <CustomTableColumn prop="xu_he_thong" label="Xu hệ thống" width="120" align="right">
+          <template #default="{ row }">
+            {{ formatNumber(row.xu_he_thong) }}
+          </template>
+        </CustomTableColumn>
         <CustomTableColumn label="Trạng thái" width="200" align="center">
           <template #default="{ row }">
             <div class="status-cell">
@@ -182,11 +192,14 @@
             {{ formatDateTime(row.created_at) }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Thao tác" width="130" fixed="right" align="center">
+        <CustomTableColumn label="Thao tác" width="160" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-btns">
               <CustomTooltip content="Xem chi tiết" placement="top">
                 <CustomButton link type="primary" :icon="View" @click="openDetail(row)" />
+              </CustomTooltip>
+              <CustomTooltip content="Nạp tiền" placement="top">
+                <CustomButton link type="success" :icon="Wallet" @click="openNapTien(row)" />
               </CustomTooltip>
               <CustomTooltip content="Đổi mật khẩu" placement="top">
                 <CustomButton link type="warning" :icon="Key" @click="openChangePassword(row)" />
@@ -226,6 +239,12 @@
           <el-descriptions-item label="Tôn giáo">{{ detail.ton_giao || '—' }}</el-descriptions-item>
           <el-descriptions-item label="Trạng thái">
             {{ trangThaiLabel(detail.trang_thai) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="Edu Coin">
+            {{ formatNumber(detail.edu_coin) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="Xu hệ thống">
+            {{ formatNumber(detail.xu_he_thong) }}
           </el-descriptions-item>
           <el-descriptions-item label="Ngày tạo" :span="2">
             {{ formatDateTime(detail.created_at) }}
@@ -329,15 +348,18 @@
         </CustomButton>
       </template>
     </CustomDialog>
+
+    <NapTienModal v-model="napTienVisible" :user="napTienTarget" />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import { Delete, Key, Lock, Search, Unlock, View } from '@element-plus/icons-vue'
+import { Delete, Key, Lock, Search, Unlock, View, Wallet } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import { API_NGUOI_DUNG } from '@/constants/constant_api'
+import NapTienModal from '@/components/admin/NapTienModal.vue'
 import {
   CustomButton,
   CustomCard,
@@ -388,6 +410,8 @@ const detail = ref(null)
 const passwordVisible = ref(false)
 const passwordTarget = ref(null)
 const passwordFormRef = ref(null)
+const napTienVisible = ref(false)
+const napTienTarget = ref(null)
 
 const passwordForm = reactive({
   password: '',
@@ -516,6 +540,12 @@ function formatMoney(value) {
   return `${num.toLocaleString('vi-VN')} đ`
 }
 
+function formatNumber(value) {
+  const num = Number(value ?? 0)
+  if (Number.isNaN(num)) return '0'
+  return num.toLocaleString('vi-VN')
+}
+
 function trinhDoLabel(trinhDo) {
   const code = trinhDo?.trinh_do_hoc_van
   if (!code) return '—'
@@ -611,6 +641,11 @@ function openChangePassword(row) {
   resetPasswordForm()
   passwordTarget.value = row
   passwordVisible.value = true
+}
+
+function openNapTien(row) {
+  napTienTarget.value = row
+  napTienVisible.value = true
 }
 
 async function submitChangePassword() {
