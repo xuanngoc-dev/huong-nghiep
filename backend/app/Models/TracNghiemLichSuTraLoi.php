@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class TracNghiemLichSuTraLoi extends Model
 {
-    protected $table = 'trac_nghiem_lich_su_tra_loi';
+    protected $table = 'trac_nghiem_lich_su_tra_loi_chi_tiet';
 
     /**
      * @return array<string, string>

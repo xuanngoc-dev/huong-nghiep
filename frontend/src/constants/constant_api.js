@@ -204,6 +204,22 @@ export const API_TRAC_NGHIEM_CAU_TRA_LOI = {
   BULK_DELETE: { url: '/admin/trac-nghiem-cau-tra-loi/bulk-delete', method: 'post' },
 }
 
+/** Admin — Người dùng (bảng nguoi_dung) */
+export const API_NGUOI_DUNG = {
+  LIST: { url: '/admin/nguoi-dung', method: 'get' },
+  SHOW: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'get' }),
+  DELETE: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/nguoi-dung/bulk-delete', method: 'post' },
+}
+
+/** Admin — Lịch sử trắc nghiệm (phien da hoan thanh) */
+export const API_LICH_SU_TRAC_NGHIEM = {
+  LIST: { url: '/admin/lich-su-trac-nghiem', method: 'get' },
+  SHOW: (id) => ({ url: `/admin/lich-su-trac-nghiem/${id}`, method: 'get' }),
+  DELETE: (id) => ({ url: `/admin/lich-su-trac-nghiem/${id}`, method: 'delete' }),
+  BULK_DELETE: { url: '/admin/lich-su-trac-nghiem/bulk-delete', method: 'post' },
+}
+
 /** Admin — khác (placeholder / dùng dần) */
 export const API_ADMIN = {
   DASHBOARD: { url: '/admin/dashboard', method: 'get' },

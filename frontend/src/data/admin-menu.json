@@ -43,6 +43,38 @@
     ]
   },
   {
+    "header": "Hỗ trợ",
+    "abbr": "HT",
+    "items": [
+      {
+        "index": "/admin/ho-tro/kenh-ho-tro",
+        "title": "Kênh hỗ trợ",
+        "icon": "Headset"
+      },
+      {
+        "index": "/admin/ho-tro/chat-ho-tro",
+        "title": "Chat hỗ trợ",
+        "icon": "ChatDotRound"
+      }
+    ]
+  },
+  {
+    "header": "Blog",
+    "abbr": "BL",
+    "items": [
+      {
+        "index": "/admin/blog/tin-tuc",
+        "title": "Tin tức",
+        "icon": "Newspaper"
+      },
+      {
+        "index": "/admin/blog/tuyen-dung",
+        "title": "Tuyển dụng",
+        "icon": "Briefcase"
+      }
+    ]
+  },
+  {
     "header": "Danh mục",
     "abbr": "DM",
     "items": [
@@ -68,7 +100,7 @@
       },
       {
         "index": "/admin/danh-muc/tuyen-sinh-theo-nam",
-        "title": "Tuyển sinh theo năm",
+        "title": "Tuyển sinh",
         "icon": "Calendar"
       },
       {
@@ -141,38 +173,6 @@
         "index": "/admin/cau-hinh/ngan-hang-thanh-toan",
         "title": "Ngân hàng thanh toán",
         "icon": "CreditCard"
-      }
-    ]
-  },
-  {
-    "header": "Blog",
-    "abbr": "BL",
-    "items": [
-      {
-        "index": "/admin/blog/tin-tuc",
-        "title": "Tin tức",
-        "icon": "Newspaper"
-      },
-      {
-        "index": "/admin/blog/tuyen-dung",
-        "title": "Tuyển dụng",
-        "icon": "Briefcase"
-      }
-    ]
-  },
-  {
-    "header": "Hỗ trợ",
-    "abbr": "HT",
-    "items": [
-      {
-        "index": "/admin/ho-tro/kenh-ho-tro",
-        "title": "Kênh hỗ trợ",
-        "icon": "Headset"
-      },
-      {
-        "index": "/admin/ho-tro/chat-ho-tro",
-        "title": "Chat hỗ trợ",
-        "icon": "ChatDotRound"
       }
     ]
   }

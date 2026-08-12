@@ -228,7 +228,7 @@ const router = createRouter({
         {
           path: 'nguoi-dung',
           name: 'admin-nguoi-dung',
-          component: placeholder,
+          component: () => import('@/views/admin/NguoiDungView.vue'),
           meta: { title: 'Danh sách người dùng', icon: 'User' },
         },
         {
@@ -240,7 +240,7 @@ const router = createRouter({
         {
           path: 'nguoi-dung/lich-su-trac-nghiem',
           name: 'admin-lich-su-trac-nghiem',
-          component: placeholder,
+          component: () => import('@/views/admin/LichSuTracNghiemView.vue'),
           meta: { title: 'Lịch sử trắc nghiệm', icon: 'Document' },
         },
 

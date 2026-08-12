@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
+use App\Enums\TrangThaiLichSuPhien;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'ssid',
-    'nganh_hoc',
+    'trang_thai',
     'nhom_nganh',
+    'thong_tin_thanh_toan',
+    'chi_tiet_ket_qua',
     'nguoi_khao_sat_id',
 ])]
 class TracNghiemPhienDaHoanThanh extends Model
 {
-    protected $table = 'trac_nghiem_phien_trac_nghiem_da_hoan_thanh';
+    protected $table = 'trac_nghiem_lich_su_phien';
 
     /**
      * @return array<string, string>
@@ -22,8 +25,10 @@ class TracNghiemPhienDaHoanThanh extends Model
     protected function casts(): array
     {
         return [
-            'nganh_hoc' => 'array',
+            'trang_thai' => TrangThaiLichSuPhien::class,
             'nhom_nganh' => 'array',
+            'thong_tin_thanh_toan' => 'array',
+            'chi_tiet_ket_qua' => 'array',
         ];
     }
 

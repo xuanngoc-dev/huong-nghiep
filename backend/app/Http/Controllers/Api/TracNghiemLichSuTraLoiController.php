@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\TrangThaiLoaiCauHoi;
+use App\Enums\TrangThaiLichSuPhien;
 use App\Enums\TrangThaiNhomNganh;
 use App\Enums\TrangThaiTracNghiemCauHoi;
 use App\Http\Controllers\Controller;
@@ -121,7 +122,13 @@ class TracNghiemLichSuTraLoiController extends Controller
                 );
             }
 
-            DB::transaction(function () use ($historyRows) {
+            DB::transaction(function () use ($historyRows, $ssid, $userId) {
+                TracNghiemPhienDaHoanThanh::query()->create([
+                    'ssid' => $ssid,
+                    'trang_thai' => TrangThaiLichSuPhien::ChuaHoanThanh,
+                    'nguoi_khao_sat_id' => $userId,
+                ]);
+
                 foreach (array_chunk($historyRows, 500) as $chunk) {
                     TracNghiemLichSuTraLoi::query()->insert($chunk);
                 }
@@ -570,11 +577,12 @@ class TracNghiemLichSuTraLoiController extends Controller
     {
         return TracNghiemPhienDaHoanThanh::query()
             ->where('ssid', $ssid)
+            ->where('trang_thai', TrangThaiLichSuPhien::HoanThanh)
             ->exists();
     }
 
     /**
-     * Lưu snapshot tổng hợp nhóm ngành / ngành học khi phiên chuyển sang bước hoàn thành.
+     * Lưu snapshot tổng hợp khi phiên chuyển sang bước hoàn thành.
      *
      * @param  array{
      *   tong_diem: float,
@@ -590,13 +598,15 @@ class TracNghiemLichSuTraLoiController extends Controller
             ->whereNotNull('nguoi_dung_id')
             ->value('nguoi_dung_id');
 
-        return TracNghiemPhienDaHoanThanh::query()->firstOrCreate(
-            ['ssid' => $ssid],
-            [
-                'nganh_hoc' => $summary['nganh_hoc'] ?? [],
-                'nhom_nganh' => $summary['nhom_nganh'] ?? [],
-                'nguoi_khao_sat_id' => $nguoiKhaoSatId,
-            ],
-        );
+        $phien = TracNghiemPhienDaHoanThanh::query()->firstOrNew(['ssid' => $ssid]);
+        $phien->fill([
+            'trang_thai' => TrangThaiLichSuPhien::HoanThanh,
+            'nhom_nganh' => $summary['nhom_nganh'] ?? [],
+            'chi_tiet_ket_qua' => $summary,
+            'nguoi_khao_sat_id' => $nguoiKhaoSatId ?? $phien->nguoi_khao_sat_id,
+        ]);
+        $phien->save();
+
+        return $phien;
     }
 }
