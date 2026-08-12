@@ -2,19 +2,43 @@
   <section class="auth-page">
     <form class="card form" @submit.prevent="onSubmit">
       <h1>Đăng nhập</h1>
-      <p class="muted">Sử dụng tài khoản đã đăng ký để truy cập API bảo vệ.</p>
+      <p class="muted">Sử dụng email hoặc số điện thoại đã đăng ký để đăng nhập.</p>
 
       <label>
-        Email
-        <input v-model="form.email" type="email" required autocomplete="email" />
+        Email hoặc số điện thoại
+        <input
+          v-model="form.tai_khoan"
+          type="text"
+          required
+          autocomplete="username"
+          placeholder="Nhập email hoặc số điện thoại"
+        />
       </label>
 
       <label>
         Mật khẩu
-        <input v-model="form.password" type="password" required autocomplete="current-password" />
+        <div class="password-input">
+          <input
+            v-model="form.password"
+            :type="showPassword ? 'text' : 'password'"
+            required
+            autocomplete="current-password"
+            placeholder="Nhập mật khẩu"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+            :aria-pressed="showPassword"
+            @click.prevent="showPassword = !showPassword"
+          >
+            <el-icon :size="18">
+              <Hide v-if="showPassword" />
+              <View v-else />
+            </el-icon>
+          </button>
+        </div>
       </label>
-
-      <p v-if="auth.error" class="error-text">{{ auth.error }}</p>
 
       <button class="btn" type="submit" :disabled="auth.loading">
         {{ auth.loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
@@ -29,22 +53,28 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { Hide, View } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+const showPassword = ref(false)
 
 const form = reactive({
-  email: 'admin@huongnghiep.local',
-  password: 'password',
+  tai_khoan: '',
+  password: '',
 })
 
 async function onSubmit() {
   try {
-    await auth.login(form)
+    await auth.login({
+      tai_khoan: form.tai_khoan.trim(),
+      password: form.password,
+    })
 
     if (route.query.redirect) {
       router.push(String(route.query.redirect))
@@ -53,7 +83,7 @@ async function onSubmit() {
 
     router.push(auth.isAdmin ? { name: 'admin-dashboard' } : { name: 'home' })
   } catch {
-    // error đã lưu trong store
+    ElMessage.error(auth.error || 'Đăng nhập thất bại.')
   }
 }
 </script>
@@ -67,10 +97,42 @@ async function onSubmit() {
 }
 
 form {
-  width: min(420px, 100%);
+  width: min(520px, 100%);
 }
 
 h1 {
   margin: 0;
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  width: 100%;
+  padding-right: 2.75rem;
+  box-sizing: border-box;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+  line-height: 1;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: var(--accent);
+  outline: none;
 }
 </style>

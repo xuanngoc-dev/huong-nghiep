@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\TrangThaiUser;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -17,14 +19,28 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'so_dien_thoai' => ['required', 'string', 'max:30', 'regex:/^[0-9+\s()-]{8,30}$/'],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+            ],
+        ], [
+            'so_dien_thoai.regex' => 'Số điện thoại không hợp lệ.',
+            'password.min' => 'Mật khẩu phải có tối thiểu 8 ký tự.',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'so_dien_thoai' => $validated['so_dien_thoai'],
             'password' => $validated['password'],
             'role' => UserRole::User,
+            'trang_thai' => TrangThaiUser::DangHoatDong,
         ]);
 
         $token = $user->createToken('api-token')->plainTextToken;
@@ -39,15 +55,35 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email' => ['required', 'email'],
+            'tai_khoan' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
+        ], [
+            'tai_khoan.required' => 'Vui lòng nhập email hoặc số điện thoại.',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $login = trim($validated['tai_khoan']);
+        $phoneNormalized = preg_replace('/[\s()\-]/', '', $login) ?: $login;
+
+        $user = User::query()
+            ->where(function ($query) use ($login, $phoneNormalized) {
+                $query->where('email', $login)
+                    ->orWhere('so_dien_thoai', $login);
+
+                if ($phoneNormalized !== $login) {
+                    $query->orWhere('so_dien_thoai', $phoneNormalized);
+                }
+            })
+            ->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Email hoặc mật khẩu không đúng.'],
+                'tai_khoan' => ['Email/số điện thoại hoặc mật khẩu không đúng.'],
+            ]);
+        }
+
+        if ($user->trang_thai === TrangThaiUser::NgungHoatDong) {
+            throw ValidationException::withMessages([
+                'tai_khoan' => ['Tài khoản đã bị khóa. Vui lòng liên hệ CSKH để được hỗ trợ.'],
             ]);
         }
 

@@ -86,7 +86,7 @@
               :maxlength="field.maxlength"
               :autocomplete="field.autocomplete"
               :placeholder="field.placeholder"
-              :readonly="field.key === 'email' && isExistingProfile"
+              :readonly="field.key === 'email' && hasUserAccount"
             />
           </div>
         </CustomCol>
@@ -465,7 +465,7 @@ import { useAuthStore } from '@/stores/auth'
 const emit = defineEmits(['submit', 'saved'])
 const auth = useAuthStore()
 
-/** Đã có hồ sơ nguoi_dung trùng email → ẩn mật khẩu, lưu = cập nhật. */
+/** Đã có hồ sơ thong_tin_nguoi_dung → ẩn mật khẩu, lưu = cập nhật. */
 const isExistingProfile = ref(false)
 
 const gioiTinhOptions = ['Nam', 'Nữ', 'Khác']
@@ -644,8 +644,13 @@ const fields = [
 
 const passwordFieldKeys = new Set(['mat_khau', 'xac_nhan_mat_khau'])
 
+/** Đã có tài khoản users (đăng nhập hoặc đã lưu hồ sơ) → không bắt nhập mật khẩu. */
+const hasUserAccount = computed(
+  () => isExistingProfile.value || Boolean(auth.isAuthenticated),
+)
+
 const visibleFields = computed(() =>
-  isExistingProfile.value
+  hasUserAccount.value
     ? fields.filter((field) => !passwordFieldKeys.has(field.key))
     : fields,
 )
@@ -761,6 +766,9 @@ async function loadExistingProfile() {
   // Prefill tối thiểu từ tài khoản đăng nhập nếu chưa có hồ sơ khảo sát.
   if (!form.ho_ten && auth.user.name) form.ho_ten = auth.user.name
   if (!form.email) form.email = auth.user.email
+  if (!form.so_dien_thoai && auth.user.so_dien_thoai) {
+    form.so_dien_thoai = auth.user.so_dien_thoai
+  }
 
   const res = await request({
     url: API_PUBLIC.NGUOI_DUNG.ME,
@@ -873,7 +881,7 @@ function validate() {
   if (soDienThoai && !/^[0-9+\s()-]{8,30}$/.test(soDienThoai)) {
     return 'Số điện thoại không hợp lệ.'
   }
-  if (!isExistingProfile.value) {
+  if (!hasUserAccount.value) {
     if (!form.mat_khau) return 'Vui lòng nhập mật khẩu.'
     if (form.mat_khau.length < 8) return 'Mật khẩu phải có tối thiểu 8 ký tự.'
     if (!form.xac_nhan_mat_khau) return 'Vui lòng xác nhận mật khẩu.'
@@ -893,7 +901,10 @@ function validate() {
   return ''
 }
 
-/** Payload khớp API / bảng nguoi_dung. */
+/**
+ * Payload cho API khảo sát cá nhân.
+ * Backend lưu email / SĐT / mật khẩu vào users trước, rồi tạo/cập nhật thong_tin_nguoi_dung.
+ */
 function toPayload() {
   const payload = {
     ho_ten: String(form.ho_ten || '').trim(),
@@ -909,7 +920,7 @@ function toPayload() {
     vi_tri_dia_ly: buildViTriDiaLy(),
   }
 
-  if (!isExistingProfile.value) {
+  if (!hasUserAccount.value) {
     payload.mat_khau = form.mat_khau
     payload.mat_khau_confirmation = form.xac_nhan_mat_khau
   }

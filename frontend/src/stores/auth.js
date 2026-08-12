@@ -35,10 +35,29 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const { data } = await authApi.login(credentials)
+
+      // ApiResponse lỗi dùng HTTP 200 + status: false — không vào axios catch
+      if (data?.status === false) {
+        const fieldError =
+          data?.errors?.tai_khoan?.[0] ||
+          data?.errors?.email?.[0] ||
+          data?.errors?.password?.[0]
+        error.value = fieldError || data?.message || 'Đăng nhập thất bại.'
+        throw new Error(error.value)
+      }
+
       setSession(data.user, data.token)
       return data
     } catch (err) {
-      error.value = err.response?.data?.message || 'Đăng nhập thất bại.'
+      if (!error.value) {
+        const data = err.response?.data
+        const fieldError =
+          data?.errors?.tai_khoan?.[0] ||
+          data?.errors?.email?.[0] ||
+          data?.errors?.password?.[0]
+        error.value =
+          fieldError || data?.message || err.message || 'Đăng nhập thất bại.'
+      }
       throw err
     } finally {
       loading.value = false
@@ -50,10 +69,19 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const { data } = await authApi.register(payload)
+
+      if (data?.status === false) {
+        error.value = data?.message || 'Đăng ký thất bại.'
+        throw new Error(error.value)
+      }
+
       setSession(data.user, data.token)
       return data
     } catch (err) {
-      error.value = err.response?.data?.message || 'Đăng ký thất bại.'
+      if (!error.value) {
+        const data = err.response?.data
+        error.value = data?.message || err.message || 'Đăng ký thất bại.'
+      }
       throw err
     } finally {
       loading.value = false

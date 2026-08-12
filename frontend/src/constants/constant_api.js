@@ -204,12 +204,15 @@ export const API_TRAC_NGHIEM_CAU_TRA_LOI = {
   BULK_DELETE: { url: '/admin/trac-nghiem-cau-tra-loi/bulk-delete', method: 'post' },
 }
 
-/** Admin — Người dùng (bảng nguoi_dung) */
+/** Admin — Người dùng (bảng users + thong_tin_nguoi_dung) */
 export const API_NGUOI_DUNG = {
   LIST: { url: '/admin/nguoi-dung', method: 'get' },
   SHOW: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'get' }),
+  UPDATE: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'put' }),
+  CHANGE_PASSWORD: (id) => ({ url: `/admin/nguoi-dung/${id}/doi-mat-khau`, method: 'put' }),
   DELETE: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'delete' }),
   BULK_DELETE: { url: '/admin/nguoi-dung/bulk-delete', method: 'post' },
+  BULK_STATUS: { url: '/admin/nguoi-dung/bulk-status', method: 'post' },
 }
 
 /** Admin — Lịch sử trắc nghiệm (phien da hoan thanh) */

@@ -32,6 +32,23 @@
             </CustomFormItem>
           </CustomCol>
           <CustomCol>
+            <CustomFormItem label="Trạng thái">
+              <CustomSelect
+                v-model="filters.trang_thai"
+                clearable
+                class="filter-control"
+                placeholder="Chọn trạng thái"
+              >
+                <CustomOption
+                  v-for="opt in trangThaiOptions"
+                  :key="opt.value"
+                  :label="opt.label"
+                  :value="opt.value"
+                />
+              </CustomSelect>
+            </CustomFormItem>
+          </CustomCol>
+          <CustomCol>
             <CustomFormItem label=" " class="filter-actions-item">
               <div class="filter-actions">
                 <CustomButton
@@ -67,6 +84,36 @@
               </el-badge>
             </span>
           </CustomTooltip>
+
+          <CustomTooltip content="Khóa các tài khoản đang hoạt động" placement="top">
+            <span class="action-wrap">
+              <el-badge :value="lockableCount" :hidden="!lockableCount" :max="99">
+                <CustomButton
+                  type="warning"
+                  :icon="Lock"
+                  :disabled="!lockableCount || isRequestLoading"
+                  @click="confirmBulkStatus('ngung_hoat_dong')"
+                >
+                  Khóa
+                </CustomButton>
+              </el-badge>
+            </span>
+          </CustomTooltip>
+
+          <CustomTooltip content="Mở các tài khoản đang ngừng hoạt động" placement="top">
+            <span class="action-wrap">
+              <el-badge :value="unlockableCount" :hidden="!unlockableCount" :max="99">
+                <CustomButton
+                  type="success"
+                  :icon="Unlock"
+                  :disabled="!unlockableCount || isRequestLoading"
+                  @click="confirmBulkStatus('dang_hoat_dong')"
+                >
+                  Mở
+                </CustomButton>
+              </el-badge>
+            </span>
+          </CustomTooltip>
         </div>
       </div>
 
@@ -87,7 +134,7 @@
         </CustomTableColumn>
         <CustomTableColumn prop="ho_ten" label="Họ tên" min-width="160" show-overflow-tooltip />
         <CustomTableColumn prop="email" label="Email" min-width="200" show-overflow-tooltip />
-        <CustomTableColumn prop="so_dien_thoai" label="Số điện thoại" width="140" />
+        <CustomTableColumn prop="so_dien_thoai" label="Số điện thoại" width="160" />
         <CustomTableColumn prop="gioi_tinh" label="Giới tính" width="110" align="center">
           <template #default="{ row }">
             {{ row.gioi_tinh || '—' }}
@@ -103,21 +150,46 @@
             {{ row.dan_toc || '—' }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Trình độ" min-width="140" show-overflow-tooltip>
+        <CustomTableColumn label="Trình độ" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
             {{ trinhDoLabel(row.trinh_do_hoc_van) }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Ngày tạo" width="160" align="center">
+        <CustomTableColumn label="Trạng thái" width="200" align="center">
+          <template #default="{ row }">
+            <div class="status-cell">
+              <el-switch
+                :model-value="row.trang_thai === 'dang_hoat_dong'"
+                :loading="statusLoadingId === row.id"
+                :disabled="statusLoadingId === row.id"
+                inline-prompt
+                active-text="Mở"
+                inactive-text="Khóa"
+                @change="(val) => toggleStatus(row, val)"
+              />
+              <CustomTag
+                :type="row.trang_thai === 'dang_hoat_dong' ? 'success' : 'info'"
+                effect="light"
+                size="small"
+              >
+                {{ trangThaiLabel(row.trang_thai) }}
+              </CustomTag>
+            </div>
+          </template>
+        </CustomTableColumn>
+        <CustomTableColumn label="Ngày đăng ký" width="200" align="center">
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Thao tác" width="100" fixed="right" align="center">
+        <CustomTableColumn label="Thao tác" width="130" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-btns">
               <CustomTooltip content="Xem chi tiết" placement="top">
                 <CustomButton link type="primary" :icon="View" @click="openDetail(row)" />
+              </CustomTooltip>
+              <CustomTooltip content="Đổi mật khẩu" placement="top">
+                <CustomButton link type="warning" :icon="Key" @click="openChangePassword(row)" />
               </CustomTooltip>
               <CustomTooltip content="Xóa" placement="top">
                 <CustomButton link type="danger" :icon="Delete" @click="confirmRemove(row)" />
@@ -152,7 +224,10 @@
           </el-descriptions-item>
           <el-descriptions-item label="Dân tộc">{{ detail.dan_toc || '—' }}</el-descriptions-item>
           <el-descriptions-item label="Tôn giáo">{{ detail.ton_giao || '—' }}</el-descriptions-item>
-          <el-descriptions-item label="Ngày tạo">
+          <el-descriptions-item label="Trạng thái">
+            {{ trangThaiLabel(detail.trang_thai) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="Ngày tạo" :span="2">
             {{ formatDateTime(detail.created_at) }}
           </el-descriptions-item>
         </el-descriptions>
@@ -214,13 +289,53 @@
         <CustomButton type="primary" @click="detailVisible = false">Đóng</CustomButton>
       </template>
     </CustomDialog>
+
+    <CustomDialog
+      v-model="passwordVisible"
+      title="Đổi mật khẩu"
+      :width="680"
+      @closed="resetPasswordForm"
+    >
+      <p v-if="passwordTarget" class="password-target">
+        Tài khoản: <strong>{{ passwordTarget.ho_ten }}</strong>
+        <span class="muted">({{ passwordTarget.email }})</span>
+      </p>
+
+      <CustomForm ref="passwordFormRef" :model="passwordForm" :rules="passwordFormRules">
+        <CustomFormItem label="Mật khẩu mới" prop="password">
+          <CustomInput
+            v-model="passwordForm.password"
+            type="password"
+            show-password
+            autocomplete="new-password"
+            placeholder="Nhập mật khẩu mới"
+          />
+        </CustomFormItem>
+        <CustomFormItem label="Xác nhận mật khẩu" prop="password_confirmation">
+          <CustomInput
+            v-model="passwordForm.password_confirmation"
+            type="password"
+            show-password
+            autocomplete="new-password"
+            placeholder="Nhập lại mật khẩu mới"
+          />
+        </CustomFormItem>
+      </CustomForm>
+
+      <template #footer>
+        <CustomButton @click="passwordVisible = false">Hủy</CustomButton>
+        <CustomButton type="primary" :loading="isRequestLoading" @click="submitChangePassword">
+          Đổi mật khẩu
+        </CustomButton>
+      </template>
+    </CustomDialog>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import { Delete, Search, View } from '@element-plus/icons-vue'
+import { Delete, Key, Lock, Search, Unlock, View } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import { API_NGUOI_DUNG } from '@/constants/constant_api'
 import {
@@ -237,10 +352,16 @@ import {
   CustomSelect,
   CustomTable,
   CustomTableColumn,
+  CustomTag,
   CustomTooltip,
 } from '@/components/element'
 
 const gioiTinhOptions = ['Nam', 'Nữ', 'Khác']
+
+const trangThaiOptions = [
+  { value: 'dang_hoat_dong', label: 'Đang hoạt động' },
+  { value: 'ngung_hoat_dong', label: 'Ngừng hoạt động' },
+]
 
 const trinhDoOptions = [
   { value: 'tot_nghiep_thpt', label: 'Tốt nghiệp THPT' },
@@ -261,12 +382,80 @@ const khuVucOptions = [
 const tableRef = ref(null)
 const items = ref([])
 const selectedRows = ref([])
+const statusLoadingId = ref(null)
 const detailVisible = ref(false)
 const detail = ref(null)
+const passwordVisible = ref(false)
+const passwordTarget = ref(null)
+const passwordFormRef = ref(null)
+
+const passwordForm = reactive({
+  password: '',
+  password_confirmation: '',
+})
+
+const validatePasswordStrength = (_rule, value, callback) => {
+  const pwd = value || ''
+  if (!pwd) {
+    callback(new Error('Vui lòng nhập mật khẩu mới'))
+    return
+  }
+
+  const checks = {
+    minLength: pwd.length >= 8,
+    lower: /[a-z]/.test(pwd),
+    upper: /[A-Z]/.test(pwd),
+    number: /\d/.test(pwd),
+    special: /[^A-Za-z0-9]/.test(pwd),
+  }
+
+  if (!checks.minLength) {
+    callback(new Error('Mật khẩu phải có tối thiểu 8 ký tự'))
+    return
+  }
+  if (!checks.lower) {
+    callback(new Error('Mật khẩu phải có ít nhất một chữ thường'))
+    return
+  }
+  if (!checks.upper) {
+    callback(new Error('Mật khẩu phải có ít nhất một chữ hoa'))
+    return
+  }
+  if (!checks.number) {
+    callback(new Error('Mật khẩu phải có ít nhất một chữ số'))
+    return
+  }
+  if (!checks.special) {
+    callback(new Error('Mật khẩu phải có ít nhất một ký tự đặc biệt'))
+    return
+  }
+
+  callback()
+}
+
+const validatePasswordConfirm = (_rule, value, callback) => {
+  if (!value) {
+    callback(new Error('Vui lòng xác nhận mật khẩu'))
+    return
+  }
+  if (value !== passwordForm.password) {
+    callback(new Error('Mật khẩu xác nhận không khớp'))
+    return
+  }
+  callback()
+}
+
+const passwordFormRules = {
+  password: [{ required: true, validator: validatePasswordStrength, trigger: ['blur', 'change'] }],
+  password_confirmation: [
+    { required: true, validator: validatePasswordConfirm, trigger: ['blur', 'change'] },
+  ],
+}
 
 const filters = reactive({
   keyword: '',
   gioi_tinh: '',
+  trang_thai: '',
 })
 
 const pagination = reactive({
@@ -278,6 +467,15 @@ const pagination = reactive({
 const selectedCount = computed(() => selectedRows.value.length)
 const hasSelection = computed(() => selectedCount.value > 0)
 const selectedIds = computed(() => selectedRows.value.map((row) => row.id))
+
+const lockableRows = computed(() =>
+  selectedRows.value.filter((row) => row.trang_thai === 'dang_hoat_dong'),
+)
+const unlockableRows = computed(() =>
+  selectedRows.value.filter((row) => row.trang_thai === 'ngung_hoat_dong'),
+)
+const lockableCount = computed(() => lockableRows.value.length)
+const unlockableCount = computed(() => unlockableRows.value.length)
 
 function onSelectionChange(rows) {
   selectedRows.value = rows
@@ -291,6 +489,10 @@ function clearSelection() {
 function handleSearch() {
   pagination.start = 0
   fetchList()
+}
+
+function trangThaiLabel(value) {
+  return trangThaiOptions.find((o) => o.value === value)?.label || value || '—'
 }
 
 function formatDate(value) {
@@ -341,9 +543,11 @@ function formatChungChi(list) {
 async function fetchList() {
   const q = filters.keyword.trim()
   const gioiTinh = filters.gioi_tinh || ''
+  const trangThai = filters.trang_thai || ''
   const params = {
     ...(q ? { q } : {}),
     ...(gioiTinh ? { gioi_tinh: gioiTinh } : {}),
+    ...(trangThai ? { trang_thai: trangThai } : {}),
     start: pagination.start,
     limit: pagination.limit,
   }
@@ -362,12 +566,67 @@ async function fetchList() {
   clearSelection()
 }
 
+async function toggleStatus(row, enabled) {
+  const nextStatus = enabled ? 'dang_hoat_dong' : 'ngung_hoat_dong'
+  if (row.trang_thai === nextStatus) return
+
+  const prevStatus = row.trang_thai
+  row.trang_thai = nextStatus
+  statusLoadingId.value = row.id
+
+  const res = await request({
+    url: API_NGUOI_DUNG.UPDATE(row.id),
+    body: { trang_thai: nextStatus },
+    loading: false,
+  })
+
+  statusLoadingId.value = null
+
+  if (!res.ok) {
+    row.trang_thai = prevStatus
+    return
+  }
+
+  if (res.data?.trang_thai) {
+    row.trang_thai = res.data.trang_thai
+  }
+}
+
 async function openDetail(row) {
   const res = await request({ url: API_NGUOI_DUNG.SHOW(row.id) })
   if (!res.ok) return
 
   detail.value = res.data
   detailVisible.value = true
+}
+
+function resetPasswordForm() {
+  passwordForm.password = ''
+  passwordForm.password_confirmation = ''
+  passwordTarget.value = null
+  passwordFormRef.value?.clearValidate?.()
+}
+
+function openChangePassword(row) {
+  resetPasswordForm()
+  passwordTarget.value = row
+  passwordVisible.value = true
+}
+
+async function submitChangePassword() {
+  const valid = await passwordFormRef.value?.validate().catch(() => false)
+  if (!valid || !passwordTarget.value) return
+
+  const res = await request({
+    url: API_NGUOI_DUNG.CHANGE_PASSWORD(passwordTarget.value.id),
+    body: {
+      password: passwordForm.password,
+      password_confirmation: passwordForm.password_confirmation,
+    },
+  })
+  if (!res.ok) return
+
+  passwordVisible.value = false
 }
 
 async function confirmRemove(row) {
@@ -409,6 +668,33 @@ async function confirmBulkRemove() {
   await fetchList()
 }
 
+async function confirmBulkStatus(trangThai) {
+  const targetRows = trangThai === 'ngung_hoat_dong' ? lockableRows.value : unlockableRows.value
+  if (!targetRows.length) return
+
+  const actionLabel = trangThai === 'ngung_hoat_dong' ? 'khóa' : 'mở'
+  const statusLabel = trangThaiLabel(trangThai)
+  const ids = targetRows.map((row) => row.id)
+
+  try {
+    await ElMessageBox.confirm(
+      `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)} ${ids.length} người dùng (trạng thái: ${statusLabel})?`,
+      `Xác nhận ${actionLabel}`,
+      { type: 'warning', confirmButtonText: 'Đồng ý', cancelButtonText: 'Hủy' },
+    )
+  } catch {
+    return
+  }
+
+  const res = await request({
+    url: API_NGUOI_DUNG.BULK_STATUS,
+    body: { ids, trang_thai: trangThai },
+  })
+  if (!res.ok) return
+
+  await fetchList()
+}
+
 onMounted(fetchList)
 </script>
 
@@ -426,5 +712,15 @@ onMounted(fetchList)
 .detail-block :deep(.el-descriptions__label) {
   width: 160px;
   font-weight: 500;
+}
+
+.password-target {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.password-target .muted {
+  margin-left: 4px;
+  color: var(--el-text-color-secondary);
 }
 </style>

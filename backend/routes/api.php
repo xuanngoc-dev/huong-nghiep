@@ -163,9 +163,11 @@ Route::prefix('v1')->group(function () {
                 ->parameters(['ton-giao' => 'tonGiao']);
 
             Route::post('nguoi-dung/bulk-delete', [AdminNguoiDungController::class, 'bulkDestroy']);
+            Route::post('nguoi-dung/bulk-status', [AdminNguoiDungController::class, 'bulkUpdateStatus']);
+            Route::put('nguoi-dung/{user}/doi-mat-khau', [AdminNguoiDungController::class, 'changePassword']);
             Route::apiResource('nguoi-dung', AdminNguoiDungController::class)
-                ->only(['index', 'show', 'destroy'])
-                ->parameters(['nguoi-dung' => 'nguoiDung']);
+                ->only(['index', 'show', 'update', 'destroy'])
+                ->parameters(['nguoi-dung' => 'user']);
 
             Route::post('lich-su-trac-nghiem/bulk-delete', [AdminTracNghiemPhienDaHoanThanhController::class, 'bulkDestroy']);
             Route::apiResource('lich-su-trac-nghiem', AdminTracNghiemPhienDaHoanThanhController::class)
