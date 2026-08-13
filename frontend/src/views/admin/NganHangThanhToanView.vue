@@ -125,21 +125,16 @@
             {{ pagination.start + $index + 1 }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn prop="ten_ngan_hang" label="Tên ngân hàng" min-width="180" />
-        <CustomTableColumn prop="ten_viet_tat" label="Viết tắt" width="110" />
-        <CustomTableColumn label="Logo" width="80" align="center">
+        <CustomTableColumn label="Logo" width="100" align="center">
           <template #default="{ row }">
-            <el-image
-              v-if="row.hinh_anh_logo"
-              :src="row.hinh_anh_logo"
-              :preview-src-list="[row.hinh_anh_logo]"
-              fit="contain"
-              class="logo-thumb"
-              preview-teleported
-            />
+            <el-image v-if="row.hinh_anh_logo" :src="row.hinh_anh_logo" :preview-src-list="[row.hinh_anh_logo]"
+              fit="contain" class="logo-thumb" preview-teleported />
             <span v-else class="text-muted">—</span>
           </template>
         </CustomTableColumn>
+        <CustomTableColumn prop="ten_ngan_hang" label="Tên ngân hàng" min-width="180" />
+        <CustomTableColumn prop="ten_viet_tat" label="Viết tắt" width="110" />
+       
         <CustomTableColumn prop="so_tai_khoan" label="Số tài khoản" width="160" />
         <CustomTableColumn prop="chu_tai_khoan" label="Chủ tài khoản" min-width="160" />
         <CustomTableColumn
@@ -587,8 +582,8 @@ onMounted(fetchList)
 
 <style scoped>
 .logo-thumb {
-  width: 36px;
-  height: 36px;
+  width: 80px;
+  height: 60px;
   border-radius: 6px;
 }
 
@@ -605,14 +600,13 @@ onMounted(fetchList)
   border-radius: 12px;
   border: 1px solid var(--el-border-color-lighter);
   background: var(--el-fill-color-blank);
+  box-sizing: border-box;
 }
 
 .logo-preview__placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
   font-size: 13px;
   color: var(--el-text-color-placeholder);
   text-align: center;
@@ -621,6 +615,9 @@ onMounted(fetchList)
 }
 
 .logo-preview__img.logo-preview__placeholder {
+  width: 200px;
+  height: 96px;
+  flex-shrink: 0;
   border: 2px dashed var(--el-color-primary);
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);

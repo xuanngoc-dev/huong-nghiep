@@ -2,19 +2,29 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Enums\KenhThanhToan;
+use App\Enums\LoaiKhuyenMai;
+use App\Enums\LoaiNapTien;
+use App\Enums\TrangThaiNapEduCoin;
 use App\Enums\TrangThaiUser;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\LichSuNapEduCoin;
+use App\Models\NganHangThanhToan;
 use App\Models\NguoiDung;
 use App\Models\User;
 use App\Support\ApiResponse;
 use App\Support\OffsetPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class NguoiDungController extends Controller
 {
+    /** 1 Edu Coin = 1000 VND */
+    private const EDU_COIN_RATE = 1000;
+
     public function index(Request $request): JsonResponse
     {
         return $this->tryApi(function () use ($request) {
@@ -146,6 +156,130 @@ class NguoiDungController extends Controller
         });
     }
 
+    public function napTien(Request $request, User $user): JsonResponse
+    {
+        return $this->tryApi(function () use ($request, $user) {
+            abort_unless($user->role === UserRole::User, 404);
+
+            $validated = $request->validate([
+                'so_coin_nap' => ['required', 'integer', 'min:1'],
+                'loai_khuyen_mai' => ['required', Rule::enum(LoaiKhuyenMai::class)],
+                'khuyen_mai' => ['required', 'integer', 'min:0'],
+                'kenh_thanh_toan' => ['required', Rule::enum(KenhThanhToan::class)],
+                'ngan_hang_thanh_toan_id' => [
+                    'nullable',
+                    'integer',
+                    'required_if:kenh_thanh_toan,chuyen_khoan',
+                    'exists:he_thong_ngan_hang_thanh_toan,id',
+                ],
+                'ghi_chu' => ['nullable', 'string', 'max:255'],
+            ], [
+                'so_coin_nap.required' => 'Vui lòng nhập số coin nạp.',
+                'so_coin_nap.integer' => 'Số coin phải là số nguyên.',
+                'so_coin_nap.min' => 'Số coin phải ≥ 1.',
+                'loai_khuyen_mai.required' => 'Vui lòng chọn loại khuyến mại.',
+                'khuyen_mai.required' => 'Vui lòng nhập khuyến mại.',
+                'khuyen_mai.integer' => 'Khuyến mại phải là số nguyên.',
+                'khuyen_mai.min' => 'Khuyến mại phải ≥ 0.',
+                'kenh_thanh_toan.required' => 'Vui lòng chọn kênh thanh toán.',
+                'ngan_hang_thanh_toan_id.required_if' => 'Vui lòng chọn ngân hàng nhận chuyển khoản.',
+                'ngan_hang_thanh_toan_id.exists' => 'Ngân hàng không tồn tại.',
+            ]);
+
+            $loaiKhuyenMai = $validated['loai_khuyen_mai'] instanceof LoaiKhuyenMai
+                ? $validated['loai_khuyen_mai']
+                : LoaiKhuyenMai::from($validated['loai_khuyen_mai']);
+            $kenhThanhToan = $validated['kenh_thanh_toan'] instanceof KenhThanhToan
+                ? $validated['kenh_thanh_toan']
+                : KenhThanhToan::from($validated['kenh_thanh_toan']);
+
+            $soCoinNap = (int) $validated['so_coin_nap'];
+            $khuyenMai = (int) $validated['khuyen_mai'];
+
+            if ($loaiKhuyenMai === LoaiKhuyenMai::PhanTram && $khuyenMai > 1000) {
+                return ApiResponse::error('Phần trăm khuyến mại tối đa 1000%.');
+            }
+
+            $coinKhuyenMai = $loaiKhuyenMai === LoaiKhuyenMai::PhanTram
+                ? intdiv($soCoinNap * $khuyenMai, 100)
+                : $khuyenMai;
+            $tongCoinNhan = $soCoinNap + $coinKhuyenMai;
+
+            if ($tongCoinNhan < 1) {
+                return ApiResponse::error('Tổng coin nhận phải ≥ 1.');
+            }
+
+            $actor = $request->user();
+            $loaiNapTien = $this->resolveLoaiNapTien($actor);
+            $bank = null;
+            if ($kenhThanhToan === KenhThanhToan::ChuyenKhoan) {
+                $bank = NganHangThanhToan::query()->find($validated['ngan_hang_thanh_toan_id']);
+                if ($bank === null) {
+                    return ApiResponse::error('Ngân hàng không tồn tại.');
+                }
+            }
+
+            DB::transaction(function () use (
+                $user,
+                $actor,
+                $validated,
+                $soCoinNap,
+                $loaiKhuyenMai,
+                $coinKhuyenMai,
+                $tongCoinNhan,
+                $kenhThanhToan,
+                $loaiNapTien,
+                $bank,
+            ) {
+                $profile = $user->thongTinNguoiDung()->lockForUpdate()->first();
+                if ($profile === null) {
+                    $profile = $user->thongTinNguoiDung()->create([
+                        'edu_coin' => 0,
+                        'xu_he_thong' => 0,
+                    ]);
+                }
+
+                $soDuTruocNap = (int) $profile->edu_coin;
+                $isAdminNap = $loaiNapTien === LoaiNapTien::AdminNap;
+                $soDuSauNap = $isAdminNap
+                    ? $soDuTruocNap + $tongCoinNhan
+                    : $soDuTruocNap;
+
+                LichSuNapEduCoin::query()->create([
+                    'nguoi_nap_id' => $user->id,
+                    'nguoi_duyet_id' => $isAdminNap ? $actor?->id : null,
+                    'nguoi_tao_id' => $actor?->id,
+                    'loai_nap_tien' => $loaiNapTien,
+                    'so_du_truoc_nap' => $soDuTruocNap,
+                    'so_du_sau_nap' => $soDuSauNap,
+                    'so_coin_nap' => $soCoinNap,
+                    'so_tien_thanh_toan' => $soCoinNap * self::EDU_COIN_RATE,
+                    'loai_khuyen_mai' => $loaiKhuyenMai,
+                    'coin_khuyen_mai' => $coinKhuyenMai,
+                    'tong_coin_nhan' => $tongCoinNhan,
+                    'kenh_thanh_toan' => $kenhThanhToan,
+                    'thong_tin_thanh_toan' => $this->buildThongTinThanhToan($kenhThanhToan, $bank, $user),
+                    'ghi_chu' => $validated['ghi_chu'] ?? null,
+                    'trang_thai' => $isAdminNap
+                        ? TrangThaiNapEduCoin::DaDuyet
+                        : TrangThaiNapEduCoin::DangXuLy,
+                ]);
+
+                if ($isAdminNap) {
+                    $profile->edu_coin = $soDuTruocNap + $tongCoinNhan;
+                    $profile->save();
+                }
+            });
+
+            $user->load('thongTinNguoiDung');
+
+            return ApiResponse::success(
+                $this->toPublicArray($user),
+                "Đã nạp {$tongCoinNhan} Edu Coin thành công.",
+            );
+        });
+    }
+
     public function bulkDestroy(Request $request): JsonResponse
     {
         return $this->tryApi(function () use ($request) {
@@ -189,6 +323,41 @@ class NguoiDungController extends Controller
                 "Đã cập nhật trạng thái «{$trangThai->label()}» cho {$count} người dùng.",
             );
         });
+    }
+
+    private function resolveLoaiNapTien(?User $actor): LoaiNapTien
+    {
+        if ($actor?->isAdmin()) {
+            return LoaiNapTien::AdminNap;
+        }
+
+        return LoaiNapTien::NguoiDungNap;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function buildThongTinThanhToan(
+        KenhThanhToan $kenhThanhToan,
+        ?NganHangThanhToan $bank,
+        User $nguoiNap,
+    ): ?array {
+        if ($kenhThanhToan !== KenhThanhToan::ChuyenKhoan || $bank === null) {
+            return null;
+        }
+
+        $hoTen = trim((string) $nguoiNap->name);
+        $noiDung = 'NAP EDU '.$nguoiNap->id.($hoTen !== '' ? ' '.$hoTen : '');
+
+        return [
+            'ngan_hang_thanh_toan_id' => $bank->id,
+            'ten_ngan_hang' => $bank->ten_ngan_hang,
+            'ten_viet_tat' => $bank->ten_viet_tat,
+            'so_tai_khoan' => $bank->so_tai_khoan,
+            'chu_tai_khoan' => $bank->chu_tai_khoan,
+            'chi_nhanh' => $bank->chi_nhanh,
+            'noi_dung_chuyen_khoan' => mb_substr($noiDung, 0, 100),
+        ];
     }
 
     /**

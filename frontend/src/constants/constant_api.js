@@ -221,6 +221,7 @@ export const API_NGUOI_DUNG = {
   SHOW: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'get' }),
   UPDATE: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'put' }),
   CHANGE_PASSWORD: (id) => ({ url: `/admin/nguoi-dung/${id}/doi-mat-khau`, method: 'put' }),
+  NAP_TIEN: (id) => ({ url: `/admin/nguoi-dung/${id}/nap-tien`, method: 'post' }),
   DELETE: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'delete' }),
   BULK_DELETE: { url: '/admin/nguoi-dung/bulk-delete', method: 'post' },
   BULK_STATUS: { url: '/admin/nguoi-dung/bulk-status', method: 'post' },

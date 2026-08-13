@@ -349,7 +349,7 @@
       </template>
     </CustomDialog>
 
-    <NapTienModal v-model="napTienVisible" :user="napTienTarget" />
+    <NapTienModal v-model="napTienVisible" :user="napTienTarget" @success="onNapTienSuccess" />
   </div>
 </template>
 
@@ -646,6 +646,22 @@ function openChangePassword(row) {
 function openNapTien(row) {
   napTienTarget.value = row
   napTienVisible.value = true
+}
+
+function onNapTienSuccess(updated) {
+  if (!updated?.id) {
+    fetchList()
+    return
+  }
+
+  const idx = items.value.findIndex((row) => row.id === updated.id)
+  if (idx >= 0) {
+    items.value[idx] = { ...items.value[idx], ...updated }
+  }
+
+  if (detail.value?.id === updated.id) {
+    detail.value = { ...detail.value, ...updated }
+  }
 }
 
 async function submitChangePassword() {

@@ -171,6 +171,7 @@ Route::prefix('v1')->group(function () {
             Route::post('nguoi-dung/bulk-delete', [AdminNguoiDungController::class, 'bulkDestroy']);
             Route::post('nguoi-dung/bulk-status', [AdminNguoiDungController::class, 'bulkUpdateStatus']);
             Route::put('nguoi-dung/{user}/doi-mat-khau', [AdminNguoiDungController::class, 'changePassword']);
+            Route::post('nguoi-dung/{user}/nap-tien', [AdminNguoiDungController::class, 'napTien']);
             Route::apiResource('nguoi-dung', AdminNguoiDungController::class)
                 ->only(['index', 'show', 'update', 'destroy'])
                 ->parameters(['nguoi-dung' => 'user']);
