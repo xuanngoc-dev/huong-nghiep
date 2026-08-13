@@ -6,6 +6,7 @@ use App\Enums\TrangThaiUser;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -47,7 +48,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Đăng ký thành công.',
-            'user' => $user,
+            'user' => $this->toAuthUser($user),
             'token' => $token,
         ], 201);
     }
@@ -91,7 +92,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Đăng nhập thành công.',
-            'user' => $user,
+            'user' => $this->toAuthUser($user),
             'token' => $token,
         ]);
     }
@@ -108,7 +109,76 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $request->user(),
+            'user' => $this->toAuthUser($request->user()),
         ]);
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        return $this->tryApi(function () use ($request) {
+            $validated = $request->validate([
+                'current_password' => ['required', 'string'],
+                'password' => [
+                    'required',
+                    'string',
+                    'confirmed',
+                    'min:8',
+                    function (string $attribute, mixed $value, \Closure $fail): void {
+                        $password = (string) $value;
+
+                        if (! preg_match('/[a-z]/', $password)) {
+                            $fail('Mật khẩu phải có ít nhất một chữ thường.');
+                        }
+                        if (! preg_match('/[A-Z]/', $password)) {
+                            $fail('Mật khẩu phải có ít nhất một chữ hoa.');
+                        }
+                        if (! preg_match('/\d/', $password)) {
+                            $fail('Mật khẩu phải có ít nhất một chữ số.');
+                        }
+                        if (! preg_match('/[^A-Za-z0-9]/', $password)) {
+                            $fail('Mật khẩu phải có ít nhất một ký tự đặc biệt.');
+                        }
+                    },
+                ],
+            ], [
+                'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+                'password.required' => 'Vui lòng nhập mật khẩu mới.',
+                'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+                'password.min' => 'Mật khẩu phải có tối thiểu 8 ký tự.',
+            ]);
+
+            $user = $request->user();
+            if (! Hash::check($validated['current_password'], $user->password)) {
+                throw ValidationException::withMessages([
+                    'current_password' => ['Mật khẩu hiện tại không đúng.'],
+                ]);
+            }
+
+            if (Hash::check($validated['password'], $user->password)) {
+                throw ValidationException::withMessages([
+                    'password' => ['Mật khẩu mới phải khác mật khẩu hiện tại.'],
+                ]);
+            }
+
+            $user->password = $validated['password'];
+            $user->save();
+
+            return ApiResponse::success(null, 'Đổi mật khẩu thành công.');
+        });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function toAuthUser(User $user): array
+    {
+        $profile = $user->thongTinNguoiDung()->first(['edu_coin', 'xu_he_thong']);
+        $payload = $user->toArray();
+        unset($payload['thong_tin_nguoi_dung']);
+
+        $payload['edu_coin'] = (int) ($profile?->edu_coin ?? 0);
+        $payload['xu_he_thong'] = (int) ($profile?->xu_he_thong ?? 0);
+
+        return $payload;
     }
 }

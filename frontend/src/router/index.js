@@ -37,9 +37,50 @@ const router = createRouter({
         },
         {
           path: 'profile',
-          name: 'profile',
-          component: () => import('@/views/user/HoSoView.vue'),
+          component: () => import('@/layouts/user/TrangCaNhanLayout.vue'),
           meta: { requiresAuth: true },
+          children: [
+            {
+              path: '',
+              name: 'profile',
+              component: placeholder,
+              meta: { title: 'Tổng quan', icon: 'User' },
+            },
+            {
+              path: 'thong-tin',
+              name: 'profile-thong-tin',
+              component: placeholder,
+              meta: { title: 'Thông tin cá nhân', icon: 'UserFilled' },
+            },
+            {
+              path: 'bao-mat',
+              name: 'profile-bao-mat',
+              component: placeholder,
+              meta: { title: 'Bảo mật tài khoản', icon: 'Lock' },
+            },
+            {
+              path: 'doi-mat-khau',
+              redirect: { name: 'profile-bao-mat' },
+            },
+            {
+              path: 'tai-san',
+              name: 'profile-tai-san',
+              component: placeholder,
+              meta: { title: 'Tài sản', icon: 'Wallet' },
+            },
+            {
+              path: 'lich-su-trac-nghiem',
+              name: 'profile-lich-su-trac-nghiem',
+              component: placeholder,
+              meta: { title: 'Lịch sử trắc nghiệm', icon: 'Document' },
+            },
+            {
+              path: 'ho-tro',
+              name: 'profile-ho-tro',
+              component: placeholder,
+              meta: { title: 'Hỗ trợ', icon: 'Headset' },
+            },
+          ],
         },
       ],
     },

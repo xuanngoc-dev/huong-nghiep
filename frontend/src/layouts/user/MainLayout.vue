@@ -31,12 +31,46 @@
         </nav>
 
         <div class="header-right">
+          <div v-if="auth.isAuthenticated" class="user-wallet" aria-label="Số dư tài khoản">
+            <el-tooltip content="Edu Coin" placement="bottom" :show-after="150">
+              <span class="user-wallet__item">
+                <el-icon :size="16" aria-hidden="true"><Coin /></el-icon>
+                <span>{{ formatBalance(eduCoin) }}</span>
+              </span>
+            </el-tooltip>
+            <el-tooltip content="Xu hệ thống" placement="bottom" :show-after="150">
+              <span class="user-wallet__item">
+                <el-icon :size="16" aria-hidden="true"><Medal /></el-icon>
+                <span>{{ formatBalance(xuHeThong) }}</span>
+              </span>
+            </el-tooltip>
+          </div>
+
           <div class="actions">
             <template v-if="auth.isAuthenticated">
-              <span class="muted user-name">{{ auth.user?.name }}</span>
-              <button class="btn btn-outline btn-sm" type="button" @click="handleLogout">
-                Đăng xuất
-              </button>
+              <el-dropdown
+                trigger="hover"
+                placement="bottom-end"
+                popper-class="user-menu-popper"
+                @command="onUserCommand"
+              >
+                <button type="button" class="user-menu-trigger">
+                  <span class="user-name">{{ auth.user?.name }}</span>
+                  <el-icon class="user-menu-caret" :size="14">
+                    <ArrowDown />
+                  </el-icon>
+                </button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="profile" :icon="User">
+                      Trang cá nhân
+                    </el-dropdown-item>
+                    <el-dropdown-item divided command="logout" :icon="SwitchButton">
+                      Đăng xuất
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </template>
             <template v-else>
               <RouterLink class="btn btn-outline btn-sm" to="/login">Đăng nhập</RouterLink>
@@ -79,7 +113,24 @@
 
           <div class="nav-mobile-actions">
             <template v-if="auth.isAuthenticated">
+              <div class="user-wallet user-wallet--mobile" aria-label="Số dư tài khoản">
+                <span class="user-wallet__item" title="Edu Coin">
+                  <el-icon :size="16" aria-hidden="true"><Coin /></el-icon>
+                  <span>{{ formatBalance(eduCoin) }}</span>
+                </span>
+                <span class="user-wallet__item" title="Xu hệ thống">
+                  <el-icon :size="16" aria-hidden="true"><Medal /></el-icon>
+                  <span>{{ formatBalance(xuHeThong) }}</span>
+                </span>
+              </div>
               <p class="muted user-name user-name--mobile">{{ auth.user?.name }}</p>
+              <RouterLink
+                class="btn btn-outline"
+                :to="{ name: 'profile' }"
+                @click="closeMenu"
+              >
+                Trang cá nhân
+              </RouterLink>
               <button class="btn btn-outline" type="button" @click="handleLogoutMobile">
                 Đăng xuất
               </button>
@@ -146,7 +197,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { Close, Menu } from '@element-plus/icons-vue'
+import { ArrowDown, Close, Coin, Medal, Menu, SwitchButton, User } from '@element-plus/icons-vue'
 import { useScrollReveal } from '@/composables/useScrollReveal'
 import { useAuthStore } from '@/stores/auth'
 import userMenu from '@/data/user-menu.json'
@@ -157,6 +208,12 @@ const router = useRouter()
 const year = new Date().getFullYear()
 const isHome = computed(() => route.name === 'home')
 const menuOpen = ref(false)
+const eduCoin = computed(() => Number(auth.user?.edu_coin) || 0)
+const xuHeThong = computed(() => Number(auth.user?.xu_he_thong) || 0)
+
+function formatBalance(value) {
+  return new Intl.NumberFormat('vi-VN').format(Number(value) || 0)
+}
 
 useScrollReveal()
 
@@ -182,6 +239,16 @@ function closeMenu() {
 
 function onKeydown(event) {
   if (event.key === 'Escape') closeMenu()
+}
+
+function onUserCommand(command) {
+  if (command === 'profile') {
+    router.push({ name: 'profile' })
+    return
+  }
+  if (command === 'logout') {
+    handleLogout()
+  }
 }
 
 async function handleLogout() {
@@ -213,10 +280,15 @@ function onResize() {
 }
 
 onMounted(() => {
+  document.documentElement.classList.add('is-user-layout')
   window.addEventListener('resize', onResize)
+  if (auth.isAuthenticated) {
+    auth.fetchMe().catch(() => {})
+  }
 })
 
 onBeforeUnmount(() => {
+  document.documentElement.classList.remove('is-user-layout')
   document.body.style.overflow = ''
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', onResize)
@@ -228,13 +300,15 @@ onBeforeUnmount(() => {
   --text: #0f241a;
   --muted: #3d564b;
   --font: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
+  --el-font-family: var(--font);
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
   color: var(--text);
   font-family: var(--font);
-  font-weight: 500;
-  letter-spacing: -0.011em;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -245,7 +319,8 @@ onBeforeUnmount(() => {
 .layout :deep(h3),
 .layout :deep(h4) {
   color: var(--text);
-  font-weight: 700;
+  font-family: var(--font);
+  font-weight: 400;
   letter-spacing: -0.025em;
   text-wrap: balance;
 }
@@ -255,7 +330,12 @@ onBeforeUnmount(() => {
 .layout :deep(label),
 .layout :deep(span),
 .layout :deep(a),
-.layout :deep(button) {
+.layout :deep(button),
+.layout :deep(input),
+.layout :deep(textarea) {
+  font-family: var(--font);
+  font-weight: 300;
+  letter-spacing: -0.02em;
   text-rendering: optimizeLegibility;
 }
 
@@ -314,8 +394,8 @@ onBeforeUnmount(() => {
 
 .brand__text {
   display: none;
-  font-weight: 700;
-  font-size: 1.08rem;
+  font-weight: 400;
+  font-size: 16px;
   letter-spacing: -0.03em;
   line-height: 1.2;
   white-space: nowrap;
@@ -341,33 +421,86 @@ onBeforeUnmount(() => {
 
 .nav--desktop a {
   color: var(--muted);
-  font-size: 0.96rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 300;
   white-space: nowrap;
 }
 
 .nav--desktop a.router-link-active {
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 400;
 }
 
-.actions {
-  display: none;
+.user-wallet {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-btn);
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.user-wallet__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.user-wallet--mobile {
+  width: 100%;
+  margin-bottom: 0.15rem;
+}
+
+.user-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 14rem;
+  padding: 0.35rem 0.65rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+}
+
+.user-menu-trigger:hover,
+.user-menu-trigger:focus-visible,
+.user-menu-trigger[aria-expanded="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.user-menu-caret {
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+
+.user-menu-trigger[aria-expanded="true"] .user-menu-caret {
+  transform: rotate(180deg);
 }
 
 .user-name {
-  max-width: 8rem;
+  max-width: 9.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.9rem;
+  font-size: 16px;
+  font-weight: 300;
 }
 
 .btn-sm {
   padding: 0.4rem 0.85rem;
-  font-size: 0.9rem;
+  font-size: 16px;
+  font-weight: 300;
 }
 
 .menu-toggle {
@@ -438,14 +571,14 @@ onBeforeUnmount(() => {
   display: block;
   padding: 0.75rem 0.25rem;
   color: var(--text);
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 300;
   border-bottom: 1px solid var(--border);
 }
 
 .nav-mobile-link.router-link-active {
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .nav-mobile-actions {
@@ -483,8 +616,8 @@ onBeforeUnmount(() => {
 
 .footer-title {
   margin: 0 0 0.4rem;
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-weight: 400;
+  font-size: 16px;
   letter-spacing: -0.03em;
 }
 
@@ -492,8 +625,8 @@ onBeforeUnmount(() => {
   margin: 0;
   max-width: 28rem;
   line-height: 1.55;
-  font-size: 0.94rem;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 300;
 }
 
 .footer-links {
@@ -504,8 +637,8 @@ onBeforeUnmount(() => {
 
 .footer-links a {
   color: var(--muted);
-  font-size: 0.94rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 300;
 }
 
 .footer-links a:hover {
@@ -514,8 +647,8 @@ onBeforeUnmount(() => {
 
 .footer-copy {
   margin: 0;
-  font-size: 0.88rem;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 300;
 }
 
 /* Tablet: hiện actions, vẫn dùng menu toggle vì nhiều mục */
@@ -563,10 +696,20 @@ onBeforeUnmount(() => {
   .header-inner {
     gap: 0.75rem;
   }
+
+  .user-wallet {
+    gap: 0.35rem;
+  }
+
+  .user-wallet__item {
+    padding: 0.22rem 0.45rem;
+    font-size: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav--mobile {
+  .nav--mobile,
+  .user-menu-caret {
     transition: none;
   }
 
@@ -578,5 +721,55 @@ onBeforeUnmount(() => {
     transform: none !important;
     visibility: visible !important;
   }
+}
+</style>
+
+<style>
+html.is-user-layout {
+  --el-font-family: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
+}
+
+html.is-user-layout .el-select-dropdown,
+html.is-user-layout .el-picker-panel,
+html.is-user-layout .el-popper,
+html.is-user-layout .el-dropdown-menu,
+html.is-user-layout .el-select-dropdown__item,
+html.is-user-layout .el-picker-panel__content {
+  font-family: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.user-menu-popper.el-popper {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(26, 46, 36, 0.12);
+  font-family: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.user-menu-popper .el-dropdown-menu {
+  padding: 0.35rem;
+  border: 0;
+}
+
+.user-menu-popper .el-dropdown-menu__item {
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--text);
+}
+
+.user-menu-popper .el-dropdown-menu__item:hover,
+.user-menu-popper .el-dropdown-menu__item:focus {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.user-menu-popper .el-dropdown-menu__item .el-icon {
+  color: inherit;
 }
 </style>

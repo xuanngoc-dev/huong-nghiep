@@ -1,6 +1,6 @@
 <template>
-  <div class="quiz-fields-khao-sat">
-    <p class="quiz-fields-khao-sat__lead">
+  <div class="quiz-fields-khao-sat" :class="{ 'quiz-fields-khao-sat--profile': variant === 'profile' }">
+    <p v-if="variant !== 'profile'" class="quiz-fields-khao-sat__lead">
       Thu thập thêm thông tin cá nhân để tư vấn hướng nghiệp chính xác hơn.
     </p>
 
@@ -463,6 +463,13 @@ import { API_PUBLIC } from '@/constants/constant_api'
 import { useAuthStore } from '@/stores/auth'
 
 const emit = defineEmits(['submit', 'saved'])
+const props = defineProps({
+  variant: {
+    type: String,
+    default: 'quiz',
+  },
+})
+const variant = computed(() => props.variant)
 const auth = useAuthStore()
 
 /** Đã có hồ sơ thong_tin_nguoi_dung → ẩn mật khẩu, lưu = cập nhật. */
@@ -976,6 +983,10 @@ defineExpose({
 </script>
 
 <style scoped>
+.quiz-fields-khao-sat--profile .quiz-fields-khao-sat__stt {
+  display: none;
+}
+
 .quiz-fields-khao-sat__lead {
   margin: 0 0 1.15rem;
   color: var(--muted);

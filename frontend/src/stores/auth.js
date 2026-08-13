@@ -106,6 +106,12 @@ export const useAuthStore = defineStore('auth', () => {
     return data.user
   }
 
+  function updateUser(partial) {
+    if (!user.value || !partial || typeof partial !== 'object') return
+    user.value = { ...user.value, ...partial }
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user.value))
+  }
+
   return {
     user,
     token,
@@ -118,6 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     fetchMe,
+    updateUser,
     clearSession,
   }
 })
