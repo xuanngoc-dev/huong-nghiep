@@ -320,4 +320,11 @@ export const API_PUBLIC = {
   LICH_SU_NAP_EDU_COIN: {
     LIST: { url: '/lich-su-nap-edu-coin', method: 'get' },
   },
+  XU_HE_THONG: {
+    TUAN_DIEM_DANH: { url: '/xu-he-thong/diem-danh', method: 'get' },
+    DIEM_DANH: { url: '/xu-he-thong/diem-danh', method: 'post' },
+  },
+  LICH_SU_NHAN_XU: {
+    LIST: { url: '/lich-su-nhan-xu', method: 'get' },
+  },
 }

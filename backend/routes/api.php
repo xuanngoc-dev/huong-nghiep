@@ -32,7 +32,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\LoaiCauHoiController;
 use App\Http\Controllers\Api\NganhHocController;
+use App\Http\Controllers\Api\DiemDanhXuHeThongController;
 use App\Http\Controllers\Api\LichSuNapEduCoinController;
+use App\Http\Controllers\Api\LichSuNhanXuController;
 use App\Http\Controllers\Api\NganHangThanhToanController;
 use App\Http\Controllers\Api\NapEduCoinController;
 use App\Http\Controllers\Api\NguoiDungController;
@@ -87,6 +89,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/nap-edu-coin', [NapEduCoinController::class, 'store']);
         Route::get('/nap-edu-coin/{napEduCoin}', [NapEduCoinController::class, 'show']);
         Route::get('/lich-su-nap-edu-coin', [LichSuNapEduCoinController::class, 'index']);
+        Route::get('/xu-he-thong/diem-danh', [DiemDanhXuHeThongController::class, 'tuan']);
+        Route::post('/xu-he-thong/diem-danh', [DiemDanhXuHeThongController::class, 'store']);
+        Route::get('/lich-su-nhan-xu', [LichSuNhanXuController::class, 'index']);
     });
 
     // CMS / Admin — chỉ role admin

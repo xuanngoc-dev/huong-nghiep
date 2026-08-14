@@ -8,7 +8,7 @@
           <Tickets />
         </CustomIcon>
       </template>
-      <p class="xu-history__hint">Các lần nhận hoặc trừ xu sẽ hiển thị tại đây.</p>
+      <p class="xu-history__hint">Các lần nhận xu sẽ hiển thị tại đây.</p>
     </CustomEmpty>
 
     <template v-else>
@@ -17,21 +17,25 @@
           <thead>
             <tr>
               <th scope="col">Thời gian</th>
+              <th scope="col">Hình thức</th>
               <th class="is-num" scope="col">Biến động</th>
               <th class="is-num" scope="col">Số dư trước</th>
               <th class="is-num" scope="col">Số dư sau</th>
-              <th scope="col">Ghi chú</th>
+              <th scope="col">Trạng thái</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="row in items" :key="row.id">
               <td>{{ formatDateTime(row.created_at) }}</td>
-              <td class="is-num" :class="deltaClass(row.so_luong)">
-                {{ formatDelta(row.so_luong) }}
+              <td>{{ row.hinh_thuc_nhan_xu_label || '—' }}</td>
+              <td class="is-num is-plus">+{{ formatNumber(row.so_xu_nhan_duoc) }}</td>
+              <td class="is-num">{{ formatNumber(row.so_du_truoc_khi_nhan) }}</td>
+              <td class="is-num">{{ formatNumber(row.so_du_sau_khi_nhan) }}</td>
+              <td>
+                <span class="xu-history__status" :class="statusClass(row.trang_thai)">
+                  {{ row.trang_thai_label || '—' }}
+                </span>
               </td>
-              <td class="is-num">{{ formatNumber(row.so_du_truoc) }}</td>
-              <td class="is-num">{{ formatNumber(row.so_du_sau) }}</td>
-              <td>{{ row.ghi_chu || '—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -51,7 +55,9 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { Tickets } from '@element-plus/icons-vue'
+import { request } from '@/api'
 import { CustomEmpty, CustomIcon } from '@/components/element'
+import { API_PUBLIC } from '@/constants/constant_api'
 import Pagination from '@/components/user/Pagination.vue'
 
 const props = defineProps({
@@ -69,21 +75,6 @@ function formatNumber(value) {
   return new Intl.NumberFormat('vi-VN').format(Number(value) || 0)
 }
 
-function formatDelta(value) {
-  const amount = Number(value) || 0
-  const formatted = formatNumber(Math.abs(amount))
-  if (amount > 0) return `+${formatted}`
-  if (amount < 0) return `-${formatted}`
-  return formatted
-}
-
-function deltaClass(value) {
-  const amount = Number(value) || 0
-  if (amount > 0) return 'is-plus'
-  if (amount < 0) return 'is-minus'
-  return ''
-}
-
 function formatDateTime(value) {
   if (!value) return '—'
   const date = new Date(value)
@@ -91,11 +82,33 @@ function formatDateTime(value) {
   return date.toLocaleString('vi-VN')
 }
 
+function statusClass(status) {
+  if (status === 'thanh_cong') return 'is-approved'
+  if (status === 'that_bai') return 'is-rejected'
+  return 'is-pending'
+}
+
 async function fetchList() {
-  loading.value = false
+  loading.value = true
   error.value = ''
-  items.value = []
-  total.value = 0
+  const res = await request({
+    url: API_PUBLIC.LICH_SU_NHAN_XU.LIST,
+    params: { start: start.value, limit: limit.value },
+    loading: false,
+    silentSuccess: true,
+    errorFallback: 'Không tải được lịch sử biến động.',
+  })
+  loading.value = false
+
+  if (!res.ok) {
+    items.value = []
+    total.value = 0
+    error.value = res.message || 'Không tải được lịch sử biến động.'
+    return
+  }
+
+  items.value = Array.isArray(res.data) ? res.data : []
+  total.value = Number(res.total) || 0
 }
 
 onMounted(() => {
@@ -132,7 +145,7 @@ watch(
 
 .xu-history__table {
   width: 100%;
-  min-width: 640px;
+  min-width: 720px;
   border-collapse: collapse;
   font: inherit;
   font-size: 16px;
@@ -176,8 +189,27 @@ watch(
   font-weight: 400;
 }
 
-.xu-history__table .is-minus {
+.xu-history__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.xu-history__status.is-approved {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.xu-history__status.is-pending {
+  background: #fff6e5;
+  color: #b26a00;
+}
+
+.xu-history__status.is-rejected {
+  background: #fdeeee;
   color: #c0392b;
-  font-weight: 400;
 }
 </style>
