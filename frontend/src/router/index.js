@@ -76,7 +76,7 @@ const router = createRouter({
             {
               path: 'tai-san/xu-he-thong',
               name: 'profile-xu-he-thong',
-              component: placeholder,
+              component: () => import('@/views/user/XuHeThongView.vue'),
               meta: { title: 'Xu hệ thống', icon: 'Medal' },
             },
             {
