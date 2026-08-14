@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\LoaiCauHoiController;
 use App\Http\Controllers\Api\NganhHocController;
+use App\Http\Controllers\Api\LichSuNapEduCoinController;
 use App\Http\Controllers\Api\NganHangThanhToanController;
 use App\Http\Controllers\Api\NapEduCoinController;
 use App\Http\Controllers\Api\NguoiDungController;
@@ -85,6 +86,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/ngan-hang-thanh-toan', [NganHangThanhToanController::class, 'index']);
         Route::post('/nap-edu-coin', [NapEduCoinController::class, 'store']);
         Route::get('/nap-edu-coin/{napEduCoin}', [NapEduCoinController::class, 'show']);
+        Route::get('/lich-su-nap-edu-coin', [LichSuNapEduCoinController::class, 'index']);
     });
 
     // CMS / Admin — chỉ role admin

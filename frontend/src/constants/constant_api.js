@@ -317,4 +317,7 @@ export const API_PUBLIC = {
     STORE: { url: '/nap-edu-coin', method: 'post' },
     SHOW: (id) => ({ url: `/nap-edu-coin/${id}`, method: 'get' }),
   },
+  LICH_SU_NAP_EDU_COIN: {
+    LIST: { url: '/lich-su-nap-edu-coin', method: 'get' },
+  },
 }

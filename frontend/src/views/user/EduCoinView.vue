@@ -36,7 +36,7 @@
         <EduCoinNapTab />
       </div>
       <div v-show="activeTab === 'lich-su'" class="edu-coin__pane">
-        <EduCoinLichSuTab />
+        <EduCoinLichSuTab :active="activeTab === 'lich-su'" />
       </div>
     </div>
   </section>
