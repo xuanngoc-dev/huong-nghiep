@@ -236,6 +236,14 @@ export const API_LICH_SU_TRAC_NGHIEM = {
   BULK_DELETE: { url: '/admin/lich-su-trac-nghiem/bulk-delete', method: 'post' },
 }
 
+/** Admin — Lịch sử nạp Edu Coin */
+export const API_LICH_SU_NAP_COIN = {
+  LIST: { url: '/admin/lich-su-nap-coin', method: 'get' },
+  SHOW: (id) => ({ url: `/admin/lich-su-nap-coin/${id}`, method: 'get' }),
+  DUYET: (id) => ({ url: `/admin/lich-su-nap-coin/${id}/duyet`, method: 'post' }),
+  HUY_DUYET: (id) => ({ url: `/admin/lich-su-nap-coin/${id}/huy-duyet`, method: 'post' }),
+}
+
 /** Admin — khác (placeholder / dùng dần) */
 export const API_ADMIN = {
   DASHBOARD: { url: '/admin/dashboard', method: 'get' },
@@ -301,5 +309,12 @@ export const API_PUBLIC = {
   NGUOI_DUNG: {
     ME: { url: '/nguoi-dung/me', method: 'get' },
     STORE: { url: '/nguoi-dung', method: 'post' },
+  },
+  NGAN_HANG_THANH_TOAN: {
+    LIST: { url: '/ngan-hang-thanh-toan', method: 'get' },
+  },
+  NAP_EDU_COIN: {
+    STORE: { url: '/nap-edu-coin', method: 'post' },
+    SHOW: (id) => ({ url: `/nap-edu-coin/${id}`, method: 'get' }),
   },
 }

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\KhuVucController as AdminKhuVucController;
 use App\Http\Controllers\Api\Admin\LoaiCauHoiController as AdminLoaiCauHoiController;
 use App\Http\Controllers\Api\Admin\LoaiTruongController as AdminLoaiTruongController;
 use App\Http\Controllers\Api\Admin\MonHocController as AdminMonHocController;
+use App\Http\Controllers\Api\Admin\NapEduCoinController as AdminNapEduCoinController;
 use App\Http\Controllers\Api\Admin\NganHangThanhToanController as AdminNganHangThanhToanController;
 use App\Http\Controllers\Api\Admin\NganhHocController as AdminNganhHocController;
 use App\Http\Controllers\Api\Admin\NguoiDungController as AdminNguoiDungController;
@@ -31,6 +32,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\LoaiCauHoiController;
 use App\Http\Controllers\Api\NganhHocController;
+use App\Http\Controllers\Api\NganHangThanhToanController;
+use App\Http\Controllers\Api\NapEduCoinController;
 use App\Http\Controllers\Api\NguoiDungController;
 use App\Http\Controllers\Api\TracNghiemCauHoiController;
 use App\Http\Controllers\Api\TracNghiemLichSuTraLoiController;
@@ -79,6 +82,9 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/nguoi-dung/me', [NguoiDungController::class, 'me']);
         Route::post('/assessments/{id}/submit', [AssessmentController::class, 'submit']);
+        Route::get('/ngan-hang-thanh-toan', [NganHangThanhToanController::class, 'index']);
+        Route::post('/nap-edu-coin', [NapEduCoinController::class, 'store']);
+        Route::get('/nap-edu-coin/{napEduCoin}', [NapEduCoinController::class, 'show']);
     });
 
     // CMS / Admin — chỉ role admin
@@ -181,6 +187,11 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('lich-su-trac-nghiem', AdminTracNghiemPhienDaHoanThanhController::class)
                 ->only(['index', 'show', 'destroy'])
                 ->parameters(['lich-su-trac-nghiem' => 'phienDaHoanThanh']);
+
+            Route::get('lich-su-nap-coin', [AdminNapEduCoinController::class, 'index']);
+            Route::get('lich-su-nap-coin/{napEduCoin}', [AdminNapEduCoinController::class, 'show']);
+            Route::post('lich-su-nap-coin/{napEduCoin}/duyet', [AdminNapEduCoinController::class, 'duyet']);
+            Route::post('lich-su-nap-coin/{napEduCoin}/huy-duyet', [AdminNapEduCoinController::class, 'huyDuyet']);
 
             Route::post('trac-nghiem-cau-hoi/bulk-delete', [AdminTracNghiemCauHoiController::class, 'bulkDestroy']);
             Route::post('trac-nghiem-cau-hoi/bulk-status', [AdminTracNghiemCauHoiController::class, 'bulkUpdateStatus']);

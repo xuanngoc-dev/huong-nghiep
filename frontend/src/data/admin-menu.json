@@ -36,6 +36,11 @@
         "icon": "Wallet"
       },
       {
+        "index": "/admin/nguoi-dung/lich-su-nap-coin",
+        "title": "LS nạp coin",
+        "icon": "Coin"
+      },
+      {
         "index": "/admin/nguoi-dung/lich-su-trac-nghiem",
         "title": "LS trắc nghiệm",
         "icon": "Document"

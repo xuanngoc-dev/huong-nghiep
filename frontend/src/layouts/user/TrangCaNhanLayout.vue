@@ -4,18 +4,41 @@
       <p class="profile-nav__eyebrow">Tài khoản</p>
       <h1 class="profile-nav__title">Trang cá nhân</h1>
       <nav class="profile-nav__list">
-        <RouterLink
-          v-for="item in menu"
-          :key="item.name"
-          :to="{ name: item.name }"
-          class="profile-nav__link"
-          :class="{ 'is-active': route.name === item.name }"
-        >
-          <el-icon :size="18">
-            <component :is="item.icon" />
-          </el-icon>
-          {{ item.label }}
-        </RouterLink>
+        <template v-for="item in menu" :key="item.name || item.label">
+          <div v-if="item.children" class="profile-nav__group">
+            <p class="profile-nav__group-label">
+              <el-icon :size="18">
+                <component :is="item.icon" />
+              </el-icon>
+              {{ item.label }}
+            </p>
+            <div class="profile-nav__sub">
+              <RouterLink
+                v-for="child in item.children"
+                :key="child.name"
+                :to="{ name: child.name }"
+                class="profile-nav__link"
+                :class="{ 'is-active': route.name === child.name }"
+              >
+                <el-icon :size="18">
+                  <component :is="child.icon" />
+                </el-icon>
+                {{ child.label }}
+              </RouterLink>
+            </div>
+          </div>
+          <RouterLink
+            v-else
+            :to="{ name: item.name }"
+            class="profile-nav__link"
+            :class="{ 'is-active': route.name === item.name }"
+          >
+            <el-icon :size="18">
+              <component :is="item.icon" />
+            </el-icon>
+            {{ item.label }}
+          </RouterLink>
+        </template>
       </nav>
     </aside>
 
@@ -28,9 +51,11 @@
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import {
+  Coin,
   Document,
   Headset,
   Lock,
+  Medal,
   User,
   UserFilled,
   Wallet,
@@ -42,7 +67,14 @@ const menu = [
   { name: 'profile', label: 'Tổng quan', icon: User },
   { name: 'profile-thong-tin', label: 'Thông tin cá nhân', icon: UserFilled },
   { name: 'profile-bao-mat', label: 'Bảo mật tài khoản', icon: Lock },
-  { name: 'profile-tai-san', label: 'Tài sản', icon: Wallet },
+  {
+    label: 'Tài sản',
+    icon: Wallet,
+    children: [
+      { name: 'profile-edu-coin', label: 'Edu Coin', icon: Coin },
+      { name: 'profile-xu-he-thong', label: 'Xu hệ thống', icon: Medal },
+    ],
+  },
   { name: 'profile-lich-su-trac-nghiem', label: 'Lịch sử trắc nghiệm', icon: Document },
   { name: 'profile-ho-tro', label: 'Hỗ trợ', icon: Headset },
 ]
@@ -89,6 +121,29 @@ const menu = [
   gap: 0.3rem;
 }
 
+.profile-nav__group {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.profile-nav__group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.35rem 0 0;
+  padding: 0.35rem 0.75rem 0.15rem;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.profile-nav__sub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-left: 0.85rem;
+}
+
 .profile-nav__link {
   display: inline-flex;
   align-items: center;
@@ -113,9 +168,10 @@ const menu = [
 
 .profile-content {
   min-height: 22rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+}
+
+.profile-content :deep(> *) {
+  width: 100%;
 }
 
 @media (min-width: 900px) {
@@ -134,6 +190,16 @@ const menu = [
   .profile-nav__list {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  .profile-nav__group {
+    flex: 1 1 100%;
+  }
+
+  .profile-nav__sub {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-left: 0;
   }
 
   .profile-nav__link {

@@ -65,8 +65,19 @@ const router = createRouter({
             {
               path: 'tai-san',
               name: 'profile-tai-san',
+              redirect: { name: 'profile-edu-coin' },
+            },
+            {
+              path: 'tai-san/edu-coin',
+              name: 'profile-edu-coin',
+              component: () => import('@/views/user/EduCoinView.vue'),
+              meta: { title: 'Edu Coin', icon: 'Coin' },
+            },
+            {
+              path: 'tai-san/xu-he-thong',
+              name: 'profile-xu-he-thong',
               component: placeholder,
-              meta: { title: 'Tài sản', icon: 'Wallet' },
+              meta: { title: 'Xu hệ thống', icon: 'Medal' },
             },
             {
               path: 'lich-su-trac-nghiem',
@@ -277,6 +288,12 @@ const router = createRouter({
           name: 'admin-lich-su-thanh-toan',
           component: placeholder,
           meta: { title: 'Lịch sử thanh toán', icon: 'Wallet' },
+        },
+        {
+          path: 'nguoi-dung/lich-su-nap-coin',
+          name: 'admin-lich-su-nap-coin',
+          component: () => import('@/views/admin/LichSuNapCoinView.vue'),
+          meta: { title: 'Lịch sử nạp coin', icon: 'Coin' },
         },
         {
           path: 'nguoi-dung/lich-su-trac-nghiem',
