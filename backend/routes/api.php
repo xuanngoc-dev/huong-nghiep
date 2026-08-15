@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\Admin\ToHopMonHocController as AdminToHopMonHocCont
 use App\Http\Controllers\Api\Admin\TonGiaoController as AdminTonGiaoController;
 use App\Http\Controllers\Api\Admin\TracNghiemCauHoiController as AdminTracNghiemCauHoiController;
 use App\Http\Controllers\Api\Admin\TracNghiemCauTraLoiController as AdminTracNghiemCauTraLoiController;
+use App\Http\Controllers\Api\Admin\TracNghiemLichSuThanhToanController as AdminTracNghiemLichSuThanhToanController;
 use App\Http\Controllers\Api\Admin\TracNghiemPhienDaHoanThanhController as AdminTracNghiemPhienDaHoanThanhController;
 use App\Http\Controllers\Api\Admin\TruongHocController as AdminTruongHocController;
 use App\Http\Controllers\Api\Admin\TruongHocTuyenSinhTheoNamController as AdminTruongHocTuyenSinhTheoNamController;
@@ -35,10 +36,12 @@ use App\Http\Controllers\Api\NganhHocController;
 use App\Http\Controllers\Api\DiemDanhXuHeThongController;
 use App\Http\Controllers\Api\LichSuNapEduCoinController;
 use App\Http\Controllers\Api\LichSuNhanXuController;
+use App\Http\Controllers\Api\LichSuTracNghiemController;
 use App\Http\Controllers\Api\NganHangThanhToanController;
 use App\Http\Controllers\Api\NapEduCoinController;
 use App\Http\Controllers\Api\NguoiDungController;
 use App\Http\Controllers\Api\TracNghiemCauHoiController;
+use App\Http\Controllers\Api\TracNghiemLichSuThanhToanController;
 use App\Http\Controllers\Api\TracNghiemLichSuTraLoiController;
 use Illuminate\Support\Facades\Route;
 
@@ -92,6 +95,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/xu-he-thong/diem-danh', [DiemDanhXuHeThongController::class, 'tuan']);
         Route::post('/xu-he-thong/diem-danh', [DiemDanhXuHeThongController::class, 'store']);
         Route::get('/lich-su-nhan-xu', [LichSuNhanXuController::class, 'index']);
+        Route::get('/lich-su-trac-nghiem', [LichSuTracNghiemController::class, 'index']);
+        Route::post('/lich-su-trac-nghiem/{id}/thanh-toan', [TracNghiemLichSuThanhToanController::class, 'store']);
+        Route::get('/lich-su-trac-nghiem/{id}/thanh-toan/{thanhToanId}', [TracNghiemLichSuThanhToanController::class, 'show']);
+        Route::get('/lich-su-trac-nghiem/{id}', [LichSuTracNghiemController::class, 'show']);
     });
 
     // CMS / Admin — chỉ role admin
@@ -185,6 +192,7 @@ Route::prefix('v1')->group(function () {
             Route::post('nguoi-dung/bulk-delete', [AdminNguoiDungController::class, 'bulkDestroy']);
             Route::post('nguoi-dung/bulk-status', [AdminNguoiDungController::class, 'bulkUpdateStatus']);
             Route::put('nguoi-dung/{user}/doi-mat-khau', [AdminNguoiDungController::class, 'changePassword']);
+            Route::put('nguoi-dung/{user}/doi-mat-khau-thanh-toan', [AdminNguoiDungController::class, 'changePaymentPassword']);
             Route::post('nguoi-dung/{user}/nap-tien', [AdminNguoiDungController::class, 'napTien']);
             Route::apiResource('nguoi-dung', AdminNguoiDungController::class)
                 ->only(['index', 'show', 'update', 'destroy'])
@@ -199,6 +207,10 @@ Route::prefix('v1')->group(function () {
             Route::get('lich-su-nap-coin/{napEduCoin}', [AdminNapEduCoinController::class, 'show']);
             Route::post('lich-su-nap-coin/{napEduCoin}/duyet', [AdminNapEduCoinController::class, 'duyet']);
             Route::post('lich-su-nap-coin/{napEduCoin}/huy-duyet', [AdminNapEduCoinController::class, 'huyDuyet']);
+
+            Route::get('lich-su-thanh-toan', [AdminTracNghiemLichSuThanhToanController::class, 'index']);
+            Route::get('lich-su-thanh-toan/{thanhToan}', [AdminTracNghiemLichSuThanhToanController::class, 'show']);
+            Route::post('lich-su-thanh-toan/{thanhToan}/duyet', [AdminTracNghiemLichSuThanhToanController::class, 'duyet']);
 
             Route::post('trac-nghiem-cau-hoi/bulk-delete', [AdminTracNghiemCauHoiController::class, 'bulkDestroy']);
             Route::post('trac-nghiem-cau-hoi/bulk-status', [AdminTracNghiemCauHoiController::class, 'bulkUpdateStatus']);

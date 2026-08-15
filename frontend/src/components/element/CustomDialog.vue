@@ -80,6 +80,11 @@ const dialogClass = computed(() => {
 }
 
 .custom-dialog.el-dialog .el-dialog__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   flex-shrink: 0;
+  gap: 0.75rem;
 }
 </style>

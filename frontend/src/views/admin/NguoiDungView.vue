@@ -192,7 +192,7 @@
             {{ formatDateTime(row.created_at) }}
           </template>
         </CustomTableColumn>
-        <CustomTableColumn label="Thao tác" width="160" fixed="right" align="center">
+        <CustomTableColumn label="Thao tác" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-btns">
               <CustomTooltip content="Xem chi tiết" placement="top">
@@ -203,6 +203,14 @@
               </CustomTooltip>
               <CustomTooltip content="Đổi mật khẩu" placement="top">
                 <CustomButton link type="warning" :icon="Key" @click="openChangePassword(row)" />
+              </CustomTooltip>
+              <CustomTooltip content="Đổi mật khẩu thanh toán" placement="top">
+                <CustomButton
+                  link
+                  type="warning"
+                  :icon="CreditCard"
+                  @click="openChangePaymentPassword(row)"
+                />
               </CustomTooltip>
               <CustomTooltip content="Xóa" placement="top">
                 <CustomButton link type="danger" :icon="Delete" @click="confirmRemove(row)" />
@@ -246,7 +254,10 @@
           <el-descriptions-item label="Xu hệ thống">
             {{ formatNumber(detail.xu_he_thong) }}
           </el-descriptions-item>
-          <el-descriptions-item label="Ngày tạo" :span="2">
+          <el-descriptions-item label="Mật khẩu thanh toán">
+            {{ detail.da_cai_mat_khau_thanh_toan ? 'Đã thiết lập' : 'Chưa thiết lập' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="Ngày tạo">
             {{ formatDateTime(detail.created_at) }}
           </el-descriptions-item>
         </el-descriptions>
@@ -311,7 +322,7 @@
 
     <CustomDialog
       v-model="passwordVisible"
-      title="Đổi mật khẩu"
+      :title="passwordDialogTitle"
       :width="680"
       @closed="resetPasswordForm"
     >
@@ -321,22 +332,22 @@
       </p>
 
       <CustomForm ref="passwordFormRef" :model="passwordForm" :rules="passwordFormRules">
-        <CustomFormItem label="Mật khẩu mới" prop="password">
+        <CustomFormItem :label="passwordNewLabel" prop="password">
           <CustomInput
             v-model="passwordForm.password"
             type="password"
             show-password
             autocomplete="new-password"
-            placeholder="Nhập mật khẩu mới"
+            :placeholder="passwordNewPlaceholder"
           />
         </CustomFormItem>
-        <CustomFormItem label="Xác nhận mật khẩu" prop="password_confirmation">
+        <CustomFormItem :label="passwordConfirmLabel" prop="password_confirmation">
           <CustomInput
             v-model="passwordForm.password_confirmation"
             type="password"
             show-password
             autocomplete="new-password"
-            placeholder="Nhập lại mật khẩu mới"
+            :placeholder="passwordConfirmPlaceholder"
           />
         </CustomFormItem>
       </CustomForm>
@@ -344,7 +355,7 @@
       <template #footer>
         <CustomButton @click="passwordVisible = false">Hủy</CustomButton>
         <CustomButton type="primary" :loading="isRequestLoading" @click="submitChangePassword">
-          Đổi mật khẩu
+          {{ passwordSubmitLabel }}
         </CustomButton>
       </template>
     </CustomDialog>
@@ -356,7 +367,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import { Delete, Key, Lock, Search, Unlock, View, Wallet } from '@element-plus/icons-vue'
+import { Delete, CreditCard, Key, Lock, Search, Unlock, View, Wallet } from '@element-plus/icons-vue'
 import { isRequestLoading, request } from '@/api'
 import { API_NGUOI_DUNG } from '@/constants/constant_api'
 import NapTienModal from '@/components/admin/NapTienModal.vue'
@@ -408,6 +419,7 @@ const statusLoadingId = ref(null)
 const detailVisible = ref(false)
 const detail = ref(null)
 const passwordVisible = ref(false)
+const passwordKind = ref('account')
 const passwordTarget = ref(null)
 const passwordFormRef = ref(null)
 const napTienVisible = ref(false)
@@ -418,10 +430,44 @@ const passwordForm = reactive({
   password_confirmation: '',
 })
 
+const isPaymentPassword = computed(() => passwordKind.value === 'payment')
+
+const passwordDialogTitle = computed(() =>
+  isPaymentPassword.value ? 'Đổi mật khẩu thanh toán' : 'Đổi mật khẩu',
+)
+const passwordNewLabel = computed(() =>
+  isPaymentPassword.value ? 'Mật khẩu thanh toán mới' : 'Mật khẩu mới',
+)
+const passwordConfirmLabel = computed(() =>
+  isPaymentPassword.value ? 'Xác nhận mật khẩu thanh toán' : 'Xác nhận mật khẩu',
+)
+const passwordNewPlaceholder = computed(() =>
+  isPaymentPassword.value ? 'Nhập mật khẩu thanh toán mới' : 'Nhập mật khẩu mới',
+)
+const passwordConfirmPlaceholder = computed(() =>
+  isPaymentPassword.value ? 'Nhập lại mật khẩu thanh toán mới' : 'Nhập lại mật khẩu mới',
+)
+const passwordSubmitLabel = computed(() =>
+  isPaymentPassword.value ? 'Đổi mật khẩu thanh toán' : 'Đổi mật khẩu',
+)
+
 const validatePasswordStrength = (_rule, value, callback) => {
   const pwd = value || ''
   if (!pwd) {
-    callback(new Error('Vui lòng nhập mật khẩu mới'))
+    callback(new Error(
+      isPaymentPassword.value
+        ? 'Vui lòng nhập mật khẩu thanh toán mới'
+        : 'Vui lòng nhập mật khẩu mới',
+    ))
+    return
+  }
+
+  if (isPaymentPassword.value) {
+    if (pwd.length < 6) {
+      callback(new Error('Mật khẩu thanh toán phải có tối thiểu 6 ký tự'))
+      return
+    }
+    callback()
     return
   }
 
@@ -521,8 +567,10 @@ function trangThaiLabel(value) {
 
 function formatDate(value) {
   if (!value) return '—'
+  const text = String(value).trim()
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(text)) return text
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
+  if (Number.isNaN(date.getTime())) return text
   return date.toLocaleDateString('vi-VN')
 }
 
@@ -634,11 +682,20 @@ function resetPasswordForm() {
   passwordForm.password = ''
   passwordForm.password_confirmation = ''
   passwordTarget.value = null
+  passwordKind.value = 'account'
   passwordFormRef.value?.clearValidate?.()
 }
 
 function openChangePassword(row) {
   resetPasswordForm()
+  passwordKind.value = 'account'
+  passwordTarget.value = row
+  passwordVisible.value = true
+}
+
+function openChangePaymentPassword(row) {
+  resetPasswordForm()
+  passwordKind.value = 'payment'
   passwordTarget.value = row
   passwordVisible.value = true
 }
@@ -669,13 +726,30 @@ async function submitChangePassword() {
   if (!valid || !passwordTarget.value) return
 
   const res = await request({
-    url: API_NGUOI_DUNG.CHANGE_PASSWORD(passwordTarget.value.id),
-    body: {
-      password: passwordForm.password,
-      password_confirmation: passwordForm.password_confirmation,
-    },
+    url: isPaymentPassword.value
+      ? API_NGUOI_DUNG.CHANGE_PAYMENT_PASSWORD(passwordTarget.value.id)
+      : API_NGUOI_DUNG.CHANGE_PASSWORD(passwordTarget.value.id),
+    body: isPaymentPassword.value
+      ? {
+          mat_khau_thanh_toan: passwordForm.password,
+          mat_khau_thanh_toan_confirmation: passwordForm.password_confirmation,
+        }
+      : {
+          password: passwordForm.password,
+          password_confirmation: passwordForm.password_confirmation,
+        },
   })
   if (!res.ok) return
+
+  if (isPaymentPassword.value && res.data?.id) {
+    const idx = items.value.findIndex((row) => row.id === res.data.id)
+    if (idx >= 0) {
+      items.value[idx] = { ...items.value[idx], ...res.data }
+    }
+    if (detail.value?.id === res.data.id) {
+      detail.value = { ...detail.value, ...res.data }
+    }
+  }
 
   passwordVisible.value = false
 }

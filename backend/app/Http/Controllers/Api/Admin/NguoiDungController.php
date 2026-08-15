@@ -156,6 +156,41 @@ class NguoiDungController extends Controller
         });
     }
 
+    public function changePaymentPassword(Request $request, User $user): JsonResponse
+    {
+        return $this->tryApi(function () use ($request, $user) {
+            abort_unless($user->role === UserRole::User, 404);
+
+            $validated = $request->validate([
+                'mat_khau_thanh_toan' => [
+                    'required',
+                    'string',
+                    'confirmed',
+                    'min:6',
+                ],
+            ], [
+                'mat_khau_thanh_toan.required' => 'Vui lòng nhập mật khẩu thanh toán mới.',
+                'mat_khau_thanh_toan.confirmed' => 'Mật khẩu thanh toán xác nhận không khớp.',
+                'mat_khau_thanh_toan.min' => 'Mật khẩu thanh toán phải có tối thiểu 6 ký tự.',
+            ]);
+
+            $profile = NguoiDung::query()->firstOrCreate(
+                ['user_id' => $user->id],
+                ['edu_coin' => 0, 'xu_he_thong' => 0],
+            );
+
+            $profile->mat_khau_thanh_toan = $validated['mat_khau_thanh_toan'];
+            $profile->save();
+
+            $user->load('thongTinNguoiDung');
+
+            return ApiResponse::success(
+                $this->toPublicArray($user),
+                'Đổi mật khẩu thanh toán thành công.',
+            );
+        });
+    }
+
     public function napTien(Request $request, User $user): JsonResponse
     {
         return $this->tryApi(function () use ($request, $user) {
@@ -381,7 +416,7 @@ class NguoiDungController extends Controller
             'so_dien_thoai' => $user->so_dien_thoai,
             'trang_thai' => $trangThai?->value ?? TrangThaiUser::DangHoatDong->value,
             'trang_thai_label' => $trangThai?->label() ?? TrangThaiUser::DangHoatDong->label(),
-            'ngay_sinh' => $profile?->ngay_sinh?->format('Y-m-d'),
+            'ngay_sinh' => $profile?->ngay_sinh,
             'gioi_tinh' => $profile?->gioi_tinh,
             'dan_toc' => $profile?->dan_toc,
             'ton_giao' => $profile?->ton_giao,
@@ -391,6 +426,7 @@ class NguoiDungController extends Controller
             'vi_tri_dia_ly' => $profile?->vi_tri_dia_ly,
             'edu_coin' => (int) ($profile?->edu_coin ?? 0),
             'xu_he_thong' => (int) ($profile?->xu_he_thong ?? 0),
+            'da_cai_mat_khau_thanh_toan' => filled($profile?->mat_khau_thanh_toan),
             'has_profile' => $profile !== null,
             'created_at' => $user->created_at?->toIso8601String(),
             'updated_at' => $user->updated_at?->toIso8601String(),

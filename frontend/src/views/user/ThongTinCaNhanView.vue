@@ -3,16 +3,20 @@
     <header class="profile-info__head">
       <h1>Thông tin cá nhân</h1>
       <p class="muted">
-        Cập nhật hồ sơ để hệ thống tư vấn ngành học và nghề nghiệp phù hợp hơn.
+        Xem và cập nhật hồ sơ để hệ thống tư vấn ngành học, nghề nghiệp phù hợp hơn.
+        Mật khẩu được quản lý tại
+        <RouterLink class="profile-info__link" :to="{ name: 'profile-bao-mat' }">
+          Bảo mật tài khoản
+        </RouterLink>.
       </p>
     </header>
-    <div class="card">
-      <QuizFieldsKhaoSatCaNhanTab variant="profile" @saved="onSaved" />
-    </div>
+
+    <QuizFieldsKhaoSatCaNhanTab variant="profile" @saved="onSaved" />
   </section>
 </template>
 
 <script setup>
+import { RouterLink } from 'vue-router'
 import QuizFieldsKhaoSatCaNhanTab from '@/components/quiz/QuizFieldsKhaoSatCaNhanTab.vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -34,6 +38,7 @@ function onSaved(data) {
   --el-font-family: var(--font);
   display: grid;
   gap: 1rem;
+  width: 100%;
   font-family: var(--font);
   font-size: 16px;
   font-weight: 300;
@@ -51,6 +56,14 @@ function onSaved(data) {
   margin: 0;
   font-size: 16px;
   font-weight: 300;
+  line-height: 1.5;
+}
+
+.profile-info__link {
+  color: var(--accent);
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .profile-info :deep(p),

@@ -49,7 +49,7 @@ const router = createRouter({
             {
               path: 'thong-tin',
               name: 'profile-thong-tin',
-              component: placeholder,
+              component: () => import('@/views/user/ThongTinCaNhanView.vue'),
               meta: { title: 'Thông tin cá nhân', icon: 'UserFilled' },
             },
             {
@@ -82,7 +82,7 @@ const router = createRouter({
             {
               path: 'lich-su-trac-nghiem',
               name: 'profile-lich-su-trac-nghiem',
-              component: placeholder,
+              component: () => import('@/views/user/LichSuTracNghiemView.vue'),
               meta: { title: 'Lịch sử trắc nghiệm', icon: 'Document' },
             },
             {
@@ -286,7 +286,7 @@ const router = createRouter({
         {
           path: 'nguoi-dung/lich-su-thanh-toan',
           name: 'admin-lich-su-thanh-toan',
-          component: placeholder,
+          component: () => import('@/views/admin/LichSuThanhToanView.vue'),
           meta: { title: 'Lịch sử thanh toán', icon: 'Wallet' },
         },
         {

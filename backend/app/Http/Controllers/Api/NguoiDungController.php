@@ -63,7 +63,7 @@ class NguoiDungController extends Controller
 
             $validated = $request->validate([
                 'ho_ten' => ['required', 'string', 'max:255'],
-                'ngay_sinh' => ['nullable', 'date', 'before_or_equal:today'],
+                'ngay_sinh' => NguoiDung::ngaySinhRules(),
                 'gioi_tinh' => ['nullable', 'string', 'max:20'],
                 'email' => [
                     'required',
@@ -152,7 +152,7 @@ class NguoiDungController extends Controller
                 }
 
                 $profilePayload = [
-                    'ngay_sinh' => $validated['ngay_sinh'] ?? null,
+                    'ngay_sinh' => NguoiDung::normalizeNgaySinh($validated['ngay_sinh'] ?? null),
                     'gioi_tinh' => $validated['gioi_tinh'] ?? null,
                     'dan_toc' => $validated['dan_toc'] ?? null,
                     'ton_giao' => $validated['ton_giao'] ?? null,
@@ -202,7 +202,7 @@ class NguoiDungController extends Controller
             'user_id' => $profile->user_id,
             'ho_ten' => $user?->name,
             'email' => $user?->email,
-            'ngay_sinh' => $profile->ngay_sinh?->format('Y-m-d'),
+            'ngay_sinh' => $profile->ngay_sinh,
             'gioi_tinh' => $profile->gioi_tinh,
             'so_dien_thoai' => $user?->so_dien_thoai,
             'dan_toc' => $profile->dan_toc,

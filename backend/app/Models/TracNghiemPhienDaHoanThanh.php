@@ -6,6 +6,7 @@ use App\Enums\TrangThaiLichSuPhien;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'ssid',
@@ -35,5 +36,10 @@ class TracNghiemPhienDaHoanThanh extends Model
     public function nguoiKhaoSat(): BelongsTo
     {
         return $this->belongsTo(User::class, 'nguoi_khao_sat_id');
+    }
+
+    public function thanhToans(): HasMany
+    {
+        return $this->hasMany(TracNghiemLichSuThanhToan::class, 'lich_su_phien_id');
     }
 }

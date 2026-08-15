@@ -222,6 +222,10 @@ export const API_NGUOI_DUNG = {
   SHOW: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'get' }),
   UPDATE: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'put' }),
   CHANGE_PASSWORD: (id) => ({ url: `/admin/nguoi-dung/${id}/doi-mat-khau`, method: 'put' }),
+  CHANGE_PAYMENT_PASSWORD: (id) => ({
+    url: `/admin/nguoi-dung/${id}/doi-mat-khau-thanh-toan`,
+    method: 'put',
+  }),
   NAP_TIEN: (id) => ({ url: `/admin/nguoi-dung/${id}/nap-tien`, method: 'post' }),
   DELETE: (id) => ({ url: `/admin/nguoi-dung/${id}`, method: 'delete' }),
   BULK_DELETE: { url: '/admin/nguoi-dung/bulk-delete', method: 'post' },
@@ -234,6 +238,13 @@ export const API_LICH_SU_TRAC_NGHIEM = {
   SHOW: (id) => ({ url: `/admin/lich-su-trac-nghiem/${id}`, method: 'get' }),
   DELETE: (id) => ({ url: `/admin/lich-su-trac-nghiem/${id}`, method: 'delete' }),
   BULK_DELETE: { url: '/admin/lich-su-trac-nghiem/bulk-delete', method: 'post' },
+}
+
+/** Admin — Lịch sử thanh toán trắc nghiệm */
+export const API_LICH_SU_THANH_TOAN = {
+  LIST: { url: '/admin/lich-su-thanh-toan', method: 'get' },
+  SHOW: (id) => ({ url: `/admin/lich-su-thanh-toan/${id}`, method: 'get' }),
+  DUYET: (id) => ({ url: `/admin/lich-su-thanh-toan/${id}/duyet`, method: 'post' }),
 }
 
 /** Admin — Lịch sử nạp Edu Coin */
@@ -326,5 +337,14 @@ export const API_PUBLIC = {
   },
   LICH_SU_NHAN_XU: {
     LIST: { url: '/lich-su-nhan-xu', method: 'get' },
+  },
+  LICH_SU_TRAC_NGHIEM: {
+    LIST: { url: '/lich-su-trac-nghiem', method: 'get' },
+    SHOW: (id) => ({ url: `/lich-su-trac-nghiem/${id}`, method: 'get' }),
+    THANH_TOAN: (id) => ({ url: `/lich-su-trac-nghiem/${id}/thanh-toan`, method: 'post' }),
+    THANH_TOAN_SHOW: (id, thanhToanId) => ({
+      url: `/lich-su-trac-nghiem/${id}/thanh-toan/${thanhToanId}`,
+      method: 'get',
+    }),
   },
 }

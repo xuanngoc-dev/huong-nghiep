@@ -43,9 +43,11 @@
               v-else-if="field.type === 'date'"
               v-model="form[field.key]"
               type="date"
-              value-format="YYYY-MM-DD"
-              :placeholder="field.placeholder || 'Chọn ngày'"
+              format="DD/MM/YYYY"
+              value-format="DD/MM/YYYY"
+              :placeholder="field.placeholder || 'dd/mm/yyyy'"
               :disabled-date="disabledFutureDate"
+              editable
               clearable
               style="width: 100%"
             />
@@ -584,7 +586,7 @@ const fields = [
     label: 'Ngày sinh',
     type: 'date',
     required: false,
-    placeholder: 'Chọn ngày sinh',
+    placeholder: 'Nhập hoặc chọn, vd. 27/02/1996',
   },
   {
     stt: 4,
@@ -720,6 +722,31 @@ function toFormSelectValue(value) {
   return String(value)
 }
 
+function pad2(value) {
+  return String(value).padStart(2, '0')
+}
+
+/** Chuẩn hóa về dd/mm/yyyy để date picker và API cùng định dạng. */
+function toFormDateValue(value) {
+  if (value == null || value === '') return undefined
+  const str = String(value).trim()
+  const iso = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  if (iso) return `${pad2(iso[3])}/${pad2(iso[2])}/${iso[1]}`
+  const vn = str.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/)
+  if (vn) return `${pad2(vn[1])}/${pad2(vn[2])}/${vn[3]}`
+  return str
+}
+
+function toIsoDate(value) {
+  if (value == null || value === '') return ''
+  const str = String(value).trim()
+  const iso = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  if (iso) return `${iso[1]}-${pad2(iso[2])}-${pad2(iso[3])}`
+  const vn = str.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/)
+  if (vn) return `${vn[3]}-${pad2(vn[2])}-${pad2(vn[1])}`
+  return ''
+}
+
 function toFormNumber(value) {
   return value == null || value === '' ? '' : value
 }
@@ -729,7 +756,7 @@ function applyProfileToForm(data) {
 
   form.ho_ten = toFormText(data.ho_ten)
   form.gioi_tinh = toFormSelectValue(data.gioi_tinh)
-  form.ngay_sinh = toFormSelectValue(data.ngay_sinh)
+  form.ngay_sinh = toFormDateValue(data.ngay_sinh)
   form.email = toFormText(data.email)
   form.so_dien_thoai = toFormText(data.so_dien_thoai)
   form.dan_toc = toFormSelectValue(data.dan_toc)
@@ -896,7 +923,8 @@ function validate() {
       return 'Mật khẩu xác nhận không khớp.'
     }
   }
-  if (form.ngay_sinh && form.ngay_sinh > maxNgaySinh) {
+  const ngaySinhIso = toIsoDate(form.ngay_sinh)
+  if (form.ngay_sinh && (!ngaySinhIso || ngaySinhIso > maxNgaySinh)) {
     return 'Ngày sinh không hợp lệ.'
   }
   if (

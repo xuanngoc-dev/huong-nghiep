@@ -183,8 +183,10 @@ function tinhThanhLabel(value) {
 
 function formatDate(value) {
   if (!value) return '—'
-  const [year, month, day] = String(value).slice(0, 10).split('-')
-  if (!year || !month || !day) return String(value)
+  const text = String(value).trim()
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(text)) return text
+  const [year, month, day] = text.slice(0, 10).split('-')
+  if (!year || !month || !day) return text
   return `${day}/${month}/${year}`
 }
 

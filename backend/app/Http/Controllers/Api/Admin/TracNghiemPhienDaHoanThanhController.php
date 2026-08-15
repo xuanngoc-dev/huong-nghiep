@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Enums\TrangThaiLichSuPhien;
+use App\Enums\TrangThaiThanhToanTracNghiem;
+use App\Models\TracNghiemLichSuThanhToan;
 use App\Models\TracNghiemPhienDaHoanThanh;
 use App\Support\ApiResponse;
 use App\Support\OffsetPaginator;
@@ -18,7 +20,10 @@ class TracNghiemPhienDaHoanThanhController extends Controller
             $keyword = trim((string) $request->query('q', ''));
 
             $query = TracNghiemPhienDaHoanThanh::query()
-                ->with(['nguoiKhaoSat:id,name,email'])
+                ->with([
+                    'nguoiKhaoSat:id,name,email',
+                    'thanhToans' => fn ($q) => $q->orderByDesc('id'),
+                ])
                 ->when($keyword !== '', function ($query) use ($keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('ssid', 'like', "%{$keyword}%")
@@ -47,7 +52,10 @@ class TracNghiemPhienDaHoanThanhController extends Controller
     public function show(TracNghiemPhienDaHoanThanh $phienDaHoanThanh): JsonResponse
     {
         return $this->tryApi(function () use ($phienDaHoanThanh) {
-            $phienDaHoanThanh->load(['nguoiKhaoSat:id,name,email']);
+            $phienDaHoanThanh->load([
+                'nguoiKhaoSat:id,name,email',
+                'thanhToans' => fn ($q) => $q->orderByDesc('id'),
+            ]);
 
             return ApiResponse::success(
                 $this->toPublicArray($phienDaHoanThanh),
@@ -119,10 +127,26 @@ class TracNghiemPhienDaHoanThanhController extends Controller
             'tong_diem' => $chiTiet['tong_diem'] ?? ($topNhom['tong_diem'] ?? null),
             'so_cau_da_tra_loi' => $chiTiet['so_cau_da_tra_loi'] ?? null,
             'thong_tin_thanh_toan' => $item->thong_tin_thanh_toan,
-            'da_thanh_toan' => ! empty($item->thong_tin_thanh_toan),
+            'da_thanh_toan' => $this->isDaThanhToan($item),
             'chi_tiet_ket_qua' => $chiTiet,
             'created_at' => $item->created_at?->toIso8601String(),
             'updated_at' => $item->updated_at?->toIso8601String(),
         ];
+    }
+
+    private function isDaThanhToan(TracNghiemPhienDaHoanThanh $item): bool
+    {
+        if (! empty($item->thong_tin_thanh_toan)) {
+            return true;
+        }
+
+        if (! $item->relationLoaded('thanhToans')) {
+            return false;
+        }
+
+        return $item->thanhToans->contains(
+            fn (TracNghiemLichSuThanhToan $row) => $row->trang_thai === TrangThaiThanhToanTracNghiem::DaHoanThanh
+                || $row->trang_thai === TrangThaiThanhToanTracNghiem::DaHoanThanh->value,
+        );
     }
 }
