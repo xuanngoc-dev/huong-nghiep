@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\TrangThaiUser;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\NguoiDung;
 use App\Models\User;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -117,46 +118,43 @@ class AuthController extends Controller
     {
         return $this->tryApi(function () use ($request) {
             $validated = $request->validate([
-                'current_password' => ['required', 'string'],
+                'current_password' => ['required', 'string', 'max:255'],
                 'password' => [
                     'required',
                     'string',
+                    'max:255',
                     'confirmed',
-                    'min:8',
-                    function (string $attribute, mixed $value, \Closure $fail): void {
-                        $password = (string) $value;
-
-                        if (! preg_match('/[a-z]/', $password)) {
-                            $fail('Mật khẩu phải có ít nhất một chữ thường.');
-                        }
-                        if (! preg_match('/[A-Z]/', $password)) {
-                            $fail('Mật khẩu phải có ít nhất một chữ hoa.');
-                        }
-                        if (! preg_match('/\d/', $password)) {
-                            $fail('Mật khẩu phải có ít nhất một chữ số.');
-                        }
-                        if (! preg_match('/[^A-Za-z0-9]/', $password)) {
-                            $fail('Mật khẩu phải có ít nhất một ký tự đặc biệt.');
-                        }
-                    },
+                    'different:current_password',
+                    Password::min(8)
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols(),
                 ],
+                'password_confirmation' => ['required', 'string', 'max:255'],
             ], [
-                'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+                'current_password.required' => 'Vui lòng nhập mật khẩu cũ.',
                 'password.required' => 'Vui lòng nhập mật khẩu mới.',
                 'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+                'password.different' => 'Mật khẩu mới phải khác mật khẩu cũ.',
                 'password.min' => 'Mật khẩu phải có tối thiểu 8 ký tự.',
+                'password.letters' => 'Mật khẩu phải có ít nhất một chữ cái.',
+                'password.mixed' => 'Mật khẩu phải có chữ hoa và chữ thường.',
+                'password.numbers' => 'Mật khẩu phải có ít nhất một chữ số.',
+                'password.symbols' => 'Mật khẩu phải có ít nhất một ký tự đặc biệt.',
+                'password_confirmation.required' => 'Vui lòng nhập lại mật khẩu mới.',
             ]);
 
             $user = $request->user();
             if (! Hash::check($validated['current_password'], $user->password)) {
                 throw ValidationException::withMessages([
-                    'current_password' => ['Mật khẩu hiện tại không đúng.'],
+                    'current_password' => ['Mật khẩu cũ không đúng.'],
                 ]);
             }
 
             if (Hash::check($validated['password'], $user->password)) {
                 throw ValidationException::withMessages([
-                    'password' => ['Mật khẩu mới phải khác mật khẩu hiện tại.'],
+                    'password' => ['Mật khẩu mới phải khác mật khẩu cũ.'],
                 ]);
             }
 
@@ -167,17 +165,69 @@ class AuthController extends Controller
         });
     }
 
+    public function changePaymentPassword(Request $request): JsonResponse
+    {
+        return $this->tryApi(function () use ($request) {
+            $validated = $request->validate([
+                'current_password' => ['required', 'string', 'max:255'],
+                'mat_khau_thanh_toan' => [
+                    'required',
+                    'string',
+                    'confirmed',
+                    'regex:/^\d{6}$/',
+                ],
+                'mat_khau_thanh_toan_confirmation' => ['required', 'string'],
+            ], [
+                'current_password.required' => 'Vui lòng nhập mật khẩu đăng nhập.',
+                'mat_khau_thanh_toan.required' => 'Vui lòng nhập mật khẩu thanh toán mới.',
+                'mat_khau_thanh_toan.confirmed' => 'Mật khẩu thanh toán xác nhận không khớp.',
+                'mat_khau_thanh_toan.regex' => 'Mật khẩu thanh toán phải là số gồm đúng 6 chữ số.',
+                'mat_khau_thanh_toan_confirmation.required' => 'Vui lòng nhập lại mật khẩu thanh toán mới.',
+            ]);
+
+            $user = $request->user();
+            if (! Hash::check($validated['current_password'], $user->password)) {
+                throw ValidationException::withMessages([
+                    'current_password' => ['Mật khẩu đăng nhập không đúng.'],
+                ]);
+            }
+
+            $profile = NguoiDung::query()->firstOrCreate(
+                ['user_id' => $user->id],
+                ['edu_coin' => 0, 'xu_he_thong' => 0],
+            );
+
+            if (
+                filled($profile->mat_khau_thanh_toan)
+                && Hash::check($validated['mat_khau_thanh_toan'], $profile->mat_khau_thanh_toan)
+            ) {
+                throw ValidationException::withMessages([
+                    'mat_khau_thanh_toan' => ['Mật khẩu thanh toán mới phải khác mật khẩu hiện tại.'],
+                ]);
+            }
+
+            $profile->mat_khau_thanh_toan = $validated['mat_khau_thanh_toan'];
+            $profile->save();
+
+            return ApiResponse::success(
+                ['da_cai_mat_khau_thanh_toan' => true],
+                'Đổi mật khẩu thanh toán thành công.',
+            );
+        });
+    }
+
     /**
      * @return array<string, mixed>
      */
     private function toAuthUser(User $user): array
     {
-        $profile = $user->thongTinNguoiDung()->first(['edu_coin', 'xu_he_thong']);
+        $profile = $user->thongTinNguoiDung()->first(['edu_coin', 'xu_he_thong', 'mat_khau_thanh_toan']);
         $payload = $user->toArray();
         unset($payload['thong_tin_nguoi_dung']);
 
         $payload['edu_coin'] = (int) ($profile?->edu_coin ?? 0);
         $payload['xu_he_thong'] = (int) ($profile?->xu_he_thong ?? 0);
+        $payload['da_cai_mat_khau_thanh_toan'] = filled($profile?->mat_khau_thanh_toan);
 
         return $payload;
     }

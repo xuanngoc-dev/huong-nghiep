@@ -62,6 +62,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::get('/me', [AuthController::class, 'me']);
             Route::put('/doi-mat-khau', [AuthController::class, 'changePassword']);
+            Route::put('/doi-mat-khau-thanh-toan', [AuthController::class, 'changePaymentPassword']);
         });
     });
 

@@ -55,7 +55,7 @@ const router = createRouter({
             {
               path: 'bao-mat',
               name: 'profile-bao-mat',
-              component: placeholder,
+              component: () => import('@/views/user/BaoMatTaiKhoanView.vue'),
               meta: { title: 'Bảo mật tài khoản', icon: 'Lock' },
             },
             {

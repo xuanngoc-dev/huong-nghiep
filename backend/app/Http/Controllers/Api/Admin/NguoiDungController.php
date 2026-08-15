@@ -166,12 +166,12 @@ class NguoiDungController extends Controller
                     'required',
                     'string',
                     'confirmed',
-                    'min:6',
+                    'regex:/^\d{6}$/',
                 ],
             ], [
                 'mat_khau_thanh_toan.required' => 'Vui lòng nhập mật khẩu thanh toán mới.',
                 'mat_khau_thanh_toan.confirmed' => 'Mật khẩu thanh toán xác nhận không khớp.',
-                'mat_khau_thanh_toan.min' => 'Mật khẩu thanh toán phải có tối thiểu 6 ký tự.',
+                'mat_khau_thanh_toan.regex' => 'Mật khẩu thanh toán phải là số gồm đúng 6 chữ số.',
             ]);
 
             $profile = NguoiDung::query()->firstOrCreate(

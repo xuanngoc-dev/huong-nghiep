@@ -12,6 +12,7 @@ export const API_AUTH = {
   LOGOUT: { url: '/auth/logout', method: 'post' },
   ME: { url: '/auth/me', method: 'get' },
   CHANGE_PASSWORD: { url: '/auth/doi-mat-khau', method: 'put' },
+  CHANGE_PAYMENT_PASSWORD: { url: '/auth/doi-mat-khau-thanh-toan', method: 'put' },
 }
 
 /** Admin — Ngành học */

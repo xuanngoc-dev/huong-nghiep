@@ -203,22 +203,28 @@
     :width="420"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
+    @opened="focusOtp"
     @closed="resetPasswordForm"
   >
     <p class="pay-password__lead">
       Nhập mật khẩu thanh toán để trừ
       <strong>{{ formatNumber(PHI_EDU_COIN) }} Edu Coin</strong>.
     </p>
-    <label class="pay-password__field">
-      Mật khẩu thanh toán
-      <input
+    <div class="pay-password__field">
+      <span class="pay-password__label">Mật khẩu thanh toán</span>
+      <el-input-otp
+        ref="otpRef"
         v-model="matKhauThanhToan"
-        type="password"
-        autocomplete="off"
-        placeholder="Nhập mật khẩu thanh toán"
-        @keyup.enter="confirmEduCoinPayment"
+        class="pay-password__otp"
+        :length="6"
+        mask
+        inputmode="numeric"
+        size="large"
+        :validator="isPaymentOtpDigit"
+        aria-label="Mật khẩu thanh toán"
+        @finish="confirmEduCoinPayment"
       />
-    </label>
+    </div>
     <template #footer>
       <button class="btn btn-outline" type="button" @click="passwordVisible = false">Hủy</button>
       <button
@@ -270,6 +276,7 @@ const waitResolved = ref(false)
 const confirmingTransfer = ref(false)
 const passwordVisible = ref(false)
 const matKhauThanhToan = ref('')
+const otpRef = ref(null)
 
 let countdownTimer = null
 let pollTimer = null
@@ -289,8 +296,16 @@ const canSubmit = computed(() => {
 })
 
 const canConfirmPassword = computed(() =>
-  Boolean(matKhauThanhToan.value.trim() && !submitting.value && props.phien?.id),
+  Boolean(/^\d{6}$/.test(matKhauThanhToan.value) && !submitting.value && props.phien?.id),
 )
+
+function isPaymentOtpDigit(value) {
+  return /^\d$/.test(String(value || ''))
+}
+
+function focusOtp() {
+  otpRef.value?.focus?.(0)
+}
 
 const hasCreatedRequest = computed(() => Boolean(pendingPay.value?.id))
 
@@ -874,16 +889,33 @@ onBeforeUnmount(stopWaitTimers)
 
 .pay-password__field {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 
-.pay-password__field input {
+.pay-password__label {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.pay-password__otp {
+  display: flex;
   width: 100%;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid var(--border);
+  height: 3rem;
+  --el-input-otp-gap: 0.45rem;
+  --el-input-otp-field-width: 100%;
+}
+
+.pay-password__otp :deep(.el-input-otp__input-field) {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
   border-radius: 10px;
-  background: #fff;
-  box-sizing: border-box;
+}
+
+.pay-password__otp :deep(.el-input-otp__input) {
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .btn:disabled {

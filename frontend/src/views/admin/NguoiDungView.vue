@@ -338,6 +338,8 @@
             type="password"
             show-password
             autocomplete="new-password"
+            :maxlength="isPaymentPassword ? 6 : 255"
+            :inputmode="isPaymentPassword ? 'numeric' : undefined"
             :placeholder="passwordNewPlaceholder"
           />
         </CustomFormItem>
@@ -347,6 +349,8 @@
             type="password"
             show-password
             autocomplete="new-password"
+            :maxlength="isPaymentPassword ? 6 : 255"
+            :inputmode="isPaymentPassword ? 'numeric' : undefined"
             :placeholder="passwordConfirmPlaceholder"
           />
         </CustomFormItem>
@@ -442,10 +446,10 @@ const passwordConfirmLabel = computed(() =>
   isPaymentPassword.value ? 'Xác nhận mật khẩu thanh toán' : 'Xác nhận mật khẩu',
 )
 const passwordNewPlaceholder = computed(() =>
-  isPaymentPassword.value ? 'Nhập mật khẩu thanh toán mới' : 'Nhập mật khẩu mới',
+  isPaymentPassword.value ? 'Nhập 6 chữ số' : 'Nhập mật khẩu mới',
 )
 const passwordConfirmPlaceholder = computed(() =>
-  isPaymentPassword.value ? 'Nhập lại mật khẩu thanh toán mới' : 'Nhập lại mật khẩu mới',
+  isPaymentPassword.value ? 'Nhập lại 6 chữ số' : 'Nhập lại mật khẩu mới',
 )
 const passwordSubmitLabel = computed(() =>
   isPaymentPassword.value ? 'Đổi mật khẩu thanh toán' : 'Đổi mật khẩu',
@@ -463,8 +467,8 @@ const validatePasswordStrength = (_rule, value, callback) => {
   }
 
   if (isPaymentPassword.value) {
-    if (pwd.length < 6) {
-      callback(new Error('Mật khẩu thanh toán phải có tối thiểu 6 ký tự'))
+    if (!/^\d{6}$/.test(pwd)) {
+      callback(new Error('Mật khẩu thanh toán phải là số gồm đúng 6 chữ số'))
       return
     }
     callback()
