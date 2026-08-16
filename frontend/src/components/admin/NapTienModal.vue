@@ -210,6 +210,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Wallet } from '@element-plus/icons-vue'
 import { request } from '@/api'
 import { API_NGAN_HANG_THANH_TOAN, API_NGUOI_DUNG } from '@/constants/constant_api'
+import { taoMaNap } from '@/utils/maGiaoDich'
 import {
   CustomButton,
   CustomCol,
@@ -251,6 +252,7 @@ const banks = ref([])
 const banksLoading = ref(false)
 const selectedBank = ref(null)
 const submitting = ref(false)
+const maGiaoDich = ref('')
 
 const form = reactive({
   so_luong: '',
@@ -383,11 +385,7 @@ function onKhuyenMaiInput(raw) {
   form.khuyen_mai = formatGrouped(raw)
 }
 
-const transferContent = computed(() => {
-  if (!props.user) return ''
-  const name = (props.user.ho_ten || props.user.email || '').toString().trim()
-  return `NAP EDU ${props.user.id}${name ? ` ${name}` : ''}`.slice(0, 100)
-})
+const transferContent = computed(() => maGiaoDich.value || '')
 
 const qrUrl = computed(() => {
   if (!selectedBank.value || thanhTien.value <= 0) return ''
@@ -455,6 +453,7 @@ function resetForm() {
   form.ghi_chu = ''
   selectedBank.value = null
   submitting.value = false
+  maGiaoDich.value = taoMaNap()
   formRef.value?.clearValidate?.()
 }
 
@@ -510,6 +509,7 @@ async function handleSubmit() {
     loai_khuyen_mai: form.loai_khuyen_mai,
     khuyen_mai: khuyenMaiValue.value,
     kenh_thanh_toan: form.hinh_thuc_thanh_toan,
+    ma_giao_dich: maGiaoDich.value,
     ghi_chu: form.ghi_chu.trim() || null,
   }
   if (form.hinh_thuc_thanh_toan === 'chuyen_khoan') {

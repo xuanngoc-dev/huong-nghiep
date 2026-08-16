@@ -110,16 +110,9 @@
 
       <div class="nap-modal__body">
         <p class="nap-modal__lead">
-          <template v-if="pendingNap.id">
-            Hệ thống đã ghi nhận yêu cầu nạp
-            <strong>{{ formatNumber(pendingNap.so_luong_edu_coin) }} Edu Coin</strong>.
-            Vui lòng chờ duyệt sau khi chuyển khoản.
-          </template>
-          <template v-else>
-            Vui lòng chuyển khoản
-            <strong>{{ formatNumber(pendingNap.so_luong_edu_coin) }} Edu Coin</strong>
-            theo thông tin bên dưới, rồi nhấn <strong>Đã chuyển</strong>.
-          </template>
+          Hệ thống đã ghi nhận yêu cầu nạp
+          <strong>{{ formatNumber(pendingNap.so_luong_edu_coin) }} Edu Coin</strong>.
+          Vui lòng chuyển khoản theo thông tin bên dưới rồi chờ duyệt.
         </p>
 
         <div class="transfer-panel">
@@ -177,12 +170,12 @@
               <div>
                 <dt>Nội dung CK</dt>
                 <dd>
-                  {{ pendingThongTin.noi_dung_chuyen_khoan || '—' }}
+                  {{ noiDungChuyenKhoan || '—' }}
                   <button
-                    v-if="pendingThongTin.noi_dung_chuyen_khoan"
+                    v-if="noiDungChuyenKhoan"
                     type="button"
                     class="copy-btn"
-                    @click="copyText(pendingThongTin.noi_dung_chuyen_khoan)"
+                    @click="copyText(noiDungChuyenKhoan)"
                   >
                     Sao chép
                   </button>
@@ -201,14 +194,6 @@
     </div>
 
     <template #footer>
-      <button
-        class="btn"
-        type="button"
-        :disabled="!canConfirmTransfer"
-        @click="confirmTransferred"
-      >
-        {{ confirmTransferLabel }}
-      </button>
       <button class="btn btn-outline" type="button" @click="closeModal">Đóng</button>
     </template>
   </CustomDialog>
@@ -222,6 +207,7 @@ import { request } from '@/api'
 import { CustomDialog } from '@/components/element'
 import { API_PUBLIC } from '@/constants/constant_api'
 import { useAuthStore } from '@/stores/auth'
+import { taoMaNap } from '@/utils/maGiaoDich'
 
 const DEFAULT_TY_GIA = 1000
 const DEFAULT_SO_LUONG = 100
@@ -247,7 +233,6 @@ const modalVisible = ref(false)
 const pendingNap = ref(null)
 const remainingSeconds = ref(TRANSFER_WAIT_SECONDS)
 const waitResolved = ref(false)
-const confirmingTransfer = ref(false)
 
 let countdownTimer = null
 let pollTimer = null
@@ -271,25 +256,14 @@ const canSubmit = computed(() =>
   Boolean(canSelectBank.value && selectedBank.value && !submitting.value && !modalVisible.value),
 )
 
-const hasCreatedRequest = computed(() => Boolean(pendingNap.value?.id))
-
-const canConfirmTransfer = computed(() =>
-  Boolean(
-    pendingNap.value
-    && !hasCreatedRequest.value
-    && !confirmingTransfer.value
-    && remainingSeconds.value > 0
-    && !waitResolved.value,
-  ),
-)
-
-const confirmTransferLabel = computed(() => {
-  if (confirmingTransfer.value) return 'Đang gửi...'
-  if (hasCreatedRequest.value) return 'Đã gửi yêu cầu'
-  return 'Đã chuyển'
-})
-
 const pendingThongTin = computed(() => pendingNap.value?.thong_tin_thanh_toan || {})
+
+const noiDungChuyenKhoan = computed(() =>
+  pendingNap.value?.ma_giao_dich
+  || pendingThongTin.value.ma_giao_dich
+  || pendingThongTin.value.noi_dung_chuyen_khoan
+  || '',
+)
 
 const countdownLabel = computed(() => {
   const total = Math.max(0, remainingSeconds.value)
@@ -307,7 +281,7 @@ const pendingQrUrl = computed(() => {
 
   const params = new URLSearchParams({
     amount: String(amount),
-    addInfo: info.noi_dung_chuyen_khoan || '',
+    addInfo: noiDungChuyenKhoan.value,
     accountName: info.chu_tai_khoan || '',
   })
 
@@ -407,28 +381,11 @@ function closeModal() {
   modalVisible.value = false
 }
 
-function buildTransferInfo(bank) {
-  const name = (auth.user?.name || '').toString().trim()
-  const userId = auth.user?.id
-  const noiDung = `NAP EDU ${userId}${name ? ` ${name}` : ''}`.slice(0, 100)
-
-  return {
-    ngan_hang_thanh_toan_id: bank.id,
-    ten_ngan_hang: bank.ten_ngan_hang,
-    ten_viet_tat: bank.ten_viet_tat,
-    so_tai_khoan: bank.so_tai_khoan,
-    chu_tai_khoan: bank.chu_tai_khoan,
-    chi_nhanh: bank.chi_nhanh,
-    noi_dung_chuyen_khoan: noiDung,
-  }
-}
-
 function onModalClosed() {
   stopWaitTimers()
   pendingNap.value = null
   remainingSeconds.value = TRANSFER_WAIT_SECONDS
   waitResolved.value = false
-  confirmingTransfer.value = false
 }
 
 async function handleStatusChange(status) {
@@ -522,32 +479,6 @@ function startWaitTimers() {
   }, 1000)
 }
 
-async function confirmTransferred() {
-  if (!canConfirmTransfer.value || !pendingNap.value) return
-
-  confirmingTransfer.value = true
-  const res = await request({
-    url: API_PUBLIC.NAP_EDU_COIN.STORE,
-    body: {
-      so_luong_edu_coin: pendingNap.value.so_luong_edu_coin,
-      ngan_hang_thanh_toan_id: pendingNap.value.ngan_hang_thanh_toan_id,
-      ghi_chu: pendingNap.value.ghi_chu,
-    },
-    successFallback: 'Đã ghi nhận yêu cầu nạp. Vui lòng chờ duyệt.',
-    errorFallback: 'Không gửi được yêu cầu nạp.',
-  })
-  confirmingTransfer.value = false
-
-  if (!res.ok) return
-
-  pendingNap.value = {
-    ...pendingNap.value,
-    ...res.data,
-  }
-  resetForm()
-  startPollTimer()
-}
-
 async function onSubmit() {
   localError.value = ''
   if (!canSelectBank.value) {
@@ -559,15 +490,27 @@ async function onSubmit() {
     return
   }
 
-  pendingNap.value = {
-    so_luong_edu_coin: soLuong.value,
-    so_tien_nap: soTienNap.value,
-    ngan_hang_thanh_toan_id: selectedBank.value.id,
-    ghi_chu: ghiChu.value.trim() || null,
-    thong_tin_thanh_toan: buildTransferInfo(selectedBank.value),
-  }
+  submitting.value = true
+  const res = await request({
+    url: API_PUBLIC.NAP_EDU_COIN.STORE,
+    body: {
+      so_luong_edu_coin: soLuong.value,
+      ngan_hang_thanh_toan_id: selectedBank.value.id,
+      ma_giao_dich: taoMaNap(),
+      ghi_chu: ghiChu.value.trim() || null,
+    },
+    successFallback: 'Đã ghi nhận yêu cầu nạp. Vui lòng chuyển khoản và chờ duyệt.',
+    errorFallback: 'Không gửi được yêu cầu nạp.',
+  })
+  submitting.value = false
+
+  if (!res.ok) return
+
+  pendingNap.value = res.data
+  resetForm()
   modalVisible.value = true
   startWaitTimers()
+  startPollTimer()
 }
 
 watch(canSelectBank, (ok) => {

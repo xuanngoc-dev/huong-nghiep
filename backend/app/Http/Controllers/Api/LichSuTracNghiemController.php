@@ -131,6 +131,7 @@ class LichSuTracNghiemController extends Controller
         return [
             'id' => $item->id,
             'lich_su_phien_id' => $item->lich_su_phien_id,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'hinh_thuc_thanh_toan' => $hinhThuc?->value,
             'hinh_thuc_thanh_toan_label' => $hinhThuc?->label(),
             'so_tien_thanh_toan' => (int) $item->so_tien_thanh_toan,

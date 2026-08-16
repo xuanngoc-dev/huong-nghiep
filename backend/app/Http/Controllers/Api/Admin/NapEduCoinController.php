@@ -12,6 +12,7 @@ use App\Models\NapEduCoin;
 use App\Models\NguoiDung;
 use App\Models\User;
 use App\Support\ApiResponse;
+use App\Support\MaGiaoDich;
 use App\Support\OffsetPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ class NapEduCoinController extends Controller
                 ->when($keyword !== '', function ($query) use ($keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('ghi_chu', 'like', "%{$keyword}%")
+                            ->orWhere('ma_giao_dich', 'like', "%{$keyword}%")
                             ->orWhereHas('nguoiNap', function ($userQuery) use ($keyword) {
                                 $userQuery->where('name', 'like', "%{$keyword}%")
                                     ->orWhere('email', 'like', "%{$keyword}%")
@@ -115,11 +117,17 @@ class NapEduCoinController extends Controller
                     ? $item->thong_tin_thanh_toan
                     : [];
                 $thongTinThanhToan['yeu_cau_nap_id'] = $item->id;
+                $maGiaoDich = is_string($item->ma_giao_dich) && $item->ma_giao_dich !== ''
+                    ? $item->ma_giao_dich
+                    : MaGiaoDich::taoMaNap();
+                $thongTinThanhToan['ma_giao_dich'] = $maGiaoDich;
+                $thongTinThanhToan['noi_dung_chuyen_khoan'] = $maGiaoDich;
 
                 LichSuNapEduCoin::query()->create([
                     'nguoi_nap_id' => $item->nguoi_nap_id,
                     'nguoi_duyet_id' => $actor?->id,
                     'nguoi_tao_id' => $item->nguoi_nap_id,
+                    'ma_giao_dich' => $maGiaoDich,
                     'loai_nap_tien' => LoaiNapTien::NguoiDungNap,
                     'so_du_truoc_nap' => $soDuTruocNap,
                     'so_du_sau_nap' => $soDuSauNap,
@@ -222,6 +230,7 @@ class NapEduCoinController extends Controller
 
         return [
             'id' => $item->id,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'nguoi_nap_id' => $item->nguoi_nap_id,
             'nguoi_nap' => $this->toUserArray($item->nguoiNap),
             'nguoi_duyet_id' => $item->nguoi_duyet_id,

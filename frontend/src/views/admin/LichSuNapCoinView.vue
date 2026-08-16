@@ -9,7 +9,7 @@
                 v-model="filters.keyword"
                 clearable
                 class="filter-control"
-                placeholder="Tên, email, SĐT người nạp..."
+                placeholder="Tên, email, SĐT, mã giao dịch..."
                 @keyup.enter="handleSearch"
               />
             </CustomFormItem>
@@ -75,6 +75,12 @@
             <span v-else>—</span>
           </template>
         </CustomTableColumn>
+        <CustomTableColumn
+          prop="ma_giao_dich"
+          label="Mã giao dịch"
+          min-width="170"
+          show-overflow-tooltip
+        />
         <CustomTableColumn label="Số coin" width="110" align="right">
           <template #default="{ row }">
             {{ formatNumber(row.so_luong_edu_coin) }}
@@ -165,6 +171,9 @@
             <span v-if="detail.nguoi_nap?.email" class="sub-text">
               ({{ detail.nguoi_nap.email }})
             </span>
+          </el-descriptions-item>
+          <el-descriptions-item label="Mã giao dịch" :span="2">
+            {{ detail.ma_giao_dich || '—' }}
           </el-descriptions-item>
           <el-descriptions-item label="Số điện thoại">
             {{ detail.nguoi_nap?.so_dien_thoai || '—' }}

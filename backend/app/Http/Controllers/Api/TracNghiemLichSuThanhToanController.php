@@ -12,6 +12,7 @@ use App\Models\TracNghiemLichSuThanhToan;
 use App\Models\TracNghiemPhienDaHoanThanh;
 use App\Models\User;
 use App\Support\ApiResponse;
+use App\Support\MaGiaoDich;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,11 +45,17 @@ class TracNghiemLichSuThanhToanController extends Controller
                     'nullable',
                     'string',
                 ],
+                'ma_giao_dich' => [
+                    'nullable',
+                    'string',
+                    'regex:/^PAY[0-9]{8}$/i',
+                ],
             ], [
                 'hinh_thuc_thanh_toan.required' => 'Vui lòng chọn hình thức thanh toán.',
                 'ngan_hang_thanh_toan_id.required_if' => 'Vui lòng chọn ngân hàng nhận chuyển khoản.',
                 'ngan_hang_thanh_toan_id.exists' => 'Ngân hàng không tồn tại.',
                 'mat_khau_thanh_toan.required_if' => 'Vui lòng nhập mật khẩu thanh toán.',
+                'ma_giao_dich.regex' => 'Mã giao dịch thanh toán không đúng định dạng.',
             ]);
 
             $hinhThuc = HinhThucThanhToanTracNghiem::from($validated['hinh_thuc_thanh_toan']);
@@ -91,7 +98,12 @@ class TracNghiemLichSuThanhToanController extends Controller
                     return ['item' => $pending];
                 }
 
-                return $this->taoYeuCauChuyenKhoan($user, $phien, (int) $validated['ngan_hang_thanh_toan_id']);
+                return $this->taoYeuCauChuyenKhoan(
+                    $user,
+                    $phien,
+                    (int) $validated['ngan_hang_thanh_toan_id'],
+                    $validated['ma_giao_dich'] ?? null,
+                );
             });
 
             if (isset($result['error'])) {
@@ -199,8 +211,12 @@ class TracNghiemLichSuThanhToanController extends Controller
     /**
      * @return array{item?: TracNghiemLichSuThanhToan, error?: string}
      */
-    private function taoYeuCauChuyenKhoan(User $user, TracNghiemPhienDaHoanThanh $phien, int $bankId): array
-    {
+    private function taoYeuCauChuyenKhoan(
+        User $user,
+        TracNghiemPhienDaHoanThanh $phien,
+        int $bankId,
+        ?string $maGiaoDichCandidate = null,
+    ): array {
         $bank = NganHangThanhToan::query()
             ->where('id', $bankId)
             ->where('trang_thai', TrangThaiNganHangThanhToan::DangSuDung)
@@ -210,13 +226,19 @@ class TracNghiemLichSuThanhToanController extends Controller
             return ['error' => 'Ngân hàng không khả dụng để thanh toán.'];
         }
 
+        $maGiaoDich = MaGiaoDich::resolveMaThanhToan($maGiaoDichCandidate);
+        if ($maGiaoDich === null) {
+            return ['error' => 'Mã giao dịch đã tồn tại. Vui lòng tạo lại yêu cầu thanh toán.'];
+        }
+
         $item = TracNghiemLichSuThanhToan::query()->create([
             'lich_su_phien_id' => $phien->id,
             'nguoi_dung_id' => $user->id,
+            'ma_giao_dich' => $maGiaoDich,
             'hinh_thuc_thanh_toan' => HinhThucThanhToanTracNghiem::ChuyenKhoan,
             'so_tien_thanh_toan' => TracNghiemLichSuThanhToan::SO_TIEN_CHUYEN_KHOAN,
             'trang_thai' => TrangThaiThanhToanTracNghiem::DangXuLy,
-            'thong_tin_thanh_toan' => $this->buildThongTinThanhToan($bank, $user, $phien),
+            'thong_tin_thanh_toan' => $this->buildThongTinThanhToan($bank, $maGiaoDich),
         ]);
 
         return ['item' => $item];
@@ -225,14 +247,8 @@ class TracNghiemLichSuThanhToanController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function buildThongTinThanhToan(
-        NganHangThanhToan $bank,
-        User $user,
-        TracNghiemPhienDaHoanThanh $phien,
-    ): array {
-        $hoTen = trim((string) $user->name);
-        $noiDung = 'TT TN '.$user->id.' '.$phien->id.($hoTen !== '' ? ' '.$hoTen : '');
-
+    private function buildThongTinThanhToan(NganHangThanhToan $bank, string $maGiaoDich): array
+    {
         return [
             'ngan_hang_thanh_toan_id' => $bank->id,
             'ten_ngan_hang' => $bank->ten_ngan_hang,
@@ -240,7 +256,8 @@ class TracNghiemLichSuThanhToanController extends Controller
             'so_tai_khoan' => $bank->so_tai_khoan,
             'chu_tai_khoan' => $bank->chu_tai_khoan,
             'chi_nhanh' => $bank->chi_nhanh,
-            'noi_dung_chuyen_khoan' => mb_substr($noiDung, 0, 100),
+            'ma_giao_dich' => $maGiaoDich,
+            'noi_dung_chuyen_khoan' => $maGiaoDich,
         ];
     }
 
@@ -268,6 +285,7 @@ class TracNghiemLichSuThanhToanController extends Controller
         $phien->thong_tin_thanh_toan = [
             ...$info,
             'thanh_toan_id' => $thanhToan->id,
+            'ma_giao_dich' => $thanhToan->ma_giao_dich,
             'hinh_thuc_thanh_toan' => $hinhThuc,
             'so_tien_thanh_toan' => (int) $thanhToan->so_tien_thanh_toan,
             'thanh_toan_luc' => now()->toIso8601String(),
@@ -291,6 +309,7 @@ class TracNghiemLichSuThanhToanController extends Controller
         return [
             'id' => $item->id,
             'lich_su_phien_id' => $item->lich_su_phien_id,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'hinh_thuc_thanh_toan' => $hinhThuc?->value,
             'hinh_thuc_thanh_toan_label' => $hinhThuc?->label(),
             'so_tien_thanh_toan' => (int) $item->so_tien_thanh_toan,

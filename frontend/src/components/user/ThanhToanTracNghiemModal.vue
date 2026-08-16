@@ -154,12 +154,12 @@
               <div>
                 <dt>Nội dung CK</dt>
                 <dd>
-                  {{ pendingThongTin.noi_dung_chuyen_khoan || '—' }}
+                  {{ noiDungChuyenKhoan || '—' }}
                   <button
-                    v-if="pendingThongTin.noi_dung_chuyen_khoan"
+                    v-if="noiDungChuyenKhoan"
                     type="button"
                     class="copy-btn"
-                    @click="copyText(pendingThongTin.noi_dung_chuyen_khoan)"
+                    @click="copyText(noiDungChuyenKhoan)"
                   >
                     Sao chép
                   </button>
@@ -248,6 +248,7 @@ import { request } from '@/api'
 import { CustomDialog, CustomIcon } from '@/components/element'
 import { API_PUBLIC } from '@/constants/constant_api'
 import { useAuthStore } from '@/stores/auth'
+import { taoMaThanhToan } from '@/utils/maGiaoDich'
 
 const PHI_EDU_COIN = 15
 const PHI_CHUYEN_KHOAN = 15000
@@ -327,6 +328,13 @@ const confirmTransferLabel = computed(() => {
 
 const pendingThongTin = computed(() => pendingPay.value?.thong_tin_thanh_toan || {})
 
+const noiDungChuyenKhoan = computed(() =>
+  pendingPay.value?.ma_giao_dich
+  || pendingThongTin.value.ma_giao_dich
+  || pendingThongTin.value.noi_dung_chuyen_khoan
+  || '',
+)
+
 const countdownLabel = computed(() => {
   const total = Math.max(0, remainingSeconds.value)
   const minutes = Math.floor(total / 60)
@@ -343,7 +351,7 @@ const pendingQrUrl = computed(() => {
 
   const params = new URLSearchParams({
     amount: String(amount),
-    addInfo: info.noi_dung_chuyen_khoan || '',
+    addInfo: noiDungChuyenKhoan.value,
     accountName: info.chu_tai_khoan || '',
   })
 
@@ -418,10 +426,7 @@ function onModalClosed() {
 }
 
 function buildTransferInfo(bank) {
-  const name = (auth.user?.name || '').toString().trim()
-  const userId = auth.user?.id
-  const phienId = props.phien?.id
-  const noiDung = `TT TN ${userId} ${phienId}${name ? ` ${name}` : ''}`.slice(0, 100)
+  const maGiaoDich = taoMaThanhToan()
 
   return {
     ngan_hang_thanh_toan_id: bank.id,
@@ -430,7 +435,8 @@ function buildTransferInfo(bank) {
     so_tai_khoan: bank.so_tai_khoan,
     chu_tai_khoan: bank.chu_tai_khoan,
     chi_nhanh: bank.chi_nhanh,
-    noi_dung_chuyen_khoan: noiDung,
+    ma_giao_dich: maGiaoDich,
+    noi_dung_chuyen_khoan: maGiaoDich,
   }
 }
 
@@ -567,11 +573,13 @@ async function onSubmit() {
     return
   }
 
+  const thongTin = buildTransferInfo(selectedBank.value)
   openTransfer({
     so_tien_thanh_toan: PHI_CHUYEN_KHOAN,
     ngan_hang_thanh_toan_id: selectedBank.value.id,
     hinh_thuc_thanh_toan: 'chuyen_khoan',
-    thong_tin_thanh_toan: buildTransferInfo(selectedBank.value),
+    ma_giao_dich: thongTin.ma_giao_dich,
+    thong_tin_thanh_toan: thongTin,
   })
 }
 
@@ -584,6 +592,9 @@ async function confirmTransferred() {
     body: {
       hinh_thuc_thanh_toan: 'chuyen_khoan',
       ngan_hang_thanh_toan_id: pendingPay.value.ngan_hang_thanh_toan_id,
+      ma_giao_dich: pendingPay.value.ma_giao_dich
+        || pendingPay.value.thong_tin_thanh_toan?.ma_giao_dich
+        || pendingPay.value.thong_tin_thanh_toan?.noi_dung_chuyen_khoan,
     },
     successFallback: 'Đã ghi nhận yêu cầu thanh toán. Vui lòng chờ duyệt.',
     errorFallback: 'Không gửi được yêu cầu thanh toán.',

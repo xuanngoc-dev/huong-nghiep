@@ -36,7 +36,7 @@ class TracNghiemLichSuThanhToanController extends Controller
                                 ->orWhere('so_dien_thoai', 'like', "%{$keyword}%");
                         })->orWhereHas('lichSuPhien', function ($phienQuery) use ($keyword) {
                             $phienQuery->where('ssid', 'like', "%{$keyword}%");
-                        });
+                        })->orWhere('ma_giao_dich', 'like', "%{$keyword}%");
                     });
                 })
                 ->when(
@@ -182,6 +182,7 @@ class TracNghiemLichSuThanhToanController extends Controller
         return [
             'id' => $item->id,
             'lich_su_phien_id' => $item->lich_su_phien_id,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'ssid' => $item->lichSuPhien?->ssid,
             'nguoi_dung_id' => $item->nguoi_dung_id,
             'nguoi_dung' => $this->toUserArray($item->nguoiDung),

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'lich_su_phien_id',
     'nguoi_dung_id',
+    'ma_giao_dich',
     'hinh_thuc_thanh_toan',
     'so_tien_thanh_toan',
     'trang_thai',

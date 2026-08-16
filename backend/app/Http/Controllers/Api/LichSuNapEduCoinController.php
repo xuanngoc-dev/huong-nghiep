@@ -70,6 +70,7 @@ class LichSuNapEduCoinController extends Controller
 
         return [
             'id' => $item->id,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'loai_nap_tien' => $loaiNap?->value,
             'loai_nap_tien_label' => $loaiNap?->label(),
             'so_du_truoc_nap' => (int) $item->so_du_truoc_nap,

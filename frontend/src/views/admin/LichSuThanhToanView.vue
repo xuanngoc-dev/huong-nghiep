@@ -9,7 +9,7 @@
                 v-model="filters.keyword"
                 clearable
                 class="filter-control"
-                placeholder="Tên, email, SĐT, SSID..."
+                placeholder="Tên, email, SĐT, SSID, mã GD..."
                 @keyup.enter="handleSearch"
               />
             </CustomFormItem>
@@ -93,6 +93,12 @@
           </template>
         </CustomTableColumn>
         <CustomTableColumn prop="ssid" label="SSID" min-width="180" show-overflow-tooltip />
+        <CustomTableColumn
+          prop="ma_giao_dich"
+          label="Mã giao dịch"
+          min-width="150"
+          show-overflow-tooltip
+        />
         <CustomTableColumn label="Hình thức" width="140" align="center">
           <template #default="{ row }">
             {{ row.hinh_thuc_thanh_toan_label || '—' }}
@@ -169,6 +175,9 @@
             <CustomTag :type="trangThaiType(detail.trang_thai)" effect="light" size="small">
               {{ detail.trang_thai_label || '—' }}
             </CustomTag>
+          </el-descriptions-item>
+          <el-descriptions-item label="Mã giao dịch" :span="2">
+            {{ detail.ma_giao_dich || '—' }}
           </el-descriptions-item>
           <el-descriptions-item label="SSID" :span="2">
             {{ detail.ssid || '—' }}

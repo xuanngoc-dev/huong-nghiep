@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'nguoi_nap_id',
     'nguoi_duyet_id',
     'nguoi_tao_id',
+    'ma_giao_dich',
     'loai_nap_tien',
     'so_du_truoc_nap',
     'so_du_sau_nap',

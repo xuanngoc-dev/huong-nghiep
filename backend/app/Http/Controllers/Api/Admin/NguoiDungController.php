@@ -14,6 +14,7 @@ use App\Models\NganHangThanhToan;
 use App\Models\NguoiDung;
 use App\Models\User;
 use App\Support\ApiResponse;
+use App\Support\MaGiaoDich;
 use App\Support\OffsetPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -207,6 +208,11 @@ class NguoiDungController extends Controller
                     'required_if:kenh_thanh_toan,chuyen_khoan',
                     'exists:he_thong_ngan_hang_thanh_toan,id',
                 ],
+                'ma_giao_dich' => [
+                    'nullable',
+                    'string',
+                    'regex:/^NAP[A-Za-z0-9]{8}ECOIN$/i',
+                ],
                 'ghi_chu' => ['nullable', 'string', 'max:255'],
             ], [
                 'so_coin_nap.required' => 'Vui lòng nhập số coin nạp.',
@@ -219,6 +225,7 @@ class NguoiDungController extends Controller
                 'kenh_thanh_toan.required' => 'Vui lòng chọn kênh thanh toán.',
                 'ngan_hang_thanh_toan_id.required_if' => 'Vui lòng chọn ngân hàng nhận chuyển khoản.',
                 'ngan_hang_thanh_toan_id.exists' => 'Ngân hàng không tồn tại.',
+                'ma_giao_dich.regex' => 'Mã giao dịch nạp không đúng định dạng.',
             ]);
 
             $loaiKhuyenMai = $validated['loai_khuyen_mai'] instanceof LoaiKhuyenMai
@@ -254,6 +261,11 @@ class NguoiDungController extends Controller
                 }
             }
 
+            $maGiaoDich = MaGiaoDich::resolveMaNap($validated['ma_giao_dich'] ?? null);
+            if ($maGiaoDich === null) {
+                return ApiResponse::error('Mã giao dịch đã tồn tại. Vui lòng tạo lại yêu cầu nạp.');
+            }
+
             DB::transaction(function () use (
                 $user,
                 $actor,
@@ -265,6 +277,7 @@ class NguoiDungController extends Controller
                 $kenhThanhToan,
                 $loaiNapTien,
                 $bank,
+                $maGiaoDich,
             ) {
                 $profile = $user->thongTinNguoiDung()->lockForUpdate()->first();
                 if ($profile === null) {
@@ -284,6 +297,7 @@ class NguoiDungController extends Controller
                     'nguoi_nap_id' => $user->id,
                     'nguoi_duyet_id' => $isAdminNap ? $actor?->id : null,
                     'nguoi_tao_id' => $actor?->id,
+                    'ma_giao_dich' => $maGiaoDich,
                     'loai_nap_tien' => $loaiNapTien,
                     'so_du_truoc_nap' => $soDuTruocNap,
                     'so_du_sau_nap' => $soDuSauNap,
@@ -293,7 +307,7 @@ class NguoiDungController extends Controller
                     'coin_khuyen_mai' => $coinKhuyenMai,
                     'tong_coin_nhan' => $tongCoinNhan,
                     'kenh_thanh_toan' => $kenhThanhToan,
-                    'thong_tin_thanh_toan' => $this->buildThongTinThanhToan($kenhThanhToan, $bank, $user),
+                    'thong_tin_thanh_toan' => $this->buildThongTinThanhToan($kenhThanhToan, $bank, $maGiaoDich),
                     'ghi_chu' => $validated['ghi_chu'] ?? null,
                     'trang_thai' => $isAdminNap
                         ? TrangThaiNapEduCoin::DaDuyet
@@ -375,14 +389,11 @@ class NguoiDungController extends Controller
     private function buildThongTinThanhToan(
         KenhThanhToan $kenhThanhToan,
         ?NganHangThanhToan $bank,
-        User $nguoiNap,
+        string $maGiaoDich,
     ): ?array {
         if ($kenhThanhToan !== KenhThanhToan::ChuyenKhoan || $bank === null) {
             return null;
         }
-
-        $hoTen = trim((string) $nguoiNap->name);
-        $noiDung = 'NAP EDU '.$nguoiNap->id.($hoTen !== '' ? ' '.$hoTen : '');
 
         return [
             'ngan_hang_thanh_toan_id' => $bank->id,
@@ -391,7 +402,8 @@ class NguoiDungController extends Controller
             'so_tai_khoan' => $bank->so_tai_khoan,
             'chu_tai_khoan' => $bank->chu_tai_khoan,
             'chi_nhanh' => $bank->chi_nhanh,
-            'noi_dung_chuyen_khoan' => mb_substr($noiDung, 0, 100),
+            'ma_giao_dich' => $maGiaoDich,
+            'noi_dung_chuyen_khoan' => $maGiaoDich,
         ];
     }
 

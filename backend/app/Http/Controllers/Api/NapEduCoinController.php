@@ -8,8 +8,8 @@ use App\Enums\TrangThaiYeuCauNapEduCoin;
 use App\Http\Controllers\Controller;
 use App\Models\NapEduCoin;
 use App\Models\NganHangThanhToan;
-use App\Models\User;
 use App\Support\ApiResponse;
+use App\Support\MaGiaoDich;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -35,6 +35,11 @@ class NapEduCoinController extends Controller
                     'integer',
                     'exists:he_thong_ngan_hang_thanh_toan,id',
                 ],
+                'ma_giao_dich' => [
+                    'nullable',
+                    'string',
+                    'regex:/^NAP[A-Za-z0-9]{8}ECOIN$/i',
+                ],
                 'ghi_chu' => ['nullable', 'string', 'max:255'],
             ], [
                 'so_luong_edu_coin.required' => 'Vui lòng nhập số Edu Coin cần nạp.',
@@ -43,6 +48,7 @@ class NapEduCoinController extends Controller
                 'so_luong_edu_coin.max' => 'Số Edu Coin phải từ 1 đến 10.000.',
                 'ngan_hang_thanh_toan_id.required' => 'Vui lòng chọn ngân hàng nhận chuyển khoản.',
                 'ngan_hang_thanh_toan_id.exists' => 'Ngân hàng không tồn tại.',
+                'ma_giao_dich.regex' => 'Mã giao dịch nạp không đúng định dạng.',
             ]);
 
             $bank = NganHangThanhToan::query()
@@ -56,14 +62,19 @@ class NapEduCoinController extends Controller
 
             $soLuong = (int) $validated['so_luong_edu_coin'];
             $soTienNap = $soLuong * NapEduCoin::TY_GIA;
+            $maGiaoDich = MaGiaoDich::resolveMaNap($validated['ma_giao_dich'] ?? null);
+            if ($maGiaoDich === null) {
+                return ApiResponse::error('Mã giao dịch đã tồn tại. Vui lòng tạo lại yêu cầu nạp.');
+            }
 
             $item = NapEduCoin::query()->create([
                 'nguoi_nap_id' => $user->id,
                 'nguoi_duyet_id' => null,
+                'ma_giao_dich' => $maGiaoDich,
                 'so_luong_edu_coin' => $soLuong,
                 'so_tien_nap' => $soTienNap,
                 'kenh_thanh_toan' => KenhThanhToan::ChuyenKhoan,
-                'thong_tin_thanh_toan' => $this->buildThongTinThanhToan($bank, $user),
+                'thong_tin_thanh_toan' => $this->buildThongTinThanhToan($bank, $maGiaoDich),
                 'trang_thai' => TrangThaiYeuCauNapEduCoin::ChoDuyet,
                 'ghi_chu' => $validated['ghi_chu'] ?? null,
             ]);
@@ -93,11 +104,11 @@ class NapEduCoinController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function buildThongTinThanhToan(NganHangThanhToan $bank, User $nguoiNap): array
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildThongTinThanhToan(NganHangThanhToan $bank, string $maGiaoDich): array
     {
-        $hoTen = trim((string) $nguoiNap->name);
-        $noiDung = 'NAP EDU '.$nguoiNap->id.($hoTen !== '' ? ' '.$hoTen : '');
-
         return [
             'ngan_hang_thanh_toan_id' => $bank->id,
             'ten_ngan_hang' => $bank->ten_ngan_hang,
@@ -105,7 +116,8 @@ class NapEduCoinController extends Controller
             'so_tai_khoan' => $bank->so_tai_khoan,
             'chu_tai_khoan' => $bank->chu_tai_khoan,
             'chi_nhanh' => $bank->chi_nhanh,
-            'noi_dung_chuyen_khoan' => mb_substr($noiDung, 0, 100),
+            'ma_giao_dich' => $maGiaoDich,
+            'noi_dung_chuyen_khoan' => $maGiaoDich,
         ];
     }
 
@@ -124,6 +136,7 @@ class NapEduCoinController extends Controller
 
         return [
             'id' => $item->id,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'so_luong_edu_coin' => (int) $item->so_luong_edu_coin,
             'so_tien_nap' => (int) $item->so_tien_nap,
             'kenh_thanh_toan' => $kenh?->value,
