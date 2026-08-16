@@ -84,8 +84,8 @@ async function redirectToStart() {
 }
 
 watch(
-  () => [route.params.ssid, route.meta.requiresQuizSession],
-  async ([ssid, requiresSession]) => {
+  () => [route.params.ssid, route.meta.requiresQuizSession, route.name],
+  async ([ssid, requiresSession, name]) => {
     quiz.syncSsidFromRoute(route)
     await quiz.ensureLoaded()
 
@@ -99,6 +99,15 @@ watch(
     const history = await quiz.ensureHistoryLoaded(String(ssid))
     if (!history.ok) {
       await redirectToStart()
+      return
+    }
+
+    // Bước 6–7: ưu tiên chỉ dẫn từ API (ma_loai_chua_xong / chua_tra_loi_het)
+    if (name === 'quiz-fields' || name === 'quiz-result') {
+      const incompleteTo = quiz.toIncompleteLoaiLocationFromApi(history.data, String(ssid))
+      if (incompleteTo) {
+        await router.replace(incompleteTo)
+      }
     }
   },
   { immediate: true },

@@ -78,6 +78,25 @@ async function loadAssessment() {
         await router.replace({ name: 'quiz-start' })
         return
       }
+
+      const sessionId = String(route.params.ssid)
+      const result = await quiz.ensureKetQua(sessionId)
+      if (!result.ok) {
+        const incompleteTo = quiz.isChuaTraLoiHetError(result)
+          ? quiz.toIncompleteLoaiLocationFromApi(result.data, sessionId)
+          : quiz.toIncompleteLoaiLocationFromApi(history.data, sessionId)
+        if (incompleteTo) {
+          await router.replace(incompleteTo)
+          return
+        }
+        if (/phiên|ssid/i.test(String(result.message || ''))) {
+          quiz.resetSession()
+          await router.replace({ name: 'quiz-start' })
+          return
+        }
+        error.value = result.message || 'Không tải được kết quả trắc nghiệm.'
+        return
+      }
     }
 
     quiz.markStepCompleted('result')

@@ -82,6 +82,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/trac-nghiem-lich-su-tra-loi/start', [TracNghiemLichSuTraLoiController::class, 'start']);
     Route::post('/trac-nghiem-lich-su-tra-loi', [TracNghiemLichSuTraLoiController::class, 'store']);
     Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}/tong-hop', [TracNghiemLichSuTraLoiController::class, 'tongHop']);
+    Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}/ket-qua', [TracNghiemLichSuTraLoiController::class, 'ketQua']);
     Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}', [TracNghiemLichSuTraLoiController::class, 'show']);
 
     Route::post('/nguoi-dung', [NguoiDungController::class, 'store']);

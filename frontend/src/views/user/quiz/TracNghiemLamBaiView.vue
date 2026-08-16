@@ -449,6 +449,21 @@ async function goNext() {
           error.value = saved.message || 'Không lưu được câu trả lời.'
           return
         }
+
+        if (nextStepMeta.value?.type === 'fields') {
+          const summary = await quiz.ensureFieldsSummary(sessionId, { force: true })
+          if (!summary.ok) {
+            const incompleteTo = quiz.isChuaTraLoiHetError(summary)
+              ? quiz.toIncompleteLoaiLocationFromApi(summary.data, sessionId)
+              : quiz.toIncompleteLoaiLocation(sessionId)
+            if (incompleteTo) {
+              await router.replace(incompleteTo)
+              return
+            }
+            error.value = summary.message || 'Không tổng hợp được ngành phù hợp.'
+            return
+          }
+        }
       } finally {
         saving.value = false
       }

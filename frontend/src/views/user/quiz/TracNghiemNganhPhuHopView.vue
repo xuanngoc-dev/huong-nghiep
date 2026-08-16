@@ -379,8 +379,21 @@ async function loadSummary() {
       return
     }
 
+    const blockedTo = quiz.toIncompleteLoaiLocationFromApi(history.data, sessionId)
+    if (blockedTo) {
+      await router.replace(blockedTo)
+      return
+    }
+
     const result = await quiz.ensureFieldsSummary(sessionId, { force: true })
     if (!result.ok) {
+      const incompleteTo = quiz.isChuaTraLoiHetError(result)
+        ? quiz.toIncompleteLoaiLocationFromApi(result.data, sessionId)
+        : quiz.toIncompleteLoaiLocation(sessionId)
+      if (incompleteTo) {
+        await router.replace(incompleteTo)
+        return
+      }
       if (/phiên|ssid/i.test(String(result.message || ''))) {
         quiz.resetSession()
         await router.replace({ name: 'quiz-start' })

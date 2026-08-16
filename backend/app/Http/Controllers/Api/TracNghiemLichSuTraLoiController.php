@@ -13,6 +13,7 @@ use App\Models\TracNghiemCauHoi;
 use App\Models\TracNghiemCauTraLoi;
 use App\Models\TracNghiemLichSuTraLoi;
 use App\Models\TracNghiemPhienDaHoanThanh;
+use App\Services\TracNghiemPhienProgress;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,8 @@ class TracNghiemLichSuTraLoiController extends Controller
 {
     /** Số câu hỏi ngẫu nhiên lấy cho mỗi nhóm ngành trong một loại. */
     private const QUESTIONS_PER_NHOM = 2;
+
+    public function __construct(private TracNghiemPhienProgress $progress) {}
 
     /**
      * Bắt đầu phiên làm bài:
@@ -179,11 +182,14 @@ class TracNghiemLichSuTraLoiController extends Controller
                 return ApiResponse::error('Không tìm thấy phiên trắc nghiệm.');
             }
 
+            $payload = $this->buildSessionPayload($ssid, $maLoai ?: null);
+
             return ApiResponse::success(
                 [
                     'ssid' => $ssid,
                     'da_hoan_thanh' => $this->isSessionCompleted($ssid),
-                    ...$this->buildSessionPayload($ssid, $maLoai ?: null),
+                    ...$this->progress->progressMeta($ssid, $payload),
+                    ...$payload,
                 ],
                 'Lấy lịch sử trả lời thành công.',
             );
@@ -192,8 +198,8 @@ class TracNghiemLichSuTraLoiController extends Controller
 
     /**
      * Tổng hợp điểm theo nhom_nganh_id / nganh_hoc_id của một phiên (ssid).
-     * Chỉ tính các câu đã có đáp án (diem_so không null).
-     * Sau khi tổng hợp, lưu snapshot phiên vào bảng hoàn thành (nếu chưa có).
+     * Chỉ dành cho ssid đã trả lời hết các loại câu hỏi (bước 2–5).
+     * Kết quả được lưu / đọc từ trac_nghiem_lich_su_phien.
      */
     public function tongHop(string $ssid): JsonResponse
     {
@@ -208,17 +214,42 @@ class TracNghiemLichSuTraLoiController extends Controller
                 return ApiResponse::error('Không tìm thấy phiên trắc nghiệm.');
             }
 
-            $summary = $this->buildTongHopPayload($ssid);
-            $completed = $this->persistCompletedSession($ssid, $summary);
+            $denied = $this->denyIfChuaTraLoiHet($ssid);
+            if ($denied) {
+                return $denied;
+            }
 
             return ApiResponse::success(
-                [
-                    'ssid' => $ssid,
-                    'da_hoan_thanh' => true,
-                    'nguoi_khao_sat_id' => $completed->nguoi_khao_sat_id,
-                    ...$summary,
-                ],
+                $this->resolveKetQuaPayload($ssid),
                 'Tổng hợp ngành / chuyên ngành phù hợp thành công.',
+            );
+        });
+    }
+
+    /**
+     * Kết quả phiên — cùng điều kiện với tong-hop: phải trả lời hết bước 2–5.
+     */
+    public function ketQua(string $ssid): JsonResponse
+    {
+        return $this->tryApi(function () use ($ssid) {
+            $ssid = trim($ssid);
+
+            $sessionExists = TracNghiemLichSuTraLoi::query()
+                ->where('ssid', $ssid)
+                ->exists();
+
+            if (! $sessionExists) {
+                return ApiResponse::error('Không tìm thấy phiên trắc nghiệm.');
+            }
+
+            $denied = $this->denyIfChuaTraLoiHet($ssid);
+            if ($denied) {
+                return $denied;
+            }
+
+            return ApiResponse::success(
+                $this->resolveKetQuaPayload($ssid),
+                'Lấy kết quả trắc nghiệm thành công.',
             );
         });
     }
@@ -595,10 +626,90 @@ class TracNghiemLichSuTraLoiController extends Controller
 
     private function isSessionCompleted(string $ssid): bool
     {
-        return TracNghiemPhienDaHoanThanh::query()
+        $payload = $this->buildSessionPayload($ssid);
+        if ($this->progress->firstIncompleteLoai($payload) !== null) {
+            return false;
+        }
+
+        return $this->findCompletedSessionWithKetQua($ssid) !== null;
+    }
+
+    private function denyIfChuaTraLoiHet(string $ssid): ?JsonResponse
+    {
+        $payload = $this->buildSessionPayload($ssid);
+        $error = $this->progress->incompleteErrorData($ssid, $payload);
+        if ($error === null) {
+            return null;
+        }
+
+        return ApiResponse::error('Phiên chưa trả lời hết các bước câu hỏi.', $error);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function resolveKetQuaPayload(string $ssid): array
+    {
+        $completed = $this->findCompletedSessionWithKetQua($ssid);
+        if ($completed) {
+            $summary = $this->summaryFromCompletedSession($completed);
+        } else {
+            $summary = $this->buildTongHopPayload($ssid);
+            $completed = $this->persistCompletedSession($ssid, $summary);
+        }
+
+        return [
+            'ssid' => $ssid,
+            'da_hoan_thanh' => true,
+            'co_the_xem_ket_qua' => true,
+            'nguoi_khao_sat_id' => $completed->nguoi_khao_sat_id,
+            ...$summary,
+        ];
+    }
+
+    /**
+     * Phiên đã có kết quả trong trac_nghiem_lich_su_phien (trạng thái hoàn thành + snapshot).
+     */
+    private function findCompletedSessionWithKetQua(string $ssid): ?TracNghiemPhienDaHoanThanh
+    {
+        $phien = TracNghiemPhienDaHoanThanh::query()
             ->where('ssid', $ssid)
             ->where('trang_thai', TrangThaiLichSuPhien::HoanThanh)
-            ->exists();
+            ->first();
+
+        if (! $phien) {
+            return null;
+        }
+
+        $chiTiet = is_array($phien->chi_tiet_ket_qua) ? $phien->chi_tiet_ket_qua : [];
+        $soCauDaTraLoi = (int) ($chiTiet['so_cau_da_tra_loi'] ?? 0);
+
+        if ($soCauDaTraLoi <= 0) {
+            return null;
+        }
+
+        return $phien;
+    }
+
+    /**
+     * @return array{
+     *   tong_diem: float,
+     *   so_cau_da_tra_loi: int,
+     *   nganh_hoc: list<array<string, mixed>>,
+     *   nhom_nganh: list<array<string, mixed>>
+     * }
+     */
+    private function summaryFromCompletedSession(TracNghiemPhienDaHoanThanh $phien): array
+    {
+        $chiTiet = is_array($phien->chi_tiet_ket_qua) ? $phien->chi_tiet_ket_qua : [];
+        $nhom = is_array($phien->nhom_nganh) ? $phien->nhom_nganh : [];
+
+        return [
+            'tong_diem' => (float) ($chiTiet['tong_diem'] ?? 0),
+            'so_cau_da_tra_loi' => (int) ($chiTiet['so_cau_da_tra_loi'] ?? 0),
+            'nganh_hoc' => is_array($chiTiet['nganh_hoc'] ?? null) ? $chiTiet['nganh_hoc'] : [],
+            'nhom_nganh' => is_array($chiTiet['nhom_nganh'] ?? null) ? $chiTiet['nhom_nganh'] : $nhom,
+        ];
     }
 
     /**

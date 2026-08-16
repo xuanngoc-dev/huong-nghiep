@@ -317,6 +317,10 @@ export const API_PUBLIC = {
       url: `/trac-nghiem-lich-su-tra-loi/${ssid}/tong-hop`,
       method: 'get',
     }),
+    KET_QUA: (ssid) => ({
+      url: `/trac-nghiem-lich-su-tra-loi/${ssid}/ket-qua`,
+      method: 'get',
+    }),
   },
   NGUOI_DUNG: {
     ME: { url: '/nguoi-dung/me', method: 'get' },
