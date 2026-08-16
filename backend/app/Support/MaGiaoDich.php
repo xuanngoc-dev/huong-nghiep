@@ -56,6 +56,29 @@ class MaGiaoDich
         return strtoupper(trim((string) $code));
     }
 
+    /**
+     * Lấy NAP...ECOIN hoặc PAY + 8 số từ nội dung chuyển khoản (bỏ text dư của ngân hàng).
+     */
+    public static function extractFromText(?string $text): ?string
+    {
+        $compact = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) $text) ?? '');
+        if ($compact === '') {
+            return null;
+        }
+
+        $napPattern = '/'.self::PREFIX_NAP.'[A-Z0-9]{'.self::TOKEN_LENGTH.'}'.self::SUFFIX_NAP.'/';
+        if (preg_match($napPattern, $compact, $matches) && self::isValidNap($matches[0])) {
+            return $matches[0];
+        }
+
+        $payPattern = '/'.self::PREFIX_PAY.'\d{'.self::TOKEN_LENGTH.'}/';
+        if (preg_match($payPattern, $compact, $matches) && self::isValidPay($matches[0])) {
+            return $matches[0];
+        }
+
+        return null;
+    }
+
     public static function isTaken(string $code): bool
     {
         $code = self::normalize($code);

@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'sao_ke_webhook' => [
+        'token' => env('SAO_KE_WEBHOOK_TOKEN'),
+    ],
+
 ];

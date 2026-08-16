@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\LichSuTracNghiemController;
 use App\Http\Controllers\Api\NganHangThanhToanController;
 use App\Http\Controllers\Api\NapEduCoinController;
 use App\Http\Controllers\Api\NguoiDungController;
+use App\Http\Controllers\Api\SaoKeNganHangController;
 use App\Http\Controllers\Api\TracNghiemCauHoiController;
 use App\Http\Controllers\Api\TracNghiemLichSuThanhToanController;
 use App\Http\Controllers\Api\TracNghiemLichSuTraLoiController;
@@ -86,6 +87,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/trac-nghiem-lich-su-tra-loi/{ssid}', [TracNghiemLichSuTraLoiController::class, 'show']);
 
     Route::post('/nguoi-dung', [NguoiDungController::class, 'store']);
+    Route::post('/webhooks/sao-ke-ngan-hang', [SaoKeNganHangController::class, 'store']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/nguoi-dung/me', [NguoiDungController::class, 'me']);

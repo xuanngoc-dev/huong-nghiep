@@ -32,6 +32,7 @@ return [
     /** Các path (relative sau /api) bỏ qua, ví dụ: v1/health */
     'except' => [
         'v1/health',
+        'v1/webhooks/sao-ke-ngan-hang',
     ],
 
 ];
