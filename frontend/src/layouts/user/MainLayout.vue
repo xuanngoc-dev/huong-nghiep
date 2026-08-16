@@ -33,16 +33,16 @@
         <div class="header-right">
           <div v-if="auth.isAuthenticated" class="user-wallet" aria-label="Số dư tài khoản">
             <el-tooltip content="Edu Coin" placement="bottom" :show-after="150">
-              <span class="user-wallet__item">
+              <RouterLink :to="{ name: 'profile-edu-coin' }" class="user-wallet__item">
                 <el-icon :size="16" aria-hidden="true"><Coin /></el-icon>
                 <span>{{ formatBalance(eduCoin) }}</span>
-              </span>
+              </RouterLink>
             </el-tooltip>
             <el-tooltip content="Xu hệ thống" placement="bottom" :show-after="150">
-              <span class="user-wallet__item">
+              <RouterLink :to="{ name: 'profile-xu-he-thong' }" class="user-wallet__item">
                 <el-icon :size="16" aria-hidden="true"><Medal /></el-icon>
                 <span>{{ formatBalance(xuHeThong) }}</span>
-              </span>
+              </RouterLink>
             </el-tooltip>
           </div>
 
@@ -114,14 +114,26 @@
           <div class="nav-mobile-actions">
             <template v-if="auth.isAuthenticated">
               <div class="user-wallet user-wallet--mobile" aria-label="Số dư tài khoản">
-                <span class="user-wallet__item" title="Edu Coin">
-                  <el-icon :size="16" aria-hidden="true"><Coin /></el-icon>
-                  <span>{{ formatBalance(eduCoin) }}</span>
-                </span>
-                <span class="user-wallet__item" title="Xu hệ thống">
-                  <el-icon :size="16" aria-hidden="true"><Medal /></el-icon>
-                  <span>{{ formatBalance(xuHeThong) }}</span>
-                </span>
+                <el-tooltip content="Edu Coin" placement="bottom" :show-after="150">
+                  <RouterLink
+                    :to="{ name: 'profile-edu-coin' }"
+                    class="user-wallet__item"
+                    @click="closeMenu"
+                  >
+                    <el-icon :size="16" aria-hidden="true"><Coin /></el-icon>
+                    <span>{{ formatBalance(eduCoin) }}</span>
+                  </RouterLink>
+                </el-tooltip>
+                <el-tooltip content="Xu hệ thống" placement="bottom" :show-after="150">
+                  <RouterLink
+                    :to="{ name: 'profile-xu-he-thong' }"
+                    class="user-wallet__item"
+                    @click="closeMenu"
+                  >
+                    <el-icon :size="16" aria-hidden="true"><Medal /></el-icon>
+                    <span>{{ formatBalance(xuHeThong) }}</span>
+                  </RouterLink>
+                </el-tooltip>
               </div>
               <p class="muted user-name user-name--mobile">{{ auth.user?.name }}</p>
               <RouterLink
@@ -450,7 +462,18 @@ onBeforeUnmount(() => {
   font-weight: 300;
   line-height: 1;
   white-space: nowrap;
-  cursor: default;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.user-wallet__item:hover {
+  color: var(--accent);
+  filter: brightness(0.96);
+}
+
+.user-wallet__item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .user-wallet--mobile {

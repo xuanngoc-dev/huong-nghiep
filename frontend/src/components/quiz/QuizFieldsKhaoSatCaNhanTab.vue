@@ -586,7 +586,7 @@ const fields = [
     label: 'Ngày sinh',
     type: 'date',
     required: false,
-    placeholder: 'Nhập hoặc chọn, vd. 27/02/1996',
+    placeholder: 'Nhập hoặc chọn',
   },
   {
     stt: 4,
