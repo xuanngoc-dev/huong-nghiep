@@ -39,74 +39,71 @@
           />
         </label>
 
-        <div class="field-stack">
-          <label>
-            <span class="label-row">
-              Mật khẩu
-              <el-tooltip placement="top" :show-after="150" popper-class="password-tip-popper">
-                <template #content>
-                  <div class="password-tip">
-                    <p>Mật khẩu cần đáp ứng:</p>
-                    <ul>
-                      <li>Ít nhất 8 ký tự</li>
-                      <li>Có chữ thường</li>
-                      <li>Có chữ hoa</li>
-                      <li>Có số</li>
-                      <li>Có ký tự đặc biệt</li>
-                    </ul>
-                  </div>
-                </template>
-                <button
-                  type="button"
-                  class="info-btn"
-                  aria-label="Yêu cầu bảo mật mật khẩu"
-                  @click.prevent
-                >
-                  <el-icon :size="16"><InfoFilled /></el-icon>
-                </button>
-              </el-tooltip>
-            </span>
-            <div class="password-input">
-              <input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                required
-                minlength="8"
-                autocomplete="new-password"
-                placeholder="Nhập mật khẩu"
-                :aria-invalid="form.password.length > 0 && !passwordValid"
-              />
+        <label>
+          <span class="label-row">
+            Mật khẩu
+            <el-tooltip placement="top" :show-after="150" popper-class="password-tip-popper">
+              <template #content>
+                <div class="password-tip">
+                  <p>Mật khẩu cần đáp ứng:</p>
+                  <ul>
+                    <li>Ít nhất 8 ký tự</li>
+                    <li>Có chữ thường</li>
+                    <li>Có chữ hoa</li>
+                    <li>Có số</li>
+                    <li>Có ký tự đặc biệt</li>
+                  </ul>
+                </div>
+              </template>
               <button
                 type="button"
-                class="password-toggle"
-                :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
-                :aria-pressed="showPassword"
-                @click.prevent="showPassword = !showPassword"
+                class="info-btn"
+                aria-label="Yêu cầu bảo mật mật khẩu"
+                @click.prevent
               >
-                <el-icon :size="18">
-                  <Hide v-if="showPassword" />
-                  <View v-else />
-                </el-icon>
+                <el-icon :size="16"><InfoFilled /></el-icon>
               </button>
-            </div>
-          </label>
-
-          <div
-            v-if="form.password"
-            class="password-strength"
-            role="meter"
-            :aria-label="`Độ mạnh mật khẩu: ${passwordStrength.label}`"
-            :aria-valuenow="passwordScore"
-            aria-valuemin="0"
-            aria-valuemax="5"
-          >
-            <span
-              class="password-strength__bar"
-              :class="`is-${passwordStrength.level}`"
-              :style="{ width: `${(passwordScore / 5) * 100}%` }"
+            </el-tooltip>
+          </span>
+          <div class="password-input">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              minlength="8"
+              autocomplete="new-password"
+              placeholder="Nhập mật khẩu"
+              :aria-invalid="form.password.length > 0 && !passwordValid"
             />
+            <button
+              type="button"
+              class="password-toggle"
+              :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+              :aria-pressed="showPassword"
+              @click.prevent="showPassword = !showPassword"
+            >
+              <el-icon :size="18">
+                <Hide v-if="showPassword" />
+                <View v-else />
+              </el-icon>
+            </button>
+            <div
+              v-if="form.password"
+              class="password-strength"
+              role="meter"
+              :aria-label="`Độ mạnh mật khẩu: ${passwordStrength.label}`"
+              :aria-valuenow="passwordScore"
+              aria-valuemin="0"
+              aria-valuemax="5"
+            >
+              <span
+                class="password-strength__bar"
+                :class="`is-${passwordStrength.level}`"
+                :style="{ width: `${(passwordScore / 5) * 100}%` }"
+              />
+            </div>
           </div>
-        </div>
+        </label>
 
         <label>
           Xác nhận mật khẩu
@@ -145,6 +142,12 @@
         Đã có tài khoản?
         <RouterLink to="/login">Đăng nhập</RouterLink>
       </p>
+      <p class="auth-home-link">
+        <RouterLink to="/">
+          <el-icon :size="16" aria-hidden="true"><HomeFilled /></el-icon>
+          Về trang chủ
+        </RouterLink>
+      </p>
     </form>
   </section>
 </template>
@@ -152,7 +155,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { Hide, InfoFilled, View } from '@element-plus/icons-vue'
+import { Hide, HomeFilled, InfoFilled, View } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -230,10 +233,15 @@ async function onSubmit() {
 
 <style scoped>
 .auth-page {
+  --font: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 2rem 1rem;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
 }
 
 form {
@@ -242,18 +250,43 @@ form {
 
 h1 {
   margin: 0;
+  font-family: var(--font);
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+}
+
+.auth-page p,
+.auth-page label,
+.auth-page input,
+.auth-page button,
+.auth-page span {
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.muted {
+  line-height: 1.5;
+}
+
+.auth-home-link {
+  margin: 0;
+  text-align: right;
+}
+
+.auth-home-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .form-fields {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.9rem;
-}
-
-.field-stack {
-  display: grid;
-  gap: 0.45rem;
-  align-content: start;
 }
 
 @media (min-width: 640px) {
@@ -300,6 +333,7 @@ h1 {
   position: absolute;
   top: 50%;
   right: 0.65rem;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -319,10 +353,15 @@ h1 {
 }
 
 .password-strength {
-  height: 0.4rem;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 3px);
+  height: 5px;
   border-radius: 999px;
   background: var(--border);
   overflow: hidden;
+  pointer-events: none;
 }
 
 .password-strength__bar {
@@ -350,6 +389,13 @@ h1 {
 </style>
 
 <style>
+.password-tip-popper {
+  font-family: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
 .password-tip-popper .password-tip p {
   margin: 0 0 0.35rem;
 }

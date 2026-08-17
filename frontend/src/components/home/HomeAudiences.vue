@@ -137,10 +137,11 @@ defineProps({
   color: var(--accent);
   font-weight: 500;
   font-size: 0.92rem;
+  transition: color 0.15s ease;
 }
 
 .audience__link:hover {
-  text-decoration: underline;
+  color: var(--accent-hover);
 }
 
 @keyframes rise-in {

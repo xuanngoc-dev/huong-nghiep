@@ -44,7 +44,13 @@ watch(() => route.params.id, load)
 .back {
   display: inline-block;
   margin-bottom: 1rem;
-  color: var(--muted);
+  color: var(--accent);
+  font-weight: 400;
+  transition: color 0.15s ease;
+}
+
+.back:hover {
+  color: var(--accent-hover);
 }
 
 .category {

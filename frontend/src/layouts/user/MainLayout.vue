@@ -346,7 +346,6 @@ onBeforeUnmount(() => {
 .layout :deep(li),
 .layout :deep(label),
 .layout :deep(span),
-.layout :deep(a),
 .layout :deep(button),
 .layout :deep(input),
 .layout :deep(textarea) {
@@ -672,11 +671,12 @@ onBeforeUnmount(() => {
 .footer-links a {
   color: var(--muted);
   font-size: 16px;
-  font-weight: 300;
+  font-weight: 400;
+  transition: color 0.15s ease;
 }
 
 .footer-links a:hover {
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .footer-copy {

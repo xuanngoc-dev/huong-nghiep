@@ -62,15 +62,17 @@ function onSaved(data) {
 .profile-info__link {
   color: var(--accent);
   font-weight: 400;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
+  transition: color 0.15s ease;
+}
+
+.profile-info__link:hover {
+  color: var(--accent-hover);
 }
 
 .profile-info :deep(p),
 .profile-info :deep(li),
 .profile-info :deep(label),
 .profile-info :deep(span),
-.profile-info :deep(a),
 .profile-info :deep(button),
 .profile-info :deep(input),
 .profile-info :deep(textarea),

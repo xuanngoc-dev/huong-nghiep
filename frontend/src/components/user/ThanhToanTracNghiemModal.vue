@@ -898,6 +898,11 @@ onBeforeUnmount(stopWaitTimers)
 .error-text a {
   color: var(--accent);
   font-weight: 400;
+  transition: color 0.15s ease;
+}
+
+.error-text a:hover {
+  color: var(--accent-hover);
 }
 
 .pay-password__lead {

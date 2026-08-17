@@ -48,6 +48,12 @@
         Chưa có tài khoản?
         <RouterLink to="/register">Đăng ký</RouterLink>
       </p>
+      <p class="auth-home-link">
+        <RouterLink to="/">
+          <el-icon :size="16" aria-hidden="true"><HomeFilled /></el-icon>
+          Về trang chủ
+        </RouterLink>
+      </p>
     </form>
   </section>
 </template>
@@ -56,7 +62,7 @@
 import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Hide, View } from '@element-plus/icons-vue'
+import { Hide, HomeFilled, View } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -90,10 +96,15 @@ async function onSubmit() {
 
 <style scoped>
 .auth-page {
+  --font: "Be Vietnam Pro", "Source Sans 3", "Roboto", "Segoe UI", sans-serif;
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 2rem 1rem;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
 }
 
 form {
@@ -102,6 +113,37 @@ form {
 
 h1 {
   margin: 0;
+  font-family: var(--font);
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+}
+
+.auth-page p,
+.auth-page label,
+.auth-page input,
+.auth-page button,
+.auth-page span {
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.muted {
+  line-height: 1.5;
+}
+
+.auth-home-link {
+  margin: 0;
+  text-align: right;
+}
+
+.auth-home-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .password-input {
