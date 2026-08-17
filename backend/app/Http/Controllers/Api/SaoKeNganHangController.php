@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SaoKeNganHang;
+use App\Models\TracNghiemLichSuThanhToanEduCoin;
+use App\Services\DuyetYeuCauNapEduCoin;
 use App\Support\ApiResponse;
 use App\Support\MaGiaoDich;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaoKeNganHangController extends Controller
 {
@@ -55,22 +58,28 @@ class SaoKeNganHangController extends Controller
                 ?? MaGiaoDich::extractFromText($validated['description'] ?? null);
 
             try {
-                $item = SaoKeNganHang::query()->create([
-                    'gateway' => $validated['gateway'],
-                    'transaction_date' => $validated['transactionDate'],
-                    'account_number' => $validated['accountNumber'],
-                    'sub_account' => $validated['subAccount'] ?? null,
-                    'code' => $validated['code'] ?? null,
-                    'content' => $content,
-                    'transfer_type' => $validated['transferType'],
-                    'description' => $validated['description'] ?? null,
-                    'transfer_amount' => (int) $validated['transferAmount'],
-                    'reference_code' => $validated['referenceCode'] ?? null,
-                    'accumulated' => isset($validated['accumulated'])
-                        ? (int) $validated['accumulated']
-                        : null,
-                    'item_id' => $itemId,
-                ]);
+                $item = DB::transaction(function () use ($validated, $content, $itemId) {
+                    $item = SaoKeNganHang::query()->create([
+                        'gateway' => $validated['gateway'],
+                        'transaction_date' => $validated['transactionDate'],
+                        'account_number' => $validated['accountNumber'],
+                        'sub_account' => $validated['subAccount'] ?? null,
+                        'code' => $validated['code'] ?? null,
+                        'content' => $content,
+                        'transfer_type' => $validated['transferType'],
+                        'description' => $validated['description'] ?? null,
+                        'transfer_amount' => (int) $validated['transferAmount'],
+                        'reference_code' => $validated['referenceCode'] ?? null,
+                        'accumulated' => isset($validated['accumulated'])
+                            ? (int) $validated['accumulated']
+                            : null,
+                        'item_id' => $itemId,
+                    ]);
+
+                    $this->xuLyGiaoDichVao($item);
+
+                    return $item;
+                });
             } catch (QueryException $e) {
                 $existing = SaoKeNganHang::query()->where('item_id', $itemId)->first();
                 if ($existing !== null) {
@@ -88,6 +97,36 @@ class SaoKeNganHangController extends Controller
                 'Đã ghi nhận sao kê ngân hàng.',
             );
         });
+    }
+
+    private function xuLyGiaoDichVao(SaoKeNganHang $item): void
+    {
+        if ($item->transfer_type !== 'in') {
+            return;
+        }
+
+        $maGiaoDich = MaGiaoDich::normalize($item->content);
+        if ($maGiaoDich === '') {
+            return;
+        }
+
+        if (MaGiaoDich::isValidNap($maGiaoDich)) {
+            (new DuyetYeuCauNapEduCoin)->duyetTheoMaVaSoTien(
+                $maGiaoDich,
+                (int) $item->transfer_amount,
+            );
+
+            return;
+        }
+
+        if (MaGiaoDich::isValidPay($maGiaoDich)) {
+            TracNghiemLichSuThanhToanEduCoin::query()->create([
+                'noi_dung' => $maGiaoDich,
+                'so_tien' => (int) $item->transfer_amount,
+                'thoi_gian' => $item->transaction_date,
+                'mo_ta' => $item->description,
+            ]);
+        }
     }
 
     private function authorizeWebhook(Request $request): ?JsonResponse

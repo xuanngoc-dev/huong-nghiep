@@ -520,6 +520,12 @@ onBeforeUnmount(() => {
   font-weight: 300;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .btn-sm {
   padding: 0.4rem 0.85rem;
   font-size: 16px;

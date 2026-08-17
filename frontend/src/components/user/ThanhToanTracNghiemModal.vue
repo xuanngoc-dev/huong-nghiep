@@ -252,7 +252,7 @@ import { taoMaThanhToan } from '@/utils/maGiaoDich'
 
 const PHI_EDU_COIN = 15
 const PHI_CHUYEN_KHOAN = 15000
-const TRANSFER_WAIT_MINUTES = 1
+const TRANSFER_WAIT_MINUTES = 5
 const TRANSFER_WAIT_SECONDS = TRANSFER_WAIT_MINUTES * 60
 const STATUS_POLL_MS = 5000
 
