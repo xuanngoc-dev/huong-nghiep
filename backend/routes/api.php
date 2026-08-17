@@ -101,6 +101,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/lich-su-nhan-xu', [LichSuNhanXuController::class, 'index']);
         Route::get('/lich-su-trac-nghiem', [LichSuTracNghiemController::class, 'index']);
         Route::post('/lich-su-trac-nghiem/{id}/thanh-toan', [TracNghiemLichSuThanhToanController::class, 'store']);
+        Route::post('/lich-su-trac-nghiem/{id}/thanh-toan/doi-soat', [TracNghiemLichSuThanhToanController::class, 'doiSoat']);
         Route::get('/lich-su-trac-nghiem/{id}/thanh-toan/{thanhToanId}', [TracNghiemLichSuThanhToanController::class, 'show']);
         Route::get('/lich-su-trac-nghiem/{id}', [LichSuTracNghiemController::class, 'show']);
     });

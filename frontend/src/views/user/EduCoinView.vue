@@ -33,7 +33,7 @@
         <EduCoinTongQuanTab />
       </div>
       <div v-show="activeTab === 'nap-coin'" class="edu-coin__pane">
-        <EduCoinNapTab />
+        <EduCoinNapTab @go-lich-su="activeTab = 'lich-su'" />
       </div>
       <div v-show="activeTab === 'lich-su'" class="edu-coin__pane">
         <EduCoinLichSuTab :active="activeTab === 'lich-su'" />

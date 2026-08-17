@@ -399,7 +399,7 @@ const qrUrl = computed(() => {
     accountName: selectedBank.value.chu_tai_khoan || '',
   })
 
-  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accountNo)}-compact2.png?${params.toString()}`
+  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accountNo)}-compact.png?${params.toString()}`
 })
 
 const canSubmit = computed(() => {

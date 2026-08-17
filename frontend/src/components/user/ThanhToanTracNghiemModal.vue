@@ -95,7 +95,8 @@
           <template v-else>
             Vui lòng chuyển khoản
             <strong>{{ formatMoney(pendingPay.so_tien_thanh_toan) }}đ</strong>
-            theo thông tin bên dưới, rồi nhấn <strong>Đã chuyển</strong>.
+            theo thông tin bên dưới. Hệ thống sẽ tự xác nhận khi nhận được
+            chuyển khoản đúng nội dung.
           </template>
         </p>
 
@@ -254,7 +255,7 @@ const PHI_EDU_COIN = 15
 const PHI_CHUYEN_KHOAN = 15000
 const TRANSFER_WAIT_MINUTES = 5
 const TRANSFER_WAIT_SECONDS = TRANSFER_WAIT_MINUTES * 60
-const STATUS_POLL_MS = 5000
+const STATUS_POLL_MS = 3000
 
 const props = defineProps({
   phien: { type: Object, default: null },
@@ -281,6 +282,7 @@ const otpRef = ref(null)
 
 let countdownTimer = null
 let pollTimer = null
+let polling = false
 
 const soDuEduCoin = computed(() => Number(auth.user?.edu_coin) || 0)
 const duEduCoin = computed(() => soDuEduCoin.value >= PHI_EDU_COIN)
@@ -355,7 +357,7 @@ const pendingQrUrl = computed(() => {
     accountName: info.chu_tai_khoan || '',
   })
 
-  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accountNo)}-compact2.png?${params.toString()}`
+  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accountNo)}-compact.png?${params.toString()}`
 })
 
 function formatNumber(value) {
@@ -405,6 +407,7 @@ function closeModal() {
 
 function resetState() {
   stopWaitTimers()
+  polling = false
   phase.value = 'select'
   hinhThuc.value = 'edu_coin'
   selectedBank.value = null
@@ -479,18 +482,28 @@ async function handleStatusChange(status) {
 }
 
 async function pollPendingStatus() {
-  const id = pendingPay.value?.id
   const phienId = props.phien?.id
-  if (!id || !phienId || waitResolved.value) return false
+  const maGiaoDich = noiDungChuyenKhoan.value
+  if (!phienId || !maGiaoDich || waitResolved.value || polling) return false
 
+  polling = true
   const res = await request({
-    url: API_PUBLIC.LICH_SU_TRAC_NGHIEM.THANH_TOAN_SHOW(phienId, id),
+    url: API_PUBLIC.LICH_SU_TRAC_NGHIEM.THANH_TOAN_DOI_SOAT(phienId),
+    body: {
+      ma_giao_dich: maGiaoDich,
+      ngan_hang_thanh_toan_id: pendingPay.value?.ngan_hang_thanh_toan_id
+        || pendingPay.value?.thong_tin_thanh_toan?.ngan_hang_thanh_toan_id
+        || undefined,
+    },
     loading: false,
     silent: true,
   })
+  polling = false
   if (!res.ok) return false
 
-  pendingPay.value = { ...pendingPay.value, ...res.data }
+  if (res.data?.trang_thai === 'da_hoan_thanh' || res.data?.id) {
+    pendingPay.value = { ...pendingPay.value, ...res.data }
+  }
   return handleStatusChange(res.data?.trang_thai)
 }
 
@@ -521,11 +534,11 @@ async function onCountdownExpired() {
   }
 }
 
-function openTransfer(payload, { poll = false } = {}) {
+function openTransfer(payload) {
   pendingPay.value = payload
   phase.value = 'transfer'
   startWaitTimers()
-  if (poll && payload.id) startPollTimer()
+  startPollTimer()
 }
 
 async function thanhToanEduCoin() {
@@ -617,7 +630,7 @@ watch(visible, (open) => {
     openTransfer({
       ...pending,
       ngan_hang_thanh_toan_id: pending.thong_tin_thanh_toan?.ngan_hang_thanh_toan_id,
-    }, { poll: true })
+    })
     return
   }
 

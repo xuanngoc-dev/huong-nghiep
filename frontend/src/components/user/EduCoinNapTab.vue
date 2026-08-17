@@ -197,11 +197,33 @@
       <button class="btn btn-outline" type="button" @click="closeModal">Đóng</button>
     </template>
   </CustomDialog>
+
+  <CustomDialog
+    v-model="successVisible"
+    title="Nạp thành công"
+    :width="440"
+    :close-on-click-modal="false"
+    @closed="onSuccessClosed"
+  >
+    <div class="nap-success">
+      <p class="nap-success__lead">Đã nạp thành công. Số dư Edu Coin đã được cập nhật.</p>
+      <p v-if="successSoLuong" class="nap-success__detail">
+        Bạn vừa nhận <strong>{{ formatNumber(successSoLuong) }} Edu Coin</strong>.
+        Số dư hiện tại: <strong>{{ formatNumber(soDuEduCoin) }}</strong>.
+      </p>
+    </div>
+    <template #footer>
+      <button class="btn btn-outline" type="button" @click="closeSuccess">Đóng</button>
+      <button class="btn" type="button" @click="goToHistory">
+        Lịch sử biến động
+      </button>
+    </template>
+  </CustomDialog>
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { request } from '@/api'
 import { CustomDialog } from '@/components/element'
@@ -209,13 +231,15 @@ import { API_PUBLIC } from '@/constants/constant_api'
 import { useAuthStore } from '@/stores/auth'
 import { taoMaNap } from '@/utils/maGiaoDich'
 
+const emit = defineEmits(['go-lich-su'])
+
 const DEFAULT_TY_GIA = 1000
 const DEFAULT_SO_LUONG = 100
 const SO_LUONG_MIN = 1
 const SO_LUONG_MAX = 10000
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200, 500]
 /** Thời gian chờ chuyển khoản trên modal (phút). Đổi số này để tăng/giảm countdown. */
-const TRANSFER_WAIT_MINUTES = 1
+const TRANSFER_WAIT_MINUTES = 5
 const TRANSFER_WAIT_SECONDS = TRANSFER_WAIT_MINUTES * 60
 const STATUS_POLL_MS = 5000
 
@@ -233,6 +257,10 @@ const modalVisible = ref(false)
 const pendingNap = ref(null)
 const remainingSeconds = ref(TRANSFER_WAIT_SECONDS)
 const waitResolved = ref(false)
+const successVisible = ref(false)
+const successSoLuong = ref(0)
+
+const soDuEduCoin = computed(() => Number(auth.user?.edu_coin) || 0)
 
 let countdownTimer = null
 let pollTimer = null
@@ -285,7 +313,7 @@ const pendingQrUrl = computed(() => {
     accountName: info.chu_tai_khoan || '',
   })
 
-  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accountNo)}-compact2.png?${params.toString()}`
+  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accountNo)}-compact.png?${params.toString()}`
 })
 
 function formatGrouped(value) {
@@ -381,6 +409,19 @@ function closeModal() {
   modalVisible.value = false
 }
 
+function closeSuccess() {
+  successVisible.value = false
+}
+
+function onSuccessClosed() {
+  successSoLuong.value = 0
+}
+
+function goToHistory() {
+  successVisible.value = false
+  emit('go-lich-su')
+}
+
 function onModalClosed() {
   stopWaitTimers()
   pendingNap.value = null
@@ -393,13 +434,15 @@ async function handleStatusChange(status) {
   if (status === 'da_duyet') {
     waitResolved.value = true
     stopWaitTimers()
+    successSoLuong.value = Number(pendingNap.value?.so_luong_edu_coin) || 0
     modalVisible.value = false
     try {
       await auth.fetchMe()
     } catch {
       // Giữ số dư local nếu /auth/me tạm thời lỗi.
     }
-    ElMessage.success('Yêu cầu nạp đã được duyệt. Số dư Edu Coin đã được cập nhật.')
+    await nextTick()
+    successVisible.value = true
     return true
   }
   if (status === 'huy_duyet') {
@@ -811,6 +854,23 @@ onBeforeUnmount(() => {
 
 .copy-btn:hover {
   text-decoration: underline;
+}
+
+.nap-success {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.nap-success__lead,
+.nap-success__detail {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.nap-success__detail strong {
+  color: var(--text);
+  font-weight: 400;
 }
 
 @media (min-width: 720px) {

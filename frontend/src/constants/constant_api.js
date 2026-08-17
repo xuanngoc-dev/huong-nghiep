@@ -347,6 +347,10 @@ export const API_PUBLIC = {
     LIST: { url: '/lich-su-trac-nghiem', method: 'get' },
     SHOW: (id) => ({ url: `/lich-su-trac-nghiem/${id}`, method: 'get' }),
     THANH_TOAN: (id) => ({ url: `/lich-su-trac-nghiem/${id}/thanh-toan`, method: 'post' }),
+    THANH_TOAN_DOI_SOAT: (id) => ({
+      url: `/lich-su-trac-nghiem/${id}/thanh-toan/doi-soat`,
+      method: 'post',
+    }),
     THANH_TOAN_SHOW: (id, thanhToanId) => ({
       url: `/lich-su-trac-nghiem/${id}/thanh-toan/${thanhToanId}`,
       method: 'get',
