@@ -8,7 +8,7 @@
           <Tickets />
         </CustomIcon>
       </template>
-      <p class="edu-history__hint">Các lần nạp được duyệt sẽ hiển thị tại đây.</p>
+      <p class="edu-history__hint">Các giao dịch Edu Coin sẽ hiển thị tại đây.</p>
     </CustomEmpty>
 
     <template v-else>
@@ -17,11 +17,11 @@
           <thead>
             <tr>
               <th scope="col">Thời gian</th>
-              <!-- <th scope="col">Loại</th> -->
+              <th scope="col">Loại</th>
               <th class="is-num" scope="col">Biến động</th>
               <th class="is-num" scope="col">Số dư trước</th>
               <th class="is-num" scope="col">Số dư sau</th>
-              <th class="is-num" scope="col">Số tiền</th>
+              <!-- <th class="is-num" scope="col">Số tiền</th> -->
               <th scope="col">Kênh</th>
               <th scope="col">Trạng thái</th>
               <th scope="col">Ghi chú</th>
@@ -30,11 +30,13 @@
           <tbody>
             <tr v-for="row in items" :key="row.id">
               <td>{{ formatDateTime(row.created_at) }}</td>
-              <!-- <td>{{ row.loai_nap_tien_label || '—' }}</td> -->
-              <td class="is-num is-plus">+{{ formatNumber(row.tong_coin_nhan) }}</td>
-              <td class="is-num">{{ formatNumber(row.so_du_truoc_nap) }}</td>
-              <td class="is-num">{{ formatNumber(row.so_du_sau_nap) }}</td>
-              <td class="is-num">{{ formatMoney(row.so_tien_thanh_toan) }}đ</td>
+              <td>{{ row.loai_giao_dich_label || '—' }}</td>
+              <td class="is-num" :class="isTangCoin(row) ? 'is-plus' : 'is-minus'">
+                {{ formatBienDong(row) }}
+              </td>
+              <td class="is-num">{{ formatNumber(row.so_du_truoc_gd) }}</td>
+              <td class="is-num">{{ formatNumber(row.so_du_sau_gd) }}</td>
+              <!-- <td class="is-num">{{ formatMoney(row.so_tien_thanh_toan) }}đ</td> -->
               <td>{{ kenhLabel(row) }}</td>
               <td>
                 <span class="edu-history__status" :class="statusClass(row.trang_thai)">
@@ -83,6 +85,18 @@ function formatNumber(value) {
 
 function formatMoney(value) {
   return formatNumber(value)
+}
+
+function isTangCoin(row) {
+  return row.loai_giao_dich !== 'thanh_toan_trac_nghiem'
+}
+
+function formatBienDong(row) {
+  const amount = isTangCoin(row)
+    ? (Number(row.tong_coin_nhan) || Number(row.so_coin_gd) || 0)
+    : (Number(row.so_coin_gd) || 0)
+
+  return `${isTangCoin(row) ? '+' : '-'}${formatNumber(amount)}`
 }
 
 function formatDateTime(value) {
@@ -203,6 +217,11 @@ watch(
 
 .edu-history__table .is-plus {
   color: var(--accent);
+  font-weight: 400;
+}
+
+.edu-history__table .is-minus {
+  color: #c0392b;
   font-weight: 400;
 }
 

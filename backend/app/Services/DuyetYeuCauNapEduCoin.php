@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\LoaiNapTien;
+use App\Enums\LoaiGiaoDich;
 use App\Enums\TrangThaiNapEduCoin;
 use App\Enums\TrangThaiYeuCauNapEduCoin;
 use App\Models\LichSuNapEduCoin;
@@ -109,9 +109,9 @@ class DuyetYeuCauNapEduCoin
             'nap_edu_coin_id' => $item->id,
             'ma_giao_dich' => $item->ma_giao_dich,
             'nguoi_nap_id' => $item->nguoi_nap_id,
-            'so_du_truoc_nap' => $soDuTruocNap,
-            'so_du_sau_nap' => $soDuSauNap,
-            'so_coin_nap' => $soLuong,
+            'so_du_truoc_gd' => $soDuTruocNap,
+            'so_du_sau_gd' => $soDuSauNap,
+            'so_coin_gd' => $soLuong,
         ]);
 
         $thongTinThanhToan = is_array($item->thong_tin_thanh_toan)
@@ -129,10 +129,10 @@ class DuyetYeuCauNapEduCoin
             'nguoi_duyet_id' => $nguoiDuyetId,
             'nguoi_tao_id' => $item->nguoi_nap_id,
             'ma_giao_dich' => $maGiaoDich,
-            'loai_nap_tien' => LoaiNapTien::NguoiDungNap,
-            'so_du_truoc_nap' => $soDuTruocNap,
-            'so_du_sau_nap' => $soDuSauNap,
-            'so_coin_nap' => $soLuong,
+            'loai_giao_dich' => LoaiGiaoDich::NguoiDungNap,
+            'so_du_truoc_gd' => $soDuTruocNap,
+            'so_du_sau_gd' => $soDuSauNap,
+            'so_coin_gd' => $soLuong,
             'so_tien_thanh_toan' => (int) $item->so_tien_nap,
             'loai_khuyen_mai' => null,
             'coin_khuyen_mai' => 0,

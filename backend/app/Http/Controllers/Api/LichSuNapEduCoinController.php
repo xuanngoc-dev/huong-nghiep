@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\KenhThanhToan;
+use App\Enums\LoaiGiaoDich;
 use App\Enums\LoaiKhuyenMai;
-use App\Enums\LoaiNapTien;
 use App\Enums\TrangThaiNapEduCoin;
 use App\Http\Controllers\Controller;
 use App\Models\LichSuNapEduCoin;
@@ -50,9 +50,9 @@ class LichSuNapEduCoinController extends Controller
      */
     private function toPublicArray(LichSuNapEduCoin $item): array
     {
-        $loaiNap = $item->loai_nap_tien instanceof LoaiNapTien
-            ? $item->loai_nap_tien
-            : LoaiNapTien::tryFrom((string) $item->loai_nap_tien);
+        $loaiGiaoDich = $item->loai_giao_dich instanceof LoaiGiaoDich
+            ? $item->loai_giao_dich
+            : LoaiGiaoDich::tryFrom((string) $item->loai_giao_dich);
 
         $kenh = $item->kenh_thanh_toan instanceof KenhThanhToan
             ? $item->kenh_thanh_toan
@@ -71,11 +71,11 @@ class LichSuNapEduCoinController extends Controller
         return [
             'id' => $item->id,
             'ma_giao_dich' => $item->ma_giao_dich,
-            'loai_nap_tien' => $loaiNap?->value,
-            'loai_nap_tien_label' => $loaiNap?->label(),
-            'so_du_truoc_nap' => (int) $item->so_du_truoc_nap,
-            'so_du_sau_nap' => (int) $item->so_du_sau_nap,
-            'so_coin_nap' => (int) $item->so_coin_nap,
+            'loai_giao_dich' => $loaiGiaoDich?->value,
+            'loai_giao_dich_label' => $loaiGiaoDich?->label(),
+            'so_du_truoc_gd' => (int) $item->so_du_truoc_gd,
+            'so_du_sau_gd' => (int) $item->so_du_sau_gd,
+            'so_coin_gd' => (int) $item->so_coin_gd,
             'so_tien_thanh_toan' => (int) $item->so_tien_thanh_toan,
             'loai_khuyen_mai' => $loaiKhuyenMai?->value,
             'coin_khuyen_mai' => (int) $item->coin_khuyen_mai,

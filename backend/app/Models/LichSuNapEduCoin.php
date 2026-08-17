@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Enums\KenhThanhToan;
+use App\Enums\LoaiGiaoDich;
 use App\Enums\LoaiKhuyenMai;
-use App\Enums\LoaiNapTien;
 use App\Enums\TrangThaiNapEduCoin;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -15,10 +15,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'nguoi_duyet_id',
     'nguoi_tao_id',
     'ma_giao_dich',
-    'loai_nap_tien',
-    'so_du_truoc_nap',
-    'so_du_sau_nap',
-    'so_coin_nap',
+    'loai_giao_dich',
+    'so_du_truoc_gd',
+    'so_du_sau_gd',
+    'so_coin_gd',
     'so_tien_thanh_toan',
     'loai_khuyen_mai',
     'coin_khuyen_mai',
@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class LichSuNapEduCoin extends Model
 {
-    protected $table = 'he_thong_lich_su_nap_edu_coin';
+    protected $table = 'he_thong_lich_su_bien_dong_edu_coin';
 
     /**
      * @return array<string, string>
@@ -38,10 +38,10 @@ class LichSuNapEduCoin extends Model
     protected function casts(): array
     {
         return [
-            'loai_nap_tien' => LoaiNapTien::class,
-            'so_du_truoc_nap' => 'integer',
-            'so_du_sau_nap' => 'integer',
-            'so_coin_nap' => 'integer',
+            'loai_giao_dich' => LoaiGiaoDich::class,
+            'so_du_truoc_gd' => 'integer',
+            'so_du_sau_gd' => 'integer',
+            'so_coin_gd' => 'integer',
             'so_tien_thanh_toan' => 'integer',
             'loai_khuyen_mai' => LoaiKhuyenMai::class,
             'coin_khuyen_mai' => 'integer',

@@ -326,6 +326,11 @@ onBeforeUnmount(() => {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.container,
+.layout :deep(.container) {
+  max-width: 100%;
+}
+
 .layout :deep(h1),
 .layout :deep(h2),
 .layout :deep(h3),

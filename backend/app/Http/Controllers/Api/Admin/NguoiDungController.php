@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Enums\KenhThanhToan;
+use App\Enums\LoaiGiaoDich;
 use App\Enums\LoaiKhuyenMai;
-use App\Enums\LoaiNapTien;
 use App\Enums\TrangThaiNapEduCoin;
 use App\Enums\TrangThaiUser;
 use App\Enums\UserRole;
@@ -201,7 +201,13 @@ class NguoiDungController extends Controller
                 'so_coin_nap' => ['required', 'integer', 'min:1'],
                 'loai_khuyen_mai' => ['required', Rule::enum(LoaiKhuyenMai::class)],
                 'khuyen_mai' => ['required', 'integer', 'min:0'],
-                'kenh_thanh_toan' => ['required', Rule::enum(KenhThanhToan::class)],
+                'kenh_thanh_toan' => [
+                    'required',
+                    Rule::enum(KenhThanhToan::class)->only([
+                        KenhThanhToan::TienMat,
+                        KenhThanhToan::ChuyenKhoan,
+                    ]),
+                ],
                 'ngan_hang_thanh_toan_id' => [
                     'nullable',
                     'integer',
@@ -252,7 +258,7 @@ class NguoiDungController extends Controller
             }
 
             $actor = $request->user();
-            $loaiNapTien = $this->resolveLoaiNapTien($actor);
+            $loaiGiaoDich = $this->resolveLoaiGiaoDich($actor);
             $bank = null;
             if ($kenhThanhToan === KenhThanhToan::ChuyenKhoan) {
                 $bank = NganHangThanhToan::query()->find($validated['ngan_hang_thanh_toan_id']);
@@ -275,7 +281,7 @@ class NguoiDungController extends Controller
                 $coinKhuyenMai,
                 $tongCoinNhan,
                 $kenhThanhToan,
-                $loaiNapTien,
+                $loaiGiaoDich,
                 $bank,
                 $maGiaoDich,
             ) {
@@ -287,21 +293,21 @@ class NguoiDungController extends Controller
                     ]);
                 }
 
-                $soDuTruocNap = (int) $profile->edu_coin;
-                $isAdminNap = $loaiNapTien === LoaiNapTien::AdminNap;
-                $soDuSauNap = $isAdminNap
-                    ? $soDuTruocNap + $tongCoinNhan
-                    : $soDuTruocNap;
+                $soDuTruocGd = (int) $profile->edu_coin;
+                $isAdminNap = $loaiGiaoDich === LoaiGiaoDich::AdminNap;
+                $soDuSauGd = $isAdminNap
+                    ? $soDuTruocGd + $tongCoinNhan
+                    : $soDuTruocGd;
 
                 LichSuNapEduCoin::query()->create([
                     'nguoi_nap_id' => $user->id,
                     'nguoi_duyet_id' => $isAdminNap ? $actor?->id : null,
                     'nguoi_tao_id' => $actor?->id,
                     'ma_giao_dich' => $maGiaoDich,
-                    'loai_nap_tien' => $loaiNapTien,
-                    'so_du_truoc_nap' => $soDuTruocNap,
-                    'so_du_sau_nap' => $soDuSauNap,
-                    'so_coin_nap' => $soCoinNap,
+                    'loai_giao_dich' => $loaiGiaoDich,
+                    'so_du_truoc_gd' => $soDuTruocGd,
+                    'so_du_sau_gd' => $soDuSauGd,
+                    'so_coin_gd' => $soCoinNap,
                     'so_tien_thanh_toan' => $soCoinNap * self::EDU_COIN_RATE,
                     'loai_khuyen_mai' => $loaiKhuyenMai,
                     'coin_khuyen_mai' => $coinKhuyenMai,
@@ -315,7 +321,7 @@ class NguoiDungController extends Controller
                 ]);
 
                 if ($isAdminNap) {
-                    $profile->edu_coin = $soDuTruocNap + $tongCoinNhan;
+                    $profile->edu_coin = $soDuTruocGd + $tongCoinNhan;
                     $profile->save();
                 }
             });
@@ -374,13 +380,13 @@ class NguoiDungController extends Controller
         });
     }
 
-    private function resolveLoaiNapTien(?User $actor): LoaiNapTien
+    private function resolveLoaiGiaoDich(?User $actor): LoaiGiaoDich
     {
         if ($actor?->isAdmin()) {
-            return LoaiNapTien::AdminNap;
+            return LoaiGiaoDich::AdminNap;
         }
 
-        return LoaiNapTien::NguoiDungNap;
+        return LoaiGiaoDich::NguoiDungNap;
     }
 
     /**

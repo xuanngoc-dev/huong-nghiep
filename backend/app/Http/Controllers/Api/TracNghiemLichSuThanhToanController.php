@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\HinhThucThanhToanTracNghiem;
+use App\Enums\KenhThanhToan;
+use App\Enums\LoaiGiaoDich;
 use App\Enums\TrangThaiNganHangThanhToan;
+use App\Enums\TrangThaiNapEduCoin;
 use App\Enums\TrangThaiThanhToanTracNghiem;
 use App\Http\Controllers\Controller;
+use App\Models\LichSuNapEduCoin;
 use App\Models\NganHangThanhToan;
 use App\Models\NguoiDung;
 use App\Models\TracNghiemLichSuThanhToan;
@@ -421,7 +425,8 @@ class TracNghiemLichSuThanhToanController extends Controller
             return ['error' => 'Số dư Edu Coin không đủ. Vui lòng nạp thêm để thanh toán.'];
         }
 
-        $profile->edu_coin = $soDu - $phi;
+        $soDuSau = $soDu - $phi;
+        $profile->edu_coin = $soDuSau;
         $profile->save();
 
         $maGiaoDich = $phien->ensureMaGiaoDich();
@@ -435,9 +440,32 @@ class TracNghiemLichSuThanhToanController extends Controller
             'trang_thai' => TrangThaiThanhToanTracNghiem::DaHoanThanh,
             'thong_tin_thanh_toan' => [
                 'so_du_truoc' => $soDu,
-                'so_du_sau' => (int) $profile->edu_coin,
+                'so_du_sau' => $soDuSau,
                 'ma_giao_dich' => $maGiaoDich,
             ],
+        ]);
+
+        LichSuNapEduCoin::query()->create([
+            'nguoi_nap_id' => $user->id,
+            'nguoi_duyet_id' => null,
+            'nguoi_tao_id' => $user->id,
+            'ma_giao_dich' => $maGiaoDich,
+            'loai_giao_dich' => LoaiGiaoDich::ThanhToanTracNghiem,
+            'so_du_truoc_gd' => $soDu,
+            'so_du_sau_gd' => $soDuSau,
+            'so_coin_gd' => $phi,
+            'so_tien_thanh_toan' => 0,
+            'loai_khuyen_mai' => null,
+            'coin_khuyen_mai' => 0,
+            'tong_coin_nhan' => 0,
+            'kenh_thanh_toan' => KenhThanhToan::EduCoin,
+            'thong_tin_thanh_toan' => [
+                'lich_su_phien_id' => $phien->id,
+                'thanh_toan_id' => $item->id,
+                'ma_giao_dich' => $maGiaoDich,
+            ],
+            'ghi_chu' => 'Thanh toán kết quả trắc nghiệm',
+            'trang_thai' => TrangThaiNapEduCoin::DaDuyet,
         ]);
 
         $this->markPhienDaThanhToan($phien, $item);
