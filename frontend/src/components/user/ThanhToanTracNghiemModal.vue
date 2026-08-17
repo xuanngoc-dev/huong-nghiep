@@ -426,7 +426,7 @@ function onModalClosed() {
 }
 
 function buildTransferInfo(bank) {
-  const maGiaoDich = taoMaThanhToan()
+  const maGiaoDich = String(props.phien?.ma_giao_dich || '').trim().toUpperCase() || taoMaThanhToan()
 
   return {
     ngan_hang_thanh_toan_id: bank.id,

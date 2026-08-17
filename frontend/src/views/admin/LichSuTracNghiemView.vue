@@ -9,7 +9,7 @@
                 v-model="filters.keyword"
                 clearable
                 class="filter-control"
-                placeholder="SSID, tên hoặc email người khảo sát..."
+                placeholder="SSID, mã giao dịch, tên hoặc email..."
                 @keyup.enter="handleSearch"
               />
             </CustomFormItem>
@@ -69,6 +69,7 @@
           </template>
         </CustomTableColumn>
         <CustomTableColumn prop="ssid" label="SSID" min-width="220" show-overflow-tooltip />
+        <CustomTableColumn prop="ma_giao_dich" label="Mã giao dịch" min-width="150" show-overflow-tooltip />
         
         <CustomTableColumn label="Người khảo sát" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
@@ -139,8 +140,11 @@
     <CustomDialog v-model="detailVisible" title="Chi tiết phiên trắc nghiệm" :width="900">
       <template v-if="detail">
         <el-descriptions :column="2" border class="detail-block">
-          <el-descriptions-item label="SSID" :span="2">
+          <el-descriptions-item label="SSID">
             {{ detail.ssid || '—' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="Mã giao dịch">
+            {{ detail.ma_giao_dich || '—' }}
           </el-descriptions-item>
           <el-descriptions-item label="Người khảo sát">
             {{ detail.nguoi_khao_sat?.name || '—' }}

@@ -282,6 +282,7 @@ export const useQuizStore = defineStore('quiz', () => {
     questionsByLoai.value = nextQuestions
     answersByLoai.value = nextAnswers
     markStepCompleted('start')
+    syncIncompleteMaFromLocal()
   }
 
   function getHistoryGroup(maLoaiCauHoi) {
@@ -349,6 +350,23 @@ export const useQuizStore = defineStore('quiz', () => {
     return assigned.every((item) => isLoaiComplete(item.maLoaiCauHoi))
   }
 
+  /**
+   * Cập nhật ma_loai_chua_xong theo đáp án local / lịch sử đã lưu.
+   * Tránh giữ mã bước 2 từ lúc bắt đầu phiên sau khi đã trả lời hết.
+   */
+  function syncIncompleteMaFromLocal() {
+    if (areAssignedLoaiAllComplete()) {
+      apiIncompleteMa.value = null
+      return
+    }
+    apiIncompleteMa.value = getFirstIncompleteLoaiStep()?.maLoaiCauHoi || null
+  }
+
+  function currentIncompleteMa() {
+    if (areAssignedLoaiAllComplete()) return null
+    return getFirstIncompleteLoaiStep()?.maLoaiCauHoi || apiIncompleteMa.value || null
+  }
+
   function toIncompleteLoaiLocation(sessionId = ssid.value) {
     if (areAssignedLoaiAllComplete()) return null
     const step = getFirstIncompleteLoaiStep() || steps.value.find((item) => item.type === 'loai')
@@ -358,11 +376,13 @@ export const useQuizStore = defineStore('quiz', () => {
 
   /**
    * Điều hướng theo payload lỗi API (code: chua_tra_loi_het).
+   * Không tin ma_loai_chua_xong nếu loại đó đã trả lời đủ trên client
+   * (cache lịch sử lúc start vẫn mang mã bước 2).
    */
   function toIncompleteLoaiLocationFromApi(data, sessionId = ssid.value) {
     const id = sessionId || ssid.value
     const ma = normalizeMa(data?.ma_loai_chua_xong)
-    if (ma && id) {
+    if (ma && id && !isLoaiComplete(ma)) {
       const step = steps.value.find((item) => item.type === 'loai' && item.maLoaiCauHoi === ma)
       if (step) return toLocation(step, id)
       return {
@@ -465,6 +485,7 @@ export const useQuizStore = defineStore('quiz', () => {
     }
 
     if (!force && historyLoadedForSsid.value === id) {
+      const incompleteMa = currentIncompleteMa()
       return {
         ok: true,
         cached: true,
@@ -472,9 +493,9 @@ export const useQuizStore = defineStore('quiz', () => {
           ssid: id,
           by_loai: historyByLoai.value,
           completed_loai: historyCompletedLoai.value,
-          ma_loai_chua_xong: apiIncompleteMa.value,
+          ma_loai_chua_xong: incompleteMa,
           da_hoan_thanh: sessionCompleted.value,
-          code: apiIncompleteMa.value ? 'chua_tra_loi_het' : undefined,
+          code: incompleteMa ? 'chua_tra_loi_het' : undefined,
         },
       }
     }
@@ -585,6 +606,8 @@ export const useQuizStore = defineStore('quiz', () => {
     if (currentQuestions.length > 0 && answers.length >= currentQuestions.length) {
       markLoaiCompleted(ma)
     }
+
+    syncIncompleteMaFromLocal()
 
     // Làm mới tổng hợp ngành khi có đáp án mới
     if (fieldsSummaryLoadedForSsid.value === currentSsid) {

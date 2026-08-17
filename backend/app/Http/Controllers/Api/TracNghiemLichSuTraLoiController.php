@@ -15,6 +15,7 @@ use App\Models\TracNghiemLichSuTraLoi;
 use App\Models\TracNghiemPhienDaHoanThanh;
 use App\Services\TracNghiemPhienProgress;
 use App\Support\ApiResponse;
+use App\Support\MaGiaoDich;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -126,11 +127,14 @@ class TracNghiemLichSuTraLoiController extends Controller
                 );
             }
 
-            DB::transaction(function () use ($historyRows, $ssid, $userId) {
+            $maGiaoDich = null;
+            DB::transaction(function () use ($historyRows, $ssid, $userId, &$maGiaoDich) {
                 // Chỉ ghi lịch sử phiên khi user đã đăng nhập — căn cứ hỗ trợ CSKH.
                 if ($userId) {
+                    $maGiaoDich = MaGiaoDich::taoMaThanhToan();
                     TracNghiemPhienDaHoanThanh::query()->create([
                         'ssid' => $ssid,
+                        'ma_giao_dich' => $maGiaoDich,
                         'trang_thai' => TrangThaiLichSuPhien::ChuaHoanThanh,
                         'nguoi_khao_sat_id' => $userId,
                     ]);
@@ -146,6 +150,7 @@ class TracNghiemLichSuTraLoiController extends Controller
             return ApiResponse::success(
                 [
                     'ssid' => $ssid,
+                    'ma_giao_dich' => $maGiaoDich,
                     'nguoi_dung_id' => $userId,
                     'question_count' => count($historyRows),
                     'per_nhom' => $perNhom,
@@ -736,6 +741,10 @@ class TracNghiemLichSuTraLoiController extends Controller
             'chi_tiet_ket_qua' => $summary,
             'nguoi_khao_sat_id' => $nguoiKhaoSatId ?? $phien->nguoi_khao_sat_id,
         ]);
+        if (! MaGiaoDich::isValidPay((string) $phien->ma_giao_dich)) {
+            $phien->ma_giao_dich = MaGiaoDich::canonicalizePay((string) $phien->ma_giao_dich)
+                ?? MaGiaoDich::taoMaThanhToan();
+        }
         $phien->save();
 
         return $phien;

@@ -105,7 +105,7 @@
         Dán JSON payload rồi gửi tới
         <code>{{ $webhookUrl }}</code>.
         Cột <code>id</code> sẽ lưu thành <code>item_id</code>;
-        <code>content</code> chỉ giữ mã <code>NAP...ECOIN</code> hoặc <code>PAY</code> + 8 số.
+        <code>content</code> chỉ giữ mã <code>NAP...ECOIN</code> hoặc <code>PAY...ECOIN</code>.
     </p>
 
     <div class="card">

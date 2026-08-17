@@ -12,7 +12,6 @@ use App\Models\TracNghiemLichSuThanhToan;
 use App\Models\TracNghiemPhienDaHoanThanh;
 use App\Models\User;
 use App\Support\ApiResponse;
-use App\Support\MaGiaoDich;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +47,7 @@ class TracNghiemLichSuThanhToanController extends Controller
                 'ma_giao_dich' => [
                     'nullable',
                     'string',
-                    'regex:/^PAY[0-9]{8}$/i',
+                    'regex:/^PAY[0-9]{8}(?:ECOIN)?$/i',
                 ],
             ], [
                 'hinh_thuc_thanh_toan.required' => 'Vui lòng chọn hình thức thanh toán.',
@@ -188,15 +187,19 @@ class TracNghiemLichSuThanhToanController extends Controller
         $profile->edu_coin = $soDu - $phi;
         $profile->save();
 
+        $maGiaoDich = $phien->ensureMaGiaoDich();
+
         $item = TracNghiemLichSuThanhToan::query()->create([
             'lich_su_phien_id' => $phien->id,
             'nguoi_dung_id' => $user->id,
+            'ma_giao_dich' => $maGiaoDich,
             'hinh_thuc_thanh_toan' => HinhThucThanhToanTracNghiem::EduCoin,
             'so_tien_thanh_toan' => $phi,
             'trang_thai' => TrangThaiThanhToanTracNghiem::DaHoanThanh,
             'thong_tin_thanh_toan' => [
                 'so_du_truoc' => $soDu,
                 'so_du_sau' => (int) $profile->edu_coin,
+                'ma_giao_dich' => $maGiaoDich,
             ],
         ]);
 
@@ -226,10 +229,7 @@ class TracNghiemLichSuThanhToanController extends Controller
             return ['error' => 'Ngân hàng không khả dụng để thanh toán.'];
         }
 
-        $maGiaoDich = MaGiaoDich::resolveMaThanhToan($maGiaoDichCandidate);
-        if ($maGiaoDich === null) {
-            return ['error' => 'Mã giao dịch đã tồn tại. Vui lòng tạo lại yêu cầu thanh toán.'];
-        }
+        $maGiaoDich = $phien->ensureMaGiaoDich($maGiaoDichCandidate);
 
         $item = TracNghiemLichSuThanhToan::query()->create([
             'lich_su_phien_id' => $phien->id,

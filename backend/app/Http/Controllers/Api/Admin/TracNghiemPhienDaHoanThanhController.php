@@ -27,6 +27,7 @@ class TracNghiemPhienDaHoanThanhController extends Controller
                 ->when($keyword !== '', function ($query) use ($keyword) {
                     $query->where(function ($q) use ($keyword) {
                         $q->where('ssid', 'like', "%{$keyword}%")
+                            ->orWhere('ma_giao_dich', 'like', "%{$keyword}%")
                             ->orWhereHas('nguoiKhaoSat', function ($userQuery) use ($keyword) {
                                 $userQuery->where('name', 'like', "%{$keyword}%")
                                     ->orWhere('email', 'like', "%{$keyword}%");
@@ -109,6 +110,7 @@ class TracNghiemPhienDaHoanThanhController extends Controller
         return [
             'id' => $item->id,
             'ssid' => $item->ssid,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'trang_thai' => $item->trang_thai?->value ?? $item->trang_thai,
             'trang_thai_label' => $item->trang_thai instanceof TrangThaiLichSuPhien
                 ? $item->trang_thai->label()

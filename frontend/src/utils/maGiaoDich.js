@@ -1,6 +1,6 @@
 const NAP_PREFIX = 'NAP'
-const NAP_SUFFIX = 'ECOIN'
 const PAY_PREFIX = 'PAY'
+const SUFFIX = 'ECOIN'
 const TOKEN_LENGTH = 8
 const ALNUM = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
@@ -20,10 +20,10 @@ function randomFromAlphabet(alphabet, length) {
 
 /** NAP + 8 ký tự A-Z0-9 + ECOIN */
 export function taoMaNap() {
-  return `${NAP_PREFIX}${randomFromAlphabet(ALNUM, TOKEN_LENGTH)}${NAP_SUFFIX}`
+  return `${NAP_PREFIX}${randomFromAlphabet(ALNUM, TOKEN_LENGTH)}${SUFFIX}`
 }
 
-/** PAY + 8 chữ số */
+/** PAY + 8 chữ số + ECOIN */
 export function taoMaThanhToan() {
-  return `${PAY_PREFIX}${randomFromAlphabet('0123456789', TOKEN_LENGTH)}`
+  return `${PAY_PREFIX}${randomFromAlphabet('0123456789', TOKEN_LENGTH)}${SUFFIX}`
 }

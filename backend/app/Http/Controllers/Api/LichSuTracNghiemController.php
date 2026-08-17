@@ -93,6 +93,7 @@ class LichSuTracNghiemController extends Controller
         $payload = [
             'id' => $item->id,
             'ssid' => $item->ssid,
+            'ma_giao_dich' => $item->ma_giao_dich,
             'trang_thai' => $trangThai?->value ?? TrangThaiLichSuPhien::ChuaHoanThanh->value,
             'trang_thai_label' => $trangThai?->label() ?? TrangThaiLichSuPhien::ChuaHoanThanh->label(),
             'top_nhom_nganh' => $topNhom,
