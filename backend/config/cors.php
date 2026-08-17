@@ -1,5 +1,18 @@
 <?php
 
+$origins = array_values(array_unique(array_filter(array_map(
+    static fn (string $origin) => rtrim(trim($origin), '/'),
+    array_merge(
+        [(string) env('FRONTEND_URL', '')],
+        explode(',', (string) env(
+            'CORS_ALLOWED_ORIGINS',
+            '*',
+        )),
+    ),
+))));
+
+$allowedOrigins = in_array('*', $origins, true) ? ['*'] : $origins;
+
 return [
 
     /*
@@ -13,17 +26,17 @@ return [
     |
     | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
     |
+    | Danh sách origin: CORS_ALLOWED_ORIGINS (phẩy) + FRONTEND_URL.
+    | Origin phải đúng scheme + host, không có dấu / cuối.
+    | Đặt CORS_ALLOWED_ORIGINS=* để cho phép mọi domain.
+    |
     */
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter([
-        env('FRONTEND_URL', 'http://localhost:5173'),
-        'http://127.0.0.1:5173',
-        'http://localhost:5173',
-    ]),
+    'allowed_origins' => $allowedOrigins,
 
     'allowed_origins_patterns' => [],
 
